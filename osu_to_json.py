@@ -47,7 +47,7 @@ def getJsonByOsu(url, dumpURL=None):
             elif (hitobject_param == "2" or hitobject_param == "4" or hitobject_param == "5" or hitobject_param == "6"):
               new_combo = "1"
           elif (param_no == 6 and (hitobject_param[0] == "B" or hitobject_param[0] == "C" or hitobject_param[0] == "L" or hitobject_param[0] == "P")):
-            param_name = "objectParams"
+            param_name = "objectPrams"
           else:
             param_name = f"param{param_no}"
 
