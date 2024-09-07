@@ -80,4 +80,4 @@ def getJsonByOsu(url, dumpURL=None):
 
   return hitobject_json
 
-newJSON = getJsonByOsu("map4.osu", "test2.json")
+newJSON = getJsonByOsu("map1.osu", "test1.json")
