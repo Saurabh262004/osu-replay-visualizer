@@ -1,83 +1,84 @@
 import json
 
 def getJsonByOsu(url, dumpURL=None):
-  map = open(url, "r")
-  hitobject_data = ""
-  hitobject_json = "{"
+  map = open(url, 'r')
+  newJson = '{'
+  hitobjectDataRaw = ''
+  hitobjectJson = '\"hitobjects\": ['
   flag = False
 
   for line in map:
     if flag:
-      hitobject_data += line
+      hitobjectDataRaw += line
 
-    if line == "[HitObjects]\n":
+    if line == '[HitObjects]\n':
       flag = True
 
-  hitobject_line = ""
+  hitobjectLine = ''
   hitobject_no = 0
 
-  for i in range(len(hitobject_data)):
+  for i in range(len(hitobjectDataRaw)):
 
-    if not hitobject_data[i] == "\n":
-      hitobject_line += hitobject_data[i]
+    if not hitobjectDataRaw[i] == '\n':
+      hitobjectLine += hitobjectDataRaw[i]
     else:
-      hitobject_line += ","
-      hitobject = "{"
-      param_no = 0
-      hitobject_param = ""
-      new_combo = "0"
+      hitobjectLine += ','
+      hitobject = '{'
+      paramNum = 0
+      hitobject_param = ''
 
-      for j in range(len(hitobject_line)):
-        if not hitobject_line[j] == ",":
-          hitobject_param += hitobject_line[j]
+      for j in range(len(hitobjectLine)):
+        if not hitobjectLine[j] == ',':
+          hitobject_param += hitobjectLine[j]
         else:
-          param_no += 1
-          param_name = ""
+          paramNum += 1
+          paramName = ''
 
-          if (param_no == 1):
-            param_name = "x"
-          elif (param_no == 2):
-            param_name = "y"
-          elif (param_no == 3):
-            param_name = "time"
-          elif (param_no == 4):
-            param_name = "type"
-            if (hitobject_param == "12"):
-              hitobject_param = "3"
-            elif (hitobject_param == "2" or hitobject_param == "4" or hitobject_param == "5" or hitobject_param == "6"):
-              new_combo = "1"
-          elif (param_no == 6 and (hitobject_param[0] == "B" or hitobject_param[0] == "C" or hitobject_param[0] == "L" or hitobject_param[0] == "P")):
-            param_name = "objectParams"
+          if (paramNum == 1):
+            paramName = 'x'
+          elif (paramNum == 2):
+            paramName = 'y'
+          elif (paramNum == 3):
+            paramName = 'time'
+          elif (paramNum == 4):
+            paramName = 'type'
+            if (hitobject_param == '12'):
+              hitobject_param = '3'
+          elif (paramNum == 6 and (hitobject_param[0] == 'B' or hitobject_param[0] == 'C' or hitobject_param[0] == 'L' or hitobject_param[0] == 'P')):
+            paramName = 'objectParams'
           else:
-            param_name = f"param{param_no}"
+            paramName = f'param{paramNum}'
 
-          hitobject += f"\"{param_name}\": \"{hitobject_param}\","
-          hitobject_param = ""
+          hitobject += f'\"{paramName}\": \"{hitobject_param}\",'
+          hitobject_param = ''
 
-      hitobject_line = ""
+      hitobjectLine = ''
       hitobject = hitobject[0:len(hitobject)-1]
-      hitobject += "}"
+      hitobject += '}'
       hitobject_pyobj = json.loads(hitobject)
 
-      if ("objectParams" in hitobject_pyobj):
-        hitobject_pyobj["type"] = "1"
-      elif (not hitobject_pyobj["type"] == "3"):
-        hitobject_pyobj["type"] = "0"
-
-      hitobject_pyobj["newCombo"] = new_combo
+      if ('objectParams' in hitobject_pyobj):
+        hitobject_pyobj['type'] = '1'
+      elif (not hitobject_pyobj['type'] == '3'):
+        hitobject_pyobj['type'] = '0'
+        
+      
 
       hitobject = json.dumps(hitobject_pyobj)
-      hitobject_json += f"\"{hitobject_no}\": {hitobject},"
+      hitobjectJson += f'{hitobject},'
       hitobject_no += 1
 
-  hitobject_json = hitobject_json[0:len(hitobject_json)-1]
-  hitobject_json += "}"
+  hitobjectJson = hitobjectJson[0:len(hitobjectJson)-1]
+  hitobjectJson += ']'
+
+  newJson += hitobjectJson
+  newJson += '}'
 
   if (dumpURL):
-    dumpFile = open(dumpURL, "w")
-    dumpFile.write(hitobject_json)
-    dumpFile.close()
+    dumpFile = open(dumpURL, 'w')
+    dumpFile.write(newJson)
+    dumpFile.close()    
 
-  return hitobject_json
+  return newJson
 
-newJSON = getJsonByOsu("map1.osu", "test1.json")
+test1 = getJsonByOsu('map2.osu', 'test2.json')
