@@ -1,21 +1,21 @@
 import json
 
-def getJsonByOsu(url, dumpURL=None):
-  map = open(url, 'r')
+def getJsonByOsu(osuURL, dumpJsonURL=None):
+  map = open(osuURL, 'r')
   newJson = '{'
   hitobjectDataRaw = ''
   hitobjectJson = '\"hitobjects\": ['
-  flag = False
+  hitobjectsMark = False
 
   for line in map:
-    if flag:
+    if hitobjectsMark:
       hitobjectDataRaw += line
 
     if line == '[HitObjects]\n':
-      flag = True
+      hitobjectsMark = True
 
   hitobjectLine = ''
-  hitobject_no = 0
+  hitobjectNum = 0
 
   for i in range(len(hitobjectDataRaw)):
 
@@ -25,13 +25,18 @@ def getJsonByOsu(url, dumpURL=None):
       hitobjectLine += ','
       hitobject = '{'
       paramNum = 0
-      hitobject_param = ''
+      hitobjectParam = ''
 
       for j in range(len(hitobjectLine)):
         if not hitobjectLine[j] == ',':
-          hitobject_param += hitobjectLine[j]
+          hitobjectParam += hitobjectLine[j]
         else:
           paramNum += 1
+
+          if paramNum == 5:
+            hitobjectParam = ''
+            continue
+
           paramName = ''
 
           if (paramNum == 1):
@@ -42,31 +47,34 @@ def getJsonByOsu(url, dumpURL=None):
             paramName = 'time'
           elif (paramNum == 4):
             paramName = 'type'
-            if (hitobject_param == '12'):
-              hitobject_param = '2'
-          elif (paramNum == 6 and (hitobject_param[0] == 'B' or hitobject_param[0] == 'C' or hitobject_param[0] == 'L' or hitobject_param[0] == 'P')):
+            if (hitobjectParam == '12'):
+              hitobjectParam = 2
+          elif (paramNum == 6 and (hitobjectParam[0] == 'B' or hitobjectParam[0] == 'C' or hitobjectParam[0] == 'L' or hitobjectParam[0] == 'P')):
             paramName = 'objectParams'
+            hitobjectParam = f'\"{hitobjectParam}\"' # temporary
+            # edit objectParams value as needed here
           else:
             paramName = f'param{paramNum}'
-
-          hitobject += f'\"{paramName}\": \"{hitobject_param}\",'
-          hitobject_param = ''
+            hitobjectParam = f'\"{hitobjectParam}\"' # also temporary
+            
+          hitobject += f'\"{paramName}\": {hitobjectParam},'
+          hitobjectParam = ''
 
       hitobjectLine = ''
       hitobject = hitobject[0:len(hitobject)-1]
       hitobject += '}'
-      hitobject_pyobj = json.loads(hitobject)
+      hitobjectPyobj = json.loads(hitobject)
 
-      if ('objectParams' in hitobject_pyobj):
-        hitobject_pyobj['type'] = '1'
-      elif (not hitobject_pyobj['type'] == '2'):
-        hitobject_pyobj['type'] = '0'
-        
-      
+      if ('objectParams' in hitobjectPyobj):
+        hitobjectPyobj['type'] = 1
+      elif (not hitobjectPyobj['type'] == 2):
+        hitobjectPyobj['type'] = 0
+      else:
+        hitobjectPyobj['endTime'] = int(hitobjectPyobj.pop('param6'))
 
-      hitobject = json.dumps(hitobject_pyobj)
+      hitobject = json.dumps(hitobjectPyobj)
       hitobjectJson += f'{hitobject},'
-      hitobject_no += 1
+      hitobjectNum += 1
 
   hitobjectJson = hitobjectJson[0:len(hitobjectJson)-1]
   hitobjectJson += ']'
@@ -74,9 +82,9 @@ def getJsonByOsu(url, dumpURL=None):
   newJson += hitobjectJson
   newJson += '}'
 
-  if (dumpURL):
-    dumpFile = open(dumpURL, 'w')
+  if (dumpJsonURL):
+    dumpFile = open(dumpJsonURL, 'w')
     dumpFile.write(newJson)
-    dumpFile.close()    
+    dumpFile.close()
 
   return newJson

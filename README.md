@@ -1,4 +1,4 @@
-# osu-map-visualizer
+# osu-map-visualizerre
 
 > [!WARNING]
 **This documentation is temporary and will change in future**
