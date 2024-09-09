@@ -33,9 +33,9 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
         else:
           paramNum += 1
 
-          if paramNum == 5:
-            hitobjectParam = ''
-            continue
+          # if paramNum == 5:
+          #   hitobjectParam = ''
+          #   continue
 
           paramName = ''
 
@@ -51,12 +51,37 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
               hitobjectParam = 2
           elif (paramNum == 6 and (hitobjectParam[0] == 'B' or hitobjectParam[0] == 'C' or hitobjectParam[0] == 'L' or hitobjectParam[0] == 'P')):
             paramName = 'objectParams'
-            hitobjectParam = f'\"{hitobjectParam}\"' # temporary
-            # edit objectParams value as needed here
+            hitobjectParam += '|'
+            newObjectParams = '{\"curveType\": \"' + hitobjectParam[0] + '\", \"anchors\": ['
+            anchorCoordinate = ''
+            anchorsCoordinateList = []
+
+            for k in range(2, len(hitobjectParam)):
+              currentChar = hitobjectParam[k]
+              if currentChar == ':' or currentChar == '|':
+                anchorsCoordinateList.append(anchorCoordinate)
+                anchorCoordinate = ''
+              else:
+                anchorCoordinate += currentChar
+                
+            skipAnchorIndex = -1
+            for k in range(0, len(anchorsCoordinateList), 2):
+              anchorType = '0'
+
+              if len(anchorsCoordinateList) > 2 and k < len(anchorsCoordinateList)-3:
+                if anchorsCoordinateList[k] == anchorsCoordinateList[k+2] and anchorsCoordinateList[k+1] == anchorsCoordinateList[k+3]:
+                  skipAnchorIndex = k+2
+                  anchorType = '1'
+
+              if not (k == skipAnchorIndex):
+                newObjectParams += '{\"anchorType\": ' + anchorType + f', \"x\": {anchorsCoordinateList[k]}, \"y\": {anchorsCoordinateList[k+1]}' + '}, '
+            
+            newObjectParams = newObjectParams[0:len(newObjectParams)-2] + ']}'
+            hitobjectParam = newObjectParams
           else:
             paramName = f'param{paramNum}'
-            hitobjectParam = f'\"{hitobjectParam}\"' # also temporary
-            
+            hitobjectParam = f'\"{hitobjectParam}\"' # temporary
+
           hitobject += f'\"{paramName}\": {hitobjectParam},'
           hitobjectParam = ''
 
