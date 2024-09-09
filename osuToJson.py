@@ -75,7 +75,7 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
 
               if not (k == skipAnchorIndex):
                 newObjectParams += '{\"anchorType\": ' + anchorType + f', \"x\": {anchorsCoordinateList[k]}, \"y\": {anchorsCoordinateList[k+1]}' + '}, '
-            
+
             newObjectParams = newObjectParams[0:len(newObjectParams)-2] + ']}'
             hitobjectParam = newObjectParams
           else:
