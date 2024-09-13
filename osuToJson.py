@@ -2,7 +2,7 @@ import json
 
 def separateByColon(string, intValue=False):
   stringJson = '{'
-  
+
   stringElement = ''
   for i in range(len(string)):
     if string[i] == ':':
@@ -16,10 +16,10 @@ def separateByColon(string, intValue=False):
       stringElement = ''
     else:
       stringElement += string[i]
-  
+
   stringJson = stringJson[0:len(stringJson)-6]
   stringJson += '}'
-  
+
   return stringJson
 
 def getJsonByOsu(osuURL, dumpJsonURL=None):
@@ -60,7 +60,7 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
       metadataMark = False
       diffMark = False
       hitobjectsMark = False
-  
+
   for i in range(len(audioFileNameRaw)-1):
     if (audioFileNameRaw[i] == ' '):
       audioFileName = ''
@@ -120,7 +120,7 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
                 anchorCoordinate = ''
               else:
                 anchorCoordinate += currentChar
-                
+
             skipAnchorIndex = -1
             for k in range(0, len(anchorsCoordinateList), 2):
               anchorType = '0'
