@@ -1,24 +1,82 @@
 import json
 
+def separateByColon(string, intValue=False):
+  stringJson = '{'
+  
+  stringElement = ''
+  for i in range(len(string)):
+    if string[i] == ':':
+      stringJson += f'\"{stringElement}\": '
+      stringElement = ''
+    elif string[i] == '\n':
+      if intValue and len(stringElement) > 0:
+        stringJson += f'{stringElement}, '
+      else:
+        stringJson += f'\"{stringElement}\", '
+      stringElement = ''
+    else:
+      stringElement += string[i]
+  
+  stringJson = stringJson[0:len(stringJson)-6]
+  stringJson += '}'
+  
+  return stringJson
+
 def getJsonByOsu(osuURL, dumpJsonURL=None):
   map = open(osuURL, 'r')
   newJson = '{'
+  audioFileNameRaw = ''
+  audioFileName = ''
+  metadataRaw = ''
+  diffRaw = ''
   hitobjectDataRaw = ''
   hitobjectJson = '\"hitobjects\": ['
+  generalMark = False
+  metadataMark = False
+  diffMark = False
   hitobjectsMark = False
 
   for line in map:
-    if hitobjectsMark:
+    if generalMark:
+      audioFileNameRaw = line
+      generalMark = False
+    elif metadataMark:
+      metadataRaw += line
+    elif diffMark:
+      diffRaw += line
+    elif hitobjectsMark:
       hitobjectDataRaw += line
 
-    if line == '[HitObjects]\n':
+    if line == '[General]\n':
+      generalMark = True
+    elif line == '[Metadata]\n':
+      metadataMark = True
+    elif line == '[Difficulty]\n':
+      diffMark = True
+    elif line == '[HitObjects]\n':
       hitobjectsMark = True
+    elif line == '\n':
+      generalMark = False
+      metadataMark = False
+      diffMark = False
+      hitobjectsMark = False
+  
+  for i in range(len(audioFileNameRaw)-1):
+    if (audioFileNameRaw[i] == ' '):
+      audioFileName = ''
+    else:
+      audioFileName += audioFileNameRaw[i]
+
+  newJson += f'\"audioFileName\": \"{audioFileName}\", '
+
+  newJson += '\"metadata\": ' + separateByColon(metadataRaw) + ', '
+
+  newJson += '\"difficulty\": ' + separateByColon(diffRaw, True) + ', '
 
   hitobjectLine = ''
   hitobjectNum = 0
 
   for i in range(len(hitobjectDataRaw)):
-
     if not hitobjectDataRaw[i] == '\n':
       hitobjectLine += hitobjectDataRaw[i]
     else:
@@ -32,12 +90,11 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
           hitobjectParam += hitobjectLine[j]
         else:
           paramNum += 1
+          paramName = ''
 
           # if paramNum == 5:
           #   hitobjectParam = ''
           #   continue
-
-          paramName = ''
 
           if (paramNum == 1):
             paramName = 'x'
@@ -98,10 +155,10 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
         hitobjectPyobj['endTime'] = int(hitobjectPyobj.pop('param6'))
 
       hitobject = json.dumps(hitobjectPyobj)
-      hitobjectJson += f'{hitobject},'
+      hitobjectJson += f'{hitobject}, '
       hitobjectNum += 1
 
-  hitobjectJson = hitobjectJson[0:len(hitobjectJson)-1]
+  hitobjectJson = hitobjectJson[0:len(hitobjectJson)-2]
   hitobjectJson += ']'
 
   newJson += hitobjectJson

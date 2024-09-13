@@ -1,3 +1,3 @@
 from osuToJson import getJsonByOsu
 
-json = getJsonByOsu('map1.osu', 'test1.json')
+json = getJsonByOsu('map2.osu', 'test2.json')
