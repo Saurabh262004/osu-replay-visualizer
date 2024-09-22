@@ -35,8 +35,14 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
   metadataMark = False
   diffMark = False
   hitobjectsMark = False
+  fileVerMark = True
+  fileVer = -1
 
   for line in map:
+    if fileVerMark:
+      fileVer = int(line[17:-1])
+      fileVerMark = False
+
     if generalMark:
       audioFileNameRaw = line
       generalMark = False
@@ -66,6 +72,8 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
       audioFileName = ''
     else:
       audioFileName += audioFileNameRaw[i]
+
+  newJson += f'\"ver\": {fileVer}, '
 
   newJson += f'\"audioFileName\": \"{audioFileName}\", '
 

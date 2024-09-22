@@ -1,4 +1,5 @@
 {
+  "ver": 14,
   "audioFileName": "audio.mp3",
   "metadata": {
     "Title": "Baby Steps",
@@ -6,10 +7,10 @@
     "Artist": "Scott Roush",
     "ArtistUnicode": "Scott Roush",
     "Creator": "Saurabh Jadhav",
-    "Version": "Easy",
+    "Version": "test",
     "Source": "",
     "Tags": "Mumbo Jumbo TimeLaps Theme Baby Steps Scott Roush",
-    "BeatmapID": "4024833",
+    "BeatmapID": "0",
     "BeatmapSetID": "1945405"
   },
   "difficulty": {
@@ -22,1093 +23,154 @@
   },
   "hitobjects": [
     {
-      "x": 376,
-      "y": 232,
-      "time": 2355,
+      "x": 279,
+      "y": 138,
+      "time": 2354,
       "type": 0,
-      "param5": "8",
+      "param5": "0",
       "param6": "0:0:0:0:"
     },
     {
-      "x": 352,
-      "y": 256,
-      "time": 2890,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 328,
-      "y": 280,
+      "x": 279,
+      "y": 138,
       "time": 3426,
       "type": 0,
-      "param5": "8",
+      "param5": "0",
       "param6": "0:0:0:0:"
     },
     {
-      "x": 304,
-      "y": 304,
-      "time": 3962,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 208,
-      "y": 304,
+      "x": 279,
+      "y": 138,
       "time": 4497,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 184,
-      "y": 280,
-      "time": 5033,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 160,
-      "y": 256,
-      "time": 5569,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 136,
-      "y": 232,
-      "time": 6105,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 192,
-      "y": 144,
-      "time": 6640,
       "type": 1,
-      "param5": "8",
+      "param5": "0",
       "objectParams": {
         "curveType": "L",
         "anchors": [
           {
             "anchorType": 0,
-            "x": 248,
-            "y": 88
+            "x": 401,
+            "y": 139
           }
         ]
       },
       "param7": "1",
-      "param8": "80.0000011920928"
+      "param8": "120.000001788139"
     },
     {
-      "x": 144,
-      "y": 48,
+      "x": 279,
+      "y": 138,
+      "time": 5569,
+      "type": 1,
+      "param5": "0",
+      "objectParams": {
+        "curveType": "P",
+        "anchors": [
+          {
+            "anchorType": 0,
+            "x": 400,
+            "y": 199
+          },
+          {
+            "anchorType": 0,
+            "x": 349,
+            "y": 310
+          }
+        ]
+      },
+      "param7": "1",
+      "param8": "280.000004172325"
+    },
+    {
+      "x": 279,
+      "y": 138,
       "time": 7712,
       "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "L",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 88,
-            "y": 104
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "80.0000011920928"
-    },
-    {
-      "x": 112,
-      "y": 220,
-      "time": 8783,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 133,
-            "y": 186
-          },
-          {
-            "anchorType": 0,
-            "x": 168,
-            "y": 168
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "80.0000011920928"
-    },
-    {
-      "x": 263,
-      "y": 203,
-      "time": 9855,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 242,
-            "y": 237
-          },
-          {
-            "anchorType": 0,
-            "x": 208,
-            "y": 256
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "80.0000011920928"
-    },
-    {
-      "x": 144,
-      "y": 320,
-      "time": 10926,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 224,
-      "y": 320,
-      "time": 11462,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "B",
-        "anchors": [
-          {
-            "anchorType": 1,
-            "x": 264,
-            "y": 304
-          },
-          {
-            "anchorType": 0,
-            "x": 320,
-            "y": 336
-          },
-          {
-            "anchorType": 0,
-            "x": 384,
-            "y": 320
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "160.000002384186"
-    },
-    {
-      "x": 328,
-      "y": 232,
-      "time": 13069,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 224,
-      "y": 144,
-      "time": 13605,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "B",
-        "anchors": [
-          {
-            "anchorType": 1,
-            "x": 264,
-            "y": 160
-          },
-          {
-            "anchorType": 0,
-            "x": 320,
-            "y": 128
-          },
-          {
-            "anchorType": 0,
-            "x": 376,
-            "y": 142
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "160.000002384186"
-    },
-    {
-      "x": 448,
-      "y": 232,
-      "time": 15212,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 384,
-      "y": 320,
-      "time": 15747,
-      "type": 1,
-      "param5": "8",
+      "param5": "0",
       "objectParams": {
         "curveType": "B",
         "anchors": [
           {
             "anchorType": 0,
-            "x": 304,
-            "y": 360
+            "x": 375,
+            "y": 175
           },
           {
             "anchorType": 0,
-            "x": 272,
-            "y": 288
+            "x": 339,
+            "y": 298
           },
-          {
-            "anchorType": 0,
-            "x": 224,
-            "y": 320
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "160.000002384186"
-    },
-    {
-      "x": 192,
-      "y": 232,
-      "time": 17355,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 232,
-      "y": 144,
-      "time": 17890,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "B",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 274,
-            "y": 172
-          },
-          {
-            "anchorType": 0,
-            "x": 306,
-            "y": 100
-          },
-          {
-            "anchorType": 0,
-            "x": 386,
-            "y": 140
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "160.000002384186"
-    },
-    {
-      "x": 328,
-      "y": 232,
-      "time": 19497,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "L",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 240,
-            "y": 232
-          }
-        ]
-      },
-      "param7": "2",
-      "param8": "80.0000011920928"
-    },
-    {
-      "x": 328,
-      "y": 232,
-      "time": 21105,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 248,
-      "y": 232,
-      "time": 21640,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "L",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 160,
-            "y": 232
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "80.0000011920928"
-    },
-    {
-      "x": 208,
-      "y": 232,
-      "time": 22712,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "L",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 120,
-            "y": 232
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "80.0000011920928"
-    },
-    {
-      "x": 40,
-      "y": 232,
-      "time": 23783,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 72,
-            "y": 128
-          },
-          {
-            "anchorType": 0,
-            "x": 192,
-            "y": 136
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "240.000003576278"
-    },
-    {
-      "x": 133,
-      "y": 212,
-      "time": 25926,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 245,
-            "y": 218
-          },
-          {
-            "anchorType": 0,
-            "x": 280,
-            "y": 112
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "240.000003576278"
-    },
-    {
-      "x": 192,
-      "y": 136,
-      "time": 28069,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "L",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 192,
-            "y": 56
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "80.0000011920928"
-    },
-    {
-      "x": 104,
-      "y": 144,
-      "time": 29140,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "L",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 104,
-            "y": 64
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "80.0000011920928"
-    },
-    {
-      "x": 192,
-      "y": 64,
-      "time": 30212,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "L",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 232,
-            "y": 64
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "40.0000005960464"
-    },
-    {
-      "x": 192,
-      "y": 152,
-      "time": 31015,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 192,
-      "y": 152,
-      "time": 31283,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "L",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 240,
-            "y": 152
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "40.0000005960464"
-    },
-    {
-      "x": 320,
-      "y": 152,
-      "time": 32355,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 312,
-            "y": 128
-          },
-          {
-            "anchorType": 0,
-            "x": 320,
-            "y": 112
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "40.0000005960464"
-    },
-    {
-      "x": 400,
-      "y": 112,
-      "time": 32890,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 408,
-            "y": 136
-          },
-          {
-            "anchorType": 0,
-            "x": 400,
-            "y": 152
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "40.0000005960464"
-    },
-    {
-      "x": 320,
-      "y": 152,
-      "time": 33426,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 312,
-            "y": 128
-          },
-          {
-            "anchorType": 0,
-            "x": 320,
-            "y": 112
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "40.0000005960464"
-    },
-    {
-      "x": 400,
-      "y": 112,
-      "time": 33962,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 408,
-            "y": 136
-          },
-          {
-            "anchorType": 0,
-            "x": 400,
-            "y": 152
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "40.0000005960464"
-    },
-    {
-      "x": 320,
-      "y": 152,
-      "time": 34497,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "L",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 272,
-            "y": 152
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "40.0000005960464"
-    },
-    {
-      "x": 192,
-      "y": 152,
-      "time": 35033,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 192,
-      "y": 152,
-      "time": 35301,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 104,
-      "y": 152,
-      "time": 35569,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 112,
-            "y": 128
-          },
-          {
-            "anchorType": 0,
-            "x": 128,
-            "y": 112
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "40.0000005960464"
-    },
-    {
-      "x": 191,
-      "y": 151,
-      "time": 36105,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 186,
-            "y": 170
-          },
-          {
-            "anchorType": 0,
-            "x": 174,
-            "y": 186
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "40.0000005960464"
-    },
-    {
-      "x": 96,
-      "y": 224,
-      "time": 36640,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 104,
-            "y": 272
-          },
-          {
-            "anchorType": 0,
-            "x": 168,
-            "y": 272
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "120.000001788139"
-    },
-    {
-      "x": 218,
-      "y": 213,
-      "time": 37712,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 273,
-            "y": 210
-          },
-          {
-            "anchorType": 0,
-            "x": 288,
-            "y": 264
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "120.000001788139"
-    },
-    {
-      "x": 208,
-      "y": 296,
-      "time": 38783,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "B",
-        "anchors": [
-          {
-            "anchorType": 1,
-            "x": 184,
-            "y": 320
-          },
-          {
-            "anchorType": 0,
-            "x": 152,
-            "y": 320
-          },
-          {
-            "anchorType": 0,
-            "x": 152,
-            "y": 248
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "120.000001788139"
-    },
-    {
-      "x": 248,
-      "y": 232,
-      "time": 39855,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 248,
-      "y": 264,
-      "time": 40122,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 264,
-      "y": 296,
-      "time": 40390,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 296,
-      "y": 320,
-      "time": 40658,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 336,
-      "y": 336,
-      "time": 40926,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 392,
-            "y": 344
-          },
-          {
-            "anchorType": 0,
-            "x": 424,
-            "y": 312
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "95.9999985008239"
-    },
-    {
-      "x": 464,
-      "y": 248,
-      "time": 41997,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
           {
             "anchorType": 0,
             "x": 465,
-            "y": 191
-          },
-          {
-            "anchorType": 0,
-            "x": 429,
-            "y": 163
+            "y": 339
           }
         ]
       },
       "param7": "1",
-      "param8": "95.9999985008239"
+      "param8": "280.000004172325"
     },
     {
-      "x": 376,
-      "y": 240,
-      "time": 43069,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 376,
-      "y": 240,
-      "time": 43605,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 272,
-      "y": 240,
-      "time": 44140,
+      "x": 279,
+      "y": 138,
+      "time": 9855,
       "type": 1,
-      "param5": "8",
+      "param5": "0",
       "objectParams": {
         "curveType": "B",
         "anchors": [
           {
             "anchorType": 1,
-            "x": 216,
-            "y": 240
-          },
-          {
-            "anchorType": 1,
-            "x": 224,
-            "y": 200
+            "x": 423,
+            "y": 140
           },
           {
             "anchorType": 0,
-            "x": 200,
-            "y": 160
+            "x": 423,
+            "y": 278
           }
         ]
       },
       "param7": "1",
-      "param8": "143.999997751236"
+      "param8": "280.000004172325"
     },
     {
-      "x": 199,
-      "y": 159,
-      "time": 45212,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 199,
-      "y": 159,
-      "time": 45747,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 272,
-      "y": 112,
-      "time": 46283,
+      "x": 279,
+      "y": 138,
+      "time": 11997,
       "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "L",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 352,
-            "y": 176
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "95.9999985008239"
-    },
-    {
-      "x": 400,
-      "y": 104,
-      "time": 47355,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "P",
-        "anchors": [
-          {
-            "anchorType": 0,
-            "x": 408,
-            "y": 240
-          },
-          {
-            "anchorType": 0,
-            "x": 280,
-            "y": 240
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "287.999995502472"
-    },
-    {
-      "x": 344,
-      "y": 176,
-      "time": 49497,
-      "type": 1,
-      "param5": "8",
+      "param5": "0",
       "objectParams": {
         "curveType": "B",
         "anchors": [
           {
+            "anchorType": 0,
+            "x": 373,
+            "y": 103
+          },
+          {
             "anchorType": 1,
-            "x": 336,
-            "y": 128
+            "x": 389,
+            "y": 217
           },
           {
             "anchorType": 0,
-            "x": 288,
-            "y": 128
+            "x": 460,
+            "y": 118
           }
         ]
       },
       "param7": "1",
-      "param8": "95.9999985008239"
+      "param8": "280.000004172325"
     },
     {
-      "x": 232,
-      "y": 184,
-      "time": 50569,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "B",
-        "anchors": [
-          {
-            "anchorType": 1,
-            "x": 240,
-            "y": 232
-          },
-          {
-            "anchorType": 0,
-            "x": 288,
-            "y": 232
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "95.9999985008239"
-    },
-    {
-      "x": 360,
-      "y": 248,
-      "time": 51640,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 360,
-      "y": 248,
-      "time": 52176,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
-    },
-    {
-      "x": 368,
-      "y": 328,
-      "time": 52712,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "B",
-        "anchors": [
-          {
-            "anchorType": 1,
-            "x": 416,
-            "y": 344
-          },
-          {
-            "anchorType": 0,
-            "x": 424,
-            "y": 296
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "95.9999985008239"
-    },
-    {
-      "x": 360,
-      "y": 248,
-      "time": 53783,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "B",
-        "anchors": [
-          {
-            "anchorType": 1,
-            "x": 352,
-            "y": 144
-          },
-          {
-            "anchorType": 1,
-            "x": 256,
-            "y": 176
-          },
-          {
-            "anchorType": 0,
-            "x": 208,
-            "y": 256
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "287.999995502472"
-    },
-    {
-      "x": 213,
-      "y": 246,
-      "time": 55926,
-      "type": 1,
-      "param5": "8",
-      "objectParams": {
-        "curveType": "B",
-        "anchors": [
-          {
-            "anchorType": 1,
-            "x": 256,
-            "y": 176
-          },
-          {
-            "anchorType": 1,
-            "x": 352,
-            "y": 144
-          },
-          {
-            "anchorType": 0,
-            "x": 360,
-            "y": 248
-          }
-        ]
-      },
-      "param7": "1",
-      "param8": "287.999995502472"
-    },
-    {
-      "x": 360,
-      "y": 248,
-      "time": 58069,
-      "type": 0,
-      "param5": "8",
-      "param6": "0:0:0:0:"
+      "x": 256,
+      "y": 192,
+      "time": 14140,
+      "type": 2,
+      "param5": "0",
+      "param7": "0:0:0:0:",
+      "endTime": 16015
     }
   ]
 }

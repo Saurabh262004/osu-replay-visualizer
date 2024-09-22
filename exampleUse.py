@@ -1,3 +1,3 @@
-from osuToJson import getJsonByOsu
+from modules.osuToJson import getJsonByOsu
 
-json = getJsonByOsu('map2.osu', 'test2.json')
+json = getJsonByOsu('Function Phantom - Variable (Chaoslitz) [Deluxe].osu', 'Function Phantom - Variable (Chaoslitz) [Deluxe].json')
