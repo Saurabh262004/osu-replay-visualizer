@@ -5,8 +5,8 @@ def updateSongsList(osuDir):
   string = ''
 
   for (dirpath, dirnames, filenames) in walk(osuDir + '/Songs'):
-      d.extend(dirnames)
-      break
+    d.extend(dirnames)
+    break
 
   for i in d:
     string += f'{i}\n'
