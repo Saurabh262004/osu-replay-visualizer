@@ -69,15 +69,9 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
 
   map.close()
 
-  for i in range(len(audioFileNameRaw)-1):
-    if (audioFileNameRaw[i] == ' '):
-      audioFileName = ''
-    else:
-      audioFileName += audioFileNameRaw[i]
-
   newJson += f'\"ver\": {fileVer}, '
 
-  newJson += f'\"audioFileName\": \"{audioFileName}\", '
+  newJson += f'\"audioFileName\": \"{audioFileNameRaw[15:len(audioFileNameRaw)-1]}\", '
 
   newJson += '\"metadata\": ' + separateByColon(metadataRaw) + ', '
 
