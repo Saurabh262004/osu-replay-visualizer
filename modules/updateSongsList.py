@@ -11,6 +11,6 @@ def updateSongsList(osuDir):
   for i in d:
     string += f'{i}\n'
 
-  dumpFile = open('././data/songsList.txt', 'w')
+  dumpFile = open('././data/songsList.dat', 'w')
 
   dumpFile.write(string)

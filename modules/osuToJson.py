@@ -23,7 +23,7 @@ def separateByColon(string, intValue=False):
   return stringJson
 
 def getJsonByOsu(osuURL, dumpJsonURL=None):
-  map = open(osuURL, 'r')
+  map = open(osuURL, 'r', encoding='utf-8')
   newJson = '{'
   audioFileNameRaw = ''
   audioFileName = ''
@@ -67,6 +67,8 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
       diffMark = False
       hitobjectsMark = False
 
+  map.close()
+
   for i in range(len(audioFileNameRaw)-1):
     if (audioFileNameRaw[i] == ' '):
       audioFileName = ''
@@ -99,10 +101,6 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
         else:
           paramNum += 1
           paramName = ''
-
-          # if paramNum == 5:
-          #   hitobjectParam = ''
-          #   continue
 
           if (paramNum == 1):
             paramName = 'x'
