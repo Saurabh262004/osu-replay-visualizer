@@ -22,11 +22,10 @@ def separateByColon(string, intValue=False):
 
   return stringJson
 
-def getJsonByOsu(osuURL, dumpJsonURL=None):
-  map = open(osuURL, 'r', encoding='utf-8')
+def read(mapURL, returnType='pyObject', dumpJsonURL=None):
+  map = open(mapURL, 'r', encoding='utf-8')
   newJson = '{'
   audioFileNameRaw = ''
-  audioFileName = ''
   metadataRaw = ''
   diffRaw = ''
   hitobjectDataRaw = ''
@@ -169,4 +168,9 @@ def getJsonByOsu(osuURL, dumpJsonURL=None):
     dumpFile.write(newJson)
     dumpFile.close()
 
-  return newJson
+  if returnType == 'pyObject':
+    return json.loads(newJson)
+  elif returnType == 'JSON':
+    return newJson
+
+  return None

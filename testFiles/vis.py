@@ -1,9 +1,8 @@
-import json
 import os
 # from copy import copy
 import pygame as pg
-from modules.helper import mapRange
-from modules.osuToJson import getJsonByOsu
+from modules.helpers import mapRange
+from modules.beatmapReader import read
 
 def startMap(mapURL):
   pg.init()
@@ -33,7 +32,7 @@ def startMap(mapURL):
 
   screen = pg.display.set_mode((screen_width, screen_height))
 
-  map = json.loads(getJsonByOsu(mapURL))
+  map = read(mapURL)
 
   data = open('data/data.dat', 'r')
 
@@ -110,4 +109,3 @@ def startMap(mapURL):
     pg.display.flip()
     clock.tick(fps)
 
-startMap('map1.osu')
