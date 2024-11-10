@@ -100,7 +100,17 @@ def startMap(mapURL):
     for i in hitobjectList:
       hitobjectX = map['hitobjects'][i]['x']*screenResMultiplier
       hitobjectY = map['hitobjects'][i]['y']*screenResMultiplier
-      col = pg.Color(int(mapRange(map['hitobjects'][i]['time'] - totalTime, 0, 1000, 255, 0)), 0, 0)
+      R = 0
+      G = 0
+      B = 0
+      fadeIn = int(mapRange(map['hitobjects'][i]['time'] - totalTime, 0, 1000, 255, 0))
+
+      if (map['hitobjects'][i]['type'] == 0):
+        R = fadeIn
+      elif (map['hitobjects'][i]['type'] == 1):
+        G = fadeIn
+
+      col = pg.Color(R, G, B)
 
       pg.draw.circle(screen, col, (hitobjectX, hitobjectY), int(mapRange(map['hitobjects'][i]['time'] - totalTime, 0, 1000, 0, 100)) + 60)
       pg.draw.circle(screen, '#000000', (hitobjectX, hitobjectY), int(mapRange(map['hitobjects'][i]['time'] - totalTime, 0, 1000, 0, 100)) + 54)
@@ -108,4 +118,3 @@ def startMap(mapURL):
 
     pg.display.flip()
     clock.tick(fps)
-
