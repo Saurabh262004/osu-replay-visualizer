@@ -1,0 +1,4 @@
+data/
+testFiles/
+__pycache__/
+*/__pycache__/

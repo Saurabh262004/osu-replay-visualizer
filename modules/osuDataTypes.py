@@ -1,13 +1,12 @@
 from struct import unpack as up
+from datetime import datetime, timedelta
 from lzma import decompress as dcmp
+
+TICKS_PER_SECOND = 10**7
+TICKS_EPOCH_START = datetime(1, 1, 1)
 
 def byte(file):
   return up('B', file.read(1))[0]
-
-def boolean(file):
-  if (up('B', file.read(1)) == b'\x00'):
-    return False
-  return True
 
 def short(file):
   return up('h', file.read(2))[0]
@@ -34,6 +33,17 @@ def ULEB128(file):
 
   return result
 
+def single(file):
+  return up('f', file.read(4))[0]
+
+def double(file):
+  return up('d', file.read(8))[0]
+
+def boolean(file):
+  if (up('B', file.read(1)) == b'\x00'):
+    return False
+  return True
+
 def string(file):
   extractedSTR = ''
   if file.read(1) == b'\x0b':
@@ -42,6 +52,33 @@ def string(file):
     extractedSTR += file.read(stringLength).decode('utf-8')
 
   return extractedSTR
+
+def IntDoublePair(file):
+  pair = []
+
+  # intFlag 
+  byte(file)
+  pair.append(integer(file))
+
+  # doubleFlag
+  byte(file)
+  pair.append(double(file))
+
+  return pair
+
+def timingPoint(file):
+  return {
+    'bpm' : double(file),
+    'offset' : double(file),
+    'isInherited' : not boolean(file)
+  }
+
+def dateTime(file):
+  ticks = long(file)
+
+  date_time = TICKS_EPOCH_START + timedelta(seconds=(ticks/TICKS_PER_SECOND))
+
+  return date_time.strftime("%Y-%m-%d %H:%M:%S.%f")
 
 def replayArray(file):
   replayByteArrayLength = integer(file)
