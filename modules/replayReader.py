@@ -1,5 +1,27 @@
-from osuDataTypes import *
+from modules.osuDataTypes import *
 import json
+
+def replayArray(file):
+  replayByteArrayLength = integer(file)
+  LZMAbyteArray = file.read(replayByteArrayLength)
+  decodedReplayString = dcmp(LZMAbyteArray).decode('ascii')
+
+  replayArray = []
+  actions = []
+  action = ''
+
+  for char in decodedReplayString:
+    if char == '|':
+      actions.append(action)
+      action = ''
+    elif char == ',':
+      replayArray.append({'w' : int(actions[0]), 'x' : float(actions[1]), 'y' : float(actions[2]), 'z' : int(action)})
+      action = ''
+      actions = []
+    else:
+      action += char
+
+  return replayArray
 
 def getReplayData(replayURL, dumpJsonURL=None):
   with open(replayURL, 'rb') as file:
@@ -20,7 +42,7 @@ def getReplayData(replayURL, dumpJsonURL=None):
       'pfc' : byte(file),
       'mods' : integer(file),
       'lifeBar' : string(file),
-      'timeStamp' : long(file),
+      'timeStamp' : windowsDateTime(file),
       'replyArray' : replayArray(file),
       'onlineScoreID' : long(file)
     }
@@ -30,5 +52,3 @@ def getReplayData(replayURL, dumpJsonURL=None):
         dumpFile.write(json.dumps(replayData))
 
     return replayData
-
-getReplayData('Ultraviolet_2643867_4702446541.osr', 'replayData.json')
