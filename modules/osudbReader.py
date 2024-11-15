@@ -75,10 +75,6 @@ def getDataBase(dbURL, dumpJsonURL=None):
       'totalBeatmaps' : integer(dbFile),
       'beatmaps' : []
     }
-    
-    # for i in range(DB['totalBeatmaps']):
-    #   print('beatmapNum: ' + str(i))
-    #   DB['beatmaps'].append(beatmap(dbFile, DB['clientVersion']))
 
     DB['beatmaps'].extend([beatmap(dbFile, DB['clientVersion']) for _ in range(DB['totalBeatmaps'])])
     DB['userPermission'] = integer(dbFile)

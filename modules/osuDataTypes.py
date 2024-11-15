@@ -23,8 +23,7 @@ def ULEB128(file):
   shift = 0
 
   while True:
-    byte = file.read(1)
-    byte_value = ord(byte)
+    byte_value = file.read(1)[0]
     result |= (byte_value & 0x7F) << shift
 
     if (byte_value & 0x80) == 0:
@@ -41,7 +40,7 @@ def double(file):
   return up('<d', file.read(8))[0]
 
 def boolean(file):
-  if (up('<B', file.read(1)) == b'\x00'):
+  if (file.read(1) == b'\x00'):
     return False
   return True
 
@@ -58,11 +57,11 @@ def singleIntDoublePair(file):
   pair = []
 
   # intFlag
-  intFlag = byte(file)
+  byte(file)
   pair.append(integer(file))
 
   # doubleFlag
-  doubleFlag = byte(file)
+  byte(file)
   pair.append(double(file))
 
   return pair
@@ -76,11 +75,16 @@ def IntDoublePairs(file):
   return pairs
 
 def singleTimingPoint(file):
-  return {
+  point = {
     'bpm' : double(file),
     'offset' : double(file),
-    'isInherited' : not boolean(file)
+    'inherited' : not boolean(file)
   }
+  
+  if point['inherited']:
+    point['inverseSliderVelocityMultiplier'] = point.pop('bpm')
+
+  return point
 
 def timingPoints(file):
   totalTimingPoints = integer(file)

@@ -2,14 +2,19 @@ from modules.osuDataTypes import *
 import json
 
 def replayArray(file):
+  # read the compressed LZMA byte array containing the replay data from a ".osr" file
   replayByteArrayLength = integer(file)
   LZMAbyteArray = file.read(replayByteArrayLength)
-  decodedReplayString = dcmp(LZMAbyteArray).decode('ascii')
+
+  # decompress and decodes the data in utf-8
+  decodedReplayString = dcmp(LZMAbyteArray).decode('utf-8')
 
   replayArray = []
   actions = []
   action = ''
 
+  # process the data and returns a python `list` object containing the replay actions
+  # !!!! PROCESS ACTIONS FURTHER TO DISPALY WHAT KEYS WERE PRESSED !!!
   for char in decodedReplayString:
     if char == '|':
       actions.append(action)
@@ -24,6 +29,7 @@ def replayArray(file):
   return replayArray
 
 def getReplayData(replayURL, dumpJsonURL=None):
+  # read the data from a ".osr" file and store it in a python `dict` object
   with open(replayURL, 'rb') as file:
     replayData = {
       'type' : byte(file),
@@ -47,8 +53,9 @@ def getReplayData(replayURL, dumpJsonURL=None):
       'onlineScoreID' : long(file)
     }
 
+    # convert the data in json format and bump it in a file if a URL to the file is given
     if (dumpJsonURL):
       with open(dumpJsonURL, 'w') as dumpFile:
-        dumpFile.write(json.dumps(replayData))
+        dumpFile.write(json.dumps(replayData, indent=2))
 
     return replayData
