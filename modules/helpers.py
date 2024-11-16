@@ -12,4 +12,3 @@ def find(value, arr):
     index += 1
 
   return -1
-
