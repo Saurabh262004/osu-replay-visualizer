@@ -1,5 +1,6 @@
 from modules.osuDataTypes import *
 import json
+from lzma import decompress as dcmp
 
 def replayArray(file):
   # read the compressed LZMA byte array containing the replay data from a ".osr" file
@@ -14,13 +15,12 @@ def replayArray(file):
   action = ''
 
   # process the data and returns a python `list` object containing the replay actions
-  # !!!! PROCESS ACTIONS FURTHER TO DISPALY WHAT KEYS WERE PRESSED !!!
   for char in decodedReplayString:
     if char == '|':
       actions.append(action)
       action = ''
     elif char == ',':
-      replayArray.append({'w' : int(actions[0]), 'x' : float(actions[1]), 'y' : float(actions[2]), 'z' : int(action)})
+      replayArray.append({'interval' : int(actions[0]), 'x' : float(actions[1]), 'y' : float(actions[2]), 'keys' : decodeBinValue('keys', int(action))})
       action = ''
       actions = []
     else:
@@ -46,7 +46,7 @@ def getReplayData(replayURL, dumpJsonURL=None):
       'score' : integer(file),
       'combo' : short(file),
       'pfc' : byte(file),
-      'mods' : integer(file),
+      'mods' : decodeBinValue('mods', integer(file)),
       'lifeBar' : string(file),
       'timeStamp' : windowsDateTime(file),
       'replyArray' : replayArray(file),

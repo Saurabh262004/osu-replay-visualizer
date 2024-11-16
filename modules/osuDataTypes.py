@@ -1,10 +1,57 @@
 from struct import unpack as up
 from datetime import datetime, timedelta
-from lzma import decompress as dcmp
+from modules.helpers import find
 
 TICKS_PER_SECOND = 10**7
 TICKS_EPOCH_START = datetime(1, 1, 1)
 WINDOWS_EPOCH_START = datetime(1601, 1, 1)
+MODS = [
+  'noFail',
+  'easy',
+  'touchDevice',
+  'hidden',
+  'hardRock',
+  'suddenDeath',
+  'doubleTime',
+  'relax',
+  'halfTime',
+  'nightcore',
+  'flashlight',
+  'autoplay',
+  'spunOut',
+  'autopilot',
+  'perfect',
+  'key4',
+  'key5',
+  'key6',
+  'key7',
+  'key8',
+  'fadeIn',
+  'random',
+  'cinema',
+  'targetPractice',
+  'key9',
+  'coop',
+  'key1',
+  'key3',
+  'key2',
+  'scoreV2',
+  'mirror'
+]
+MOD_PAIRS = {
+  'pairs': [['doubleTime', 'nightCore'], ['key4', 'key5', 'key6', 'key7', 'key8']],
+  'pairNames' : ['nightCore', 'keyMod']
+}
+KEYS = [
+  'm1',
+  'm2',
+  'k1',
+  'k2'
+]
+KEY_PAIRS = {
+  'pairs': [['k1', 'm1'], ['k2', 'm2']],
+  'pairNames' : ['k1', 'k2']
+}
 
 def byte(file):
   return up('<B', file.read(1))[0]
@@ -80,7 +127,7 @@ def singleTimingPoint(file):
     'offset' : double(file),
     'inherited' : not boolean(file)
   }
-  
+
   if point['inherited']:
     point['inverseSliderVelocityMultiplier'] = point.pop('bpm')
 
@@ -108,3 +155,41 @@ def windowsDateTime(file):
   date_time = WINDOWS_EPOCH_START + timedelta(seconds=(ticks/TICKS_PER_SECOND))
 
   return date_time.strftime("%m-%d-%y %H:%M:%S")
+
+def decodeBinValue(type, value):
+  valueBin = bin(value)[2:]
+  decoded = []
+  lenValueBin = len(valueBin)
+  
+  if (type == 'mods'):
+    tabel = MODS
+    pairsTabel = MOD_PAIRS
+  elif (type == 'keys'):
+    tabel = KEYS
+    pairsTabel = KEY_PAIRS
+
+  for i in range(lenValueBin):
+    if (valueBin[(lenValueBin - i) - 1] == '1'):
+      decoded.append(tabel[i])
+
+  pairIndex = -1
+  foundPairIndexes = []
+  for pair in pairsTabel['pairs']:
+    pairIndex += 1
+    foundPair = -1
+
+    for value in pair:
+      foundPair = find(value, decoded)
+      if foundPair == -1:
+        break
+
+    if not foundPair == -1:
+      foundPairIndexes.append(pairIndex)
+
+  for index in foundPairIndexes:
+    for value in pairsTabel['pairs'][index]:
+      if value in decoded:
+        decoded.remove(value)
+    decoded.append(pairsTabel['pairNames'][index])
+
+  return decoded
