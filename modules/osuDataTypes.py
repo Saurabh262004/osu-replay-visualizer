@@ -1,5 +1,6 @@
 from struct import unpack as up
 from datetime import datetime, timedelta
+from zoneinfo import ZoneInfo
 from modules.helpers import find
 
 TICKS_PER_SECOND = 10**7
@@ -46,7 +47,8 @@ KEYS = [
   'm1',
   'm2',
   'k1',
-  'k2'
+  'k2',
+  'smoke'
 ]
 KEY_PAIRS = {
   'pairs': [['k1', 'm1'], ['k2', 'm2']],
@@ -141,26 +143,29 @@ def timingPoints(file):
 
   return points
 
-def dateTime(file):
+def dateTime(file, timezone="UTC"):
   ticks = long(file)
 
-  date_time = TICKS_EPOCH_START + timedelta(seconds=(ticks/TICKS_PER_SECOND))
+  dateTime = TICKS_EPOCH_START + timedelta(seconds=(ticks//TICKS_PER_SECOND))
+  
+  localizedTime = dateTime.replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo(timezone))
 
-  return date_time.strftime("%Y-%m-%d %H:%M:%S.%f") # this might change to the similar format of windowsDateTime
+  return localizedTime.strftime("%m/%d/%Y %I:%M:%S %p")
 
-# !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! NOT WORKING CORRECTLY !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!! #
-def windowsDateTime(file):
+def windowsDateTime(file, timezone="UTC"):
   ticks = long(file)
 
-  date_time = WINDOWS_EPOCH_START + timedelta(seconds=(ticks/TICKS_PER_SECOND))
+  dateTime = WINDOWS_EPOCH_START + timedelta(seconds=(ticks//TICKS_PER_SECOND))
+  
+  localizedTime = dateTime.replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo(timezone))
 
-  return date_time.strftime("%m-%d-%y %H:%M:%S")
+  return localizedTime.strftime("%m/%d/%Y %I:%M:%S %p")
 
 def decodeBinValue(type, value):
   valueBin = bin(value)[2:]
   decoded = []
   lenValueBin = len(valueBin)
-  
+
   if (type == 'mods'):
     tabel = MODS
     pairsTabel = MOD_PAIRS

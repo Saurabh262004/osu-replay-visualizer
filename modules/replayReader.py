@@ -20,7 +20,11 @@ def replayArray(file):
       actions.append(action)
       action = ''
     elif char == ',':
-      replayArray.append({'interval' : int(actions[0]), 'x' : float(actions[1]), 'y' : float(actions[2]), 'keys' : decodeBinValue('keys', int(action))})
+      if (actions[0] == '-12345'):
+        replayArray.append({'seed' : int(action)})
+      else:
+        replayArray.append({'interval' : int(actions[0]), 'x' : float(actions[1]), 'y' : float(actions[2]), 'keys' : decodeBinValue('keys', int(action))})
+
       action = ''
       actions = []
     else:
@@ -48,7 +52,7 @@ def getReplayData(replayURL, dumpJsonURL=None):
       'pfc' : byte(file),
       'mods' : decodeBinValue('mods', integer(file)),
       'lifeBar' : string(file),
-      'timeStamp' : windowsDateTime(file),
+      'timeStamp' : dateTime(file, 'Asia/Calcutta'),
       'replyArray' : replayArray(file),
       'onlineScoreID' : long(file)
     }
