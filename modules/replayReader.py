@@ -1,6 +1,7 @@
 from modules.osuDataTypes import *
 import json
 from lzma import decompress as dcmp
+from modules.typePairsTable import MODS_ABRV, KEYS
 
 def replayArray(file):
   # read the compressed LZMA byte array containing the replay data from a ".osr" file
@@ -23,7 +24,7 @@ def replayArray(file):
       if (actions[0] == '-12345'):
         replayArray.append({'seed' : int(action)})
       else:
-        replayArray.append({'interval' : int(actions[0]), 'x' : float(actions[1]), 'y' : float(actions[2]), 'keys' : decodeBinValue('keys', int(action))})
+        replayArray.append({'interval' : int(actions[0]), 'x' : float(actions[1]), 'y' : float(actions[2]), 'keys' : decodeBinValue(int(action), KEYS)})
 
       action = ''
       actions = []
@@ -50,7 +51,7 @@ def getReplayData(replayURL, dumpJsonURL=None):
       'score' : integer(file),
       'combo' : short(file),
       'pfc' : byte(file),
-      'mods' : decodeBinValue('mods', integer(file)),
+      'mods' : decodeBinValue(integer(file), MODS_ABRV),
       'lifeBar' : string(file),
       'timeStamp' : dateTime(file, 'Asia/Calcutta'),
       'replyArray' : replayArray(file),

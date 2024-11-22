@@ -2,58 +2,11 @@ from struct import unpack as up
 from datetime import datetime, timedelta
 from zoneinfo import ZoneInfo
 from modules.helpers import find
+from modules.typePairsTable import RANKED_STATUS, MODS_ABRV
 
 TICKS_PER_SECOND = 10**7
 TICKS_EPOCH_START = datetime(1, 1, 1)
 WINDOWS_EPOCH_START = datetime(1601, 1, 1)
-MODS = [
-  'noFail',
-  'easy',
-  'touchDevice',
-  'hidden',
-  'hardRock',
-  'suddenDeath',
-  'doubleTime',
-  'relax',
-  'halfTime',
-  'nightcore',
-  'flashlight',
-  'autoplay',
-  'spunOut',
-  'autopilot',
-  'perfect',
-  'key4',
-  'key5',
-  'key6',
-  'key7',
-  'key8',
-  'fadeIn',
-  'random',
-  'cinema',
-  'targetPractice',
-  'key9',
-  'coop',
-  'key1',
-  'key3',
-  'key2',
-  'scoreV2',
-  'mirror'
-]
-MOD_PAIRS = {
-  'pairs': [['doubleTime', 'nightCore'], ['key4', 'key5', 'key6', 'key7', 'key8']],
-  'pairNames' : ['nightCore', 'keyMod']
-}
-KEYS = [
-  'm1',
-  'm2',
-  'k1',
-  'k2',
-  'smoke'
-]
-KEY_PAIRS = {
-  'pairs': [['k1', 'm1'], ['k2', 'm2']],
-  'pairNames' : ['k1', 'k2']
-}
 
 def byte(file):
   return up('<B', file.read(1))[0]
@@ -123,6 +76,14 @@ def IntDoublePairs(file):
 
   return pairs
 
+def getStarRatings(file):
+  pairs = IntDoublePairs(file)
+
+  for pair in pairs:
+    pair[0] = decodeBinValue(pair[0], MODS_ABRV)
+
+  return pairs
+
 def singleTimingPoint(file):
   point = {
     'bpm' : double(file),
@@ -147,7 +108,7 @@ def dateTime(file, timezone="UTC"):
   ticks = long(file)
 
   dateTime = TICKS_EPOCH_START + timedelta(seconds=(ticks//TICKS_PER_SECOND))
-  
+
   localizedTime = dateTime.replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo(timezone))
 
   return localizedTime.strftime("%m/%d/%Y %I:%M:%S %p")
@@ -156,30 +117,35 @@ def windowsDateTime(file, timezone="UTC"):
   ticks = long(file)
 
   dateTime = WINDOWS_EPOCH_START + timedelta(seconds=(ticks//TICKS_PER_SECOND))
-  
+
   localizedTime = dateTime.replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo(timezone))
 
   return localizedTime.strftime("%m/%d/%Y %I:%M:%S %p")
 
-def decodeBinValue(type, value):
+def getRankedStatus(file):
+  return RANKED_STATUS[byte(file)]
+
+def decodeBinValue(value, table):
   valueBin = bin(value)[2:]
   decoded = []
   lenValueBin = len(valueBin)
 
-  if (type == 'mods'):
-    tabel = MODS
-    pairsTabel = MOD_PAIRS
-  elif (type == 'keys'):
-    tabel = KEYS
-    pairsTabel = KEY_PAIRS
+  if not (('arr' in table) and ('pairs' in table) and ('pairNames' in table)):
+    return None
+
+  if not ((type(table['arr']) is list) and (type(table['pairs']) is list) and (type(table['pairNames']) is list)):
+    return None
+
+  if len(table['pairs']) != len(table['pairNames']):
+    return None
 
   for i in range(lenValueBin):
     if (valueBin[(lenValueBin - i) - 1] == '1'):
-      decoded.append(tabel[i])
+      decoded.append(table['arr'][i])
 
   pairIndex = -1
   foundPairIndexes = []
-  for pair in pairsTabel['pairs']:
+  for pair in table['pairs']:
     pairIndex += 1
     foundPair = -1
 
@@ -192,9 +158,9 @@ def decodeBinValue(type, value):
       foundPairIndexes.append(pairIndex)
 
   for index in foundPairIndexes:
-    for value in pairsTabel['pairs'][index]:
+    for value in table['pairs'][index]:
       if value in decoded:
         decoded.remove(value)
-    decoded.append(pairsTabel['pairNames'][index])
+    decoded.append(table['pairNames'][index])
 
   return decoded
