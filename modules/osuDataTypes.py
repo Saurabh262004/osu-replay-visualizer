@@ -8,24 +8,38 @@ TICKS_PER_SECOND = 10**7
 TICKS_EPOCH_START = datetime(1, 1, 1)
 WINDOWS_EPOCH_START = datetime(1601, 1, 1)
 
-def byte(file):
+def byte(file, getSize=False):
+  if getSize:
+    return 1
+
   return up('<B', file.read(1))[0]
 
-def short(file):
+def short(file, getSize=False):
+  if getSize:
+    return 2
+
   return up('<h', file.read(2))[0]
 
-def integer(file):
+def integer(file, getSize=False):
+  if getSize:
+    return 4
+
   return up('<i', file.read(4))[0]
 
-def long(file):
+def long(file, getSize=False):
+  if getSize:
+    return 8
+
   return up('<q', file.read(8))[0]
 
-def ULEB128(file):
+def ULEB128(file, getSize=False, getBoth=False):
   result = 0
   shift = 0
+  length = 0
 
   while True:
     byte_value = file.read(1)[0]
+    length += 1
     result |= (byte_value & 0x7F) << shift
 
     if (byte_value & 0x80) == 0:
@@ -33,25 +47,49 @@ def ULEB128(file):
 
     shift += 7
 
+  if getSize:
+    if getBoth:
+      return result, length
+    return length
+
   return result
 
-def single(file):
+def single(file, getSize=False):
+  if getSize:
+    return 4
+
   return up('<f', file.read(4))[0]
 
-def double(file):
+def double(file, getSize=False):
+  if getSize:
+    return 8
+
   return up('<d', file.read(8))[0]
 
-def boolean(file):
-  if (file.read(1) == b'\x00'):
-    return False
-  return True
+def boolean(file, getSize=False):
+  if getSize:
+    return 1
 
-def string(file):
+  return not (file.read(1) == b'\x00')
+
+def string(file, getSize=False, getBoth=False):
   extractedSTR = ''
+  totalLength = 0
+  
   if file.read(1) == b'\x0b':
-    stringLength = ULEB128(file)
+    if getSize:
+      stringLength, ULEB128Length = ULEB128(file, True, True)
+      totalLength = 1 + stringLength + ULEB128Length
+
+      if not getBoth:
+        return totalLength
+    else:
+      stringLength = ULEB128(file)
 
     extractedSTR += file.read(stringLength).decode('utf-8')
+
+  if getSize and getBoth:
+    return extractedSTR, totalLength
 
   return extractedSTR
 
@@ -113,6 +151,7 @@ def dateTime(file, timezone="UTC"):
 
   return localizedTime.strftime("%m/%d/%Y %I:%M:%S %p")
 
+# this function might be useless...
 def windowsDateTime(file, timezone="UTC"):
   ticks = long(file)
 

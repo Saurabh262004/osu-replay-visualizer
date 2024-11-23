@@ -1,4 +1,4 @@
-import json
+from json import loads, dumps
 
 def separateByColon(string, intValue=False):
   stringJson = '{'
@@ -144,7 +144,7 @@ def read(mapURL, returnType='pyObject', dumpJsonURL=None):
       hitobjectLine = ''
       hitobject = hitobject[0:len(hitobject)-1]
       hitobject += '}'
-      hitobjectPyobj = json.loads(hitobject)
+      hitobjectPyobj = loads(hitobject)
 
       if ('objectParams' in hitobjectPyobj):
         hitobjectPyobj['type'] = 1
@@ -153,7 +153,7 @@ def read(mapURL, returnType='pyObject', dumpJsonURL=None):
       else:
         hitobjectPyobj['endTime'] = int(hitobjectPyobj.pop('param6'))
 
-      hitobject = json.dumps(hitobjectPyobj)
+      hitobject = dumps(hitobjectPyobj)
       hitobjectJson += f'{hitobject}, '
       hitobjectNum += 1
 
@@ -169,7 +169,7 @@ def read(mapURL, returnType='pyObject', dumpJsonURL=None):
     dumpFile.close()
 
   if returnType == 'pyObject':
-    return json.loads(newJson)
+    return loads(newJson)
   elif returnType == 'JSON':
     return newJson
 

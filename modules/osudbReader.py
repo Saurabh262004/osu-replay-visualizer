@@ -1,5 +1,5 @@
 from modules.osuDataTypes import *
-import json
+from json import dumps
 
 def beatmap(file, clientVer):
   bm = {
@@ -23,7 +23,6 @@ def beatmap(file, clientVer):
     'hpDrain' : (lambda: byte(file) if clientVer < 20140609 else single(file))(),
     'overallDifficulty' : (lambda: byte(file) if clientVer < 20140609 else single(file))(),
     'sliderVelocity' : double(file),
-    # process raw data later \/
     'standartStarRatings' : (lambda: getStarRatings(file) if clientVer >= 20140609 else None)(),
     'taikoStarRatings' : (lambda: getStarRatings(file) if clientVer >= 20140609 else None)(),
     'CTBStarRatings' : (lambda: getStarRatings(file) if clientVer >= 20140609 else None)(),
@@ -80,6 +79,26 @@ def getDataBase(dbURL, dumpJsonURL=None):
 
     if (dumpJsonURL):
       with open(dumpJsonURL, 'w') as dumpFile:
-        dumpFile.write(json.dumps(DB, indent=2))
+        dumpFile.write(dumps(DB, indent=2))
 
     return DB
+
+def getMapByMD5(dbURL, MD5):
+  with open(dbURL, 'rb') as dbFile:
+    clientVer = integer(dbFile)
+
+    #skip to player name
+    dbFile.seek(13, 1)
+
+    #read player name to skip further
+    string(dbFile)
+
+    totalBeatmaps = integer(dbFile)
+    
+    for _ in range(totalBeatmaps):
+      currentBeatmap = beatmap(dbFile, clientVer)
+      
+      if currentBeatmap['MD5Hash'] == MD5:
+        return currentBeatmap
+
+    return None

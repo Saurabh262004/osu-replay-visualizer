@@ -1,6 +1,6 @@
 from modules.osuDataTypes import *
-import json
-from lzma import decompress as dcmp
+from json import dumps
+from lzma import decompress
 from modules.typePairsTable import MODS_ABRV, KEYS
 
 def replayArray(file):
@@ -9,7 +9,7 @@ def replayArray(file):
   LZMAbyteArray = file.read(replayByteArrayLength)
 
   # decompress and decodes the data in utf-8
-  decodedReplayString = dcmp(LZMAbyteArray).decode('utf-8')
+  decodedReplayString = decompress(LZMAbyteArray).decode('utf-8')
 
   replayArray = []
   actions = []
@@ -24,7 +24,12 @@ def replayArray(file):
       if (actions[0] == '-12345'):
         replayArray.append({'seed' : int(action)})
       else:
-        replayArray.append({'interval' : int(actions[0]), 'x' : float(actions[1]), 'y' : float(actions[2]), 'keys' : decodeBinValue(int(action), KEYS)})
+        replayArray.append({
+          'interval' : int(actions[0]),
+          'x' : float(actions[1]),
+          'y' : float(actions[2]),
+          'keys' : decodeBinValue(int(action), KEYS)
+        })
 
       action = ''
       actions = []
@@ -61,6 +66,6 @@ def getReplayData(replayURL, dumpJsonURL=None):
     # convert the data in json format and bump it in a file if a URL to the file is given
     if (dumpJsonURL):
       with open(dumpJsonURL, 'w') as dumpFile:
-        dumpFile.write(json.dumps(replayData, indent=2))
+        dumpFile.write(dumps(replayData, indent=2))
 
     return replayData
