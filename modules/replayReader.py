@@ -58,7 +58,7 @@ def getReplayData(replayURL, dumpJsonURL=None):
       'pfc' : byte(file),
       'mods' : decodeBinValue(integer(file), MODS_ABRV),
       'lifeBar' : string(file),
-      'timeStamp' : dateTime(file, 'Asia/Calcutta'),
+      'timeStamp' : dateTime(file),
       'replyArray' : replayArray(file),
       'onlineScoreID' : long(file)
     }

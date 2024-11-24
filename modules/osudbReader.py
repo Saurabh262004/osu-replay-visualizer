@@ -12,12 +12,12 @@ def beatmap(file, clientVer):
     'difficultyName' : string(file),
     'audioFileName' : string(file),
     'MD5Hash' : string(file),
-    '.osuFileName' : string(file),
+    'osuFileName' : string(file),
     'rankedStatus' : getRankedStatus(file),
     'totalHitcircles' : short(file),
     'totalSliders' : short(file),
     'totalSpinners' : short(file),
-    'lastModificationTime' : dateTime(file, 'Asia/Calcutta'),
+    'lastModificationTime' : dateTime(file),
     'approachRate' : (lambda: byte(file) if clientVer < 20140609 else single(file))(),
     'circleSize' : (lambda: byte(file) if clientVer < 20140609 else single(file))(),
     'hpDrain' : (lambda: byte(file) if clientVer < 20140609 else single(file))(),
@@ -56,11 +56,76 @@ def beatmap(file, clientVer):
     'disableVideo' : boolean(file),
     'visualOverride' : boolean(file),
     'aShortThatWasHereBeforeVer20140609ForSomeReason' : (lambda: short(file) if clientVer < 20140609 else None)(),
-    'lastModificationTime?' : integer(file),
+    'lastModificationTimeInt' : integer(file),
     'maniaScrollSpeed' : byte(file)
   }
 
   return bm
+
+def beatmapMD5(file, clientVer):
+  backtrackLen = 0
+
+  if clientVer < 20191106:
+    backtrackLen += 4
+    # skip to strings
+    file.seek(4, 1)
+
+  # skip all 7 strings and add their lenghts to total backtrack length
+  for _ in range(7):
+    strTmp, len = string(file, True, True)
+    backtrackLen += len
+
+  MD5Hash, hashLength = string(file, True, True)
+
+  backtrackLen += hashLength
+
+  return MD5Hash, backtrackLen
+
+def skipAfterMD5(file, clientVer):
+  string(file)
+
+  # figure out difficulty section length and skip accordingly
+  if clientVer < 20140609:
+    file.seek(27, 1)
+  else:
+    file.seek(39, 1)
+
+  # skip star ratings
+  if clientVer >= 20140609:
+    for _ in range(4):
+      totalPairsLength = int(integer(file) * 14)
+      file.seek(totalPairsLength, 1)
+
+  # skip to timing points
+  file.seek(12, 1)
+
+  # get timing points length
+  timingPointsLength = integer(file) * 17
+
+  # skip more to get to strings
+  file.seek(timingPointsLength + 23, 1)
+
+  string(file)
+  string(file)
+
+  # skip a short to get to another string
+  file.seek(2, 1)
+
+  string(file)
+  
+  # skip to get to another string
+  file.seek(10, 1)
+
+  string(file)
+
+  # skip more
+  file.seek(13, 1)
+
+  # skip extra two bytes because there was a short here before ver. 20140609 for some reason
+  if clientVer < 20140609:
+    file.seek(7, 1)
+  else:
+    file.seek(5, 1)
 
 def getDataBase(dbURL, dumpJsonURL=None):
   with open(dbURL, 'rb') as dbFile:
@@ -87,18 +152,21 @@ def getMapByMD5(dbURL, MD5):
   with open(dbURL, 'rb') as dbFile:
     clientVer = integer(dbFile)
 
-    #skip to player name
-    dbFile.seek(13, 1)
+    # skip to player name
+    dbFile.seek(17, 0)
 
-    #read player name to skip further
+    # read player name to skip further
     string(dbFile)
 
     totalBeatmaps = integer(dbFile)
-    
+
     for _ in range(totalBeatmaps):
-      currentBeatmap = beatmap(dbFile, clientVer)
-      
-      if currentBeatmap['MD5Hash'] == MD5:
-        return currentBeatmap
+      currentBeatmapMD5, backtrack = beatmapMD5(dbFile, clientVer)
+
+      if currentBeatmapMD5 == MD5:
+        dbFile.seek(-backtrack, 1)
+        return beatmap(dbFile, clientVer)
+
+      skipAfterMD5(dbFile, clientVer)
 
     return None

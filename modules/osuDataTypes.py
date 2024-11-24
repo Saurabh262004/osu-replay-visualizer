@@ -1,6 +1,7 @@
 from struct import unpack as up
 from datetime import datetime, timedelta
-from zoneinfo import ZoneInfo
+from tzlocal import get_localzone
+from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from modules.helpers import find
 from modules.typePairsTable import RANKED_STATUS, MODS_ABRV
 
@@ -8,28 +9,16 @@ TICKS_PER_SECOND = 10**7
 TICKS_EPOCH_START = datetime(1, 1, 1)
 WINDOWS_EPOCH_START = datetime(1601, 1, 1)
 
-def byte(file, getSize=False):
-  if getSize:
-    return 1
-
+def byte(file):
   return up('<B', file.read(1))[0]
 
-def short(file, getSize=False):
-  if getSize:
-    return 2
-
+def short(file):
   return up('<h', file.read(2))[0]
 
-def integer(file, getSize=False):
-  if getSize:
-    return 4
-
+def integer(file):
   return up('<i', file.read(4))[0]
 
-def long(file, getSize=False):
-  if getSize:
-    return 8
-
+def long(file):
   return up('<q', file.read(8))[0]
 
 def ULEB128(file, getSize=False, getBoth=False):
@@ -54,22 +43,13 @@ def ULEB128(file, getSize=False, getBoth=False):
 
   return result
 
-def single(file, getSize=False):
-  if getSize:
-    return 4
-
+def single(file):
   return up('<f', file.read(4))[0]
 
-def double(file, getSize=False):
-  if getSize:
-    return 8
-
+def double(file):
   return up('<d', file.read(8))[0]
 
-def boolean(file, getSize=False):
-  if getSize:
-    return 1
-
+def boolean(file):
   return not (file.read(1) == b'\x00')
 
 def string(file, getSize=False, getBoth=False):
@@ -142,12 +122,20 @@ def timingPoints(file):
 
   return points
 
-def dateTime(file, timezone="UTC"):
+def dateTime(file, timeZone=None):
   ticks = long(file)
 
   dateTime = TICKS_EPOCH_START + timedelta(seconds=(ticks//TICKS_PER_SECOND))
 
-  localizedTime = dateTime.replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo(timezone))
+  if timeZone is None:
+    timeZone = str(get_localzone())
+
+  try:
+    localizedTime = dateTime.replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo(timeZone))
+  except (ZoneInfoNotFoundError, ValueError) as e:
+    print(f"Invalid timezone: {timeZone}")
+    print(f"Error: {e}")
+    localizedTime = dateTime.replace(tzinfo=ZoneInfo("UTC"))
 
   return localizedTime.strftime("%m/%d/%Y %I:%M:%S %p")
 
