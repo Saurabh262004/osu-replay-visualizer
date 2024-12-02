@@ -72,8 +72,8 @@ def beatmapMD5(file, clientVer):
 
   # skip all 7 strings and add their lenghts to total backtrack length
   for _ in range(7):
-    strTmp, len = string(file, True, True)
-    backtrackLen += len
+    strTmp, strLen = string(file, True, True)
+    backtrackLen += strLen
 
   MD5Hash, hashLength = string(file, True, True)
 

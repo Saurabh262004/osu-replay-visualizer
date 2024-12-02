@@ -139,16 +139,6 @@ def dateTime(file, timeZone=None):
 
   return localizedTime.strftime("%m/%d/%Y %I:%M:%S %p")
 
-# this function might be useless...
-def windowsDateTime(file, timezone="UTC"):
-  ticks = long(file)
-
-  dateTime = WINDOWS_EPOCH_START + timedelta(seconds=(ticks//TICKS_PER_SECOND))
-
-  localizedTime = dateTime.replace(tzinfo=ZoneInfo("UTC")).astimezone(ZoneInfo(timezone))
-
-  return localizedTime.strftime("%m/%d/%Y %I:%M:%S %p")
-
 def getRankedStatus(file):
   return RANKED_STATUS[byte(file)]
 

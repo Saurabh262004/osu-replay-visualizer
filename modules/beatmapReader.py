@@ -22,7 +22,7 @@ def separateByColon(string, intValue=False):
 
   return stringJson
 
-def read(mapURL, returnType='pyObject', dumpJsonURL=None):
+def readMap(mapURL, returnType='pyObject', dumpJsonURL=None):
   map = open(mapURL, 'r', encoding='utf-8')
   newJson = '{'
   audioFileNameRaw = ''
