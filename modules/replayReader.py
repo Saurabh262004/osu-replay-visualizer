@@ -1,7 +1,7 @@
 from modules.osuDataTypes import *
 from json import dumps
 from lzma import decompress
-from modules.typePairsTable import MODS_ABRV, KEYS
+from modules.gameLists import MODS_ABRV, KEYS
 
 def replayArray(file):
   # read the compressed LZMA byte array containing the replay data from a ".osr" file

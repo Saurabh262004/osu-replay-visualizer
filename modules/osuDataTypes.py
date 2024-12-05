@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from tzlocal import get_localzone
 from zoneinfo import ZoneInfo, ZoneInfoNotFoundError
 from modules.helpers import find
-from modules.typePairsTable import RANKED_STATUS, MODS_ABRV
+from modules.gameLists import RANKED_STATUS, MODS_ABRV
 
 TICKS_PER_SECOND = 10**7
 TICKS_EPOCH_START = datetime(1, 1, 1)

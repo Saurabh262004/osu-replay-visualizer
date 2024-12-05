@@ -1,5 +1,5 @@
 MODS = {
-  'arr': [
+  'arr': (
     'noFail',
     'easy',
     'touchDevice',
@@ -31,13 +31,13 @@ MODS = {
     'key2',
     'scoreV2',
     'mirror'
-  ],
-  'pairs': [['doubleTime', 'nightCore'], ['key4', 'key5', 'key6', 'key7', 'key8']],
-  'pairNames' : ['nightCore', 'keyMod']
+  ),
+  'pairs': (('doubleTime', 'nightCore'), ('key4', 'key5', 'key6', 'key7', 'key8')),
+  'pairNames' : ('nightCore', 'keyMod')
 }
 
 MODS_ABRV = {
-  'arr': [
+  'arr': (
     'NF',
     'EZ',
     'TD',
@@ -69,23 +69,29 @@ MODS_ABRV = {
     'K2',
     'V2',
     'mirror'
-  ],
-  'pairs': [['DT', 'NC'], ['K4', 'K5', 'K6', 'K7', 'K8']],
-  'pairNames' : ['NC', 'keyMod']
+  ),
+  'pairs': (('DT', 'NC'), ('K4', 'K5', 'K6', 'K7', 'K8')),
+  'pairNames' : ('NC', 'keyMod')
 }
 
 KEYS = {
-  'arr': [
+  'arr': (
     'm1',
     'm2',
     'k1',
     'k2',
     'smoke'
-  ],
-  'pairs': [['k1', 'm1'], ['k2', 'm2']],
-  'pairNames' : ['k1', 'k2']
+  ),
+  'pairs': (('k1', 'm1'), ('k2', 'm2')),
+  'pairNames' : ('k1', 'k2')
 }
 
-RANKED_STATUS = [
+RANKED_STATUS = (
   'unknown', 'unsubmitted', 'pending', 'unused', 'ranked', 'approved', 'qualified', 'loved'
-]
+)
+
+MAP_FILE_SECTIONS = {
+  'total': 8,
+  'names': ('general', 'editor', 'metadata', 'difficulty', 'events', 'timingPoints', 'colours', 'hitobjects'),
+  'headers': ('[General]\n', '[Editor]\n', '[Metadata]\n', '[Difficulty]\n', '[Events]\n', '[TimingPoints]\n', '[Colours]\n', '[HitObjects]\n')
+}
