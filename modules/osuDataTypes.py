@@ -7,7 +7,6 @@ from modules.gameLists import RANKED_STATUS, MODS_ABRV
 
 TICKS_PER_SECOND = 10**7
 TICKS_EPOCH_START = datetime(1, 1, 1)
-WINDOWS_EPOCH_START = datetime(1601, 1, 1)
 
 def byte(file):
   return up('<B', file.read(1))[0]

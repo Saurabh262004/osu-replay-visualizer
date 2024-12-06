@@ -92,6 +92,8 @@ RANKED_STATUS = (
 
 MAP_FILE_SECTIONS = {
   'total': 8,
+  'sectionEnd': '\n\n',
   'names': ('general', 'editor', 'metadata', 'difficulty', 'events', 'timingPoints', 'colours', 'hitobjects'),
-  'headers': ('[General]\n', '[Editor]\n', '[Metadata]\n', '[Difficulty]\n', '[Events]\n', '[TimingPoints]\n', '[Colours]\n', '[HitObjects]\n')
+  'headers': ('[General]\n', '[Editor]\n', '[Metadata]\n', '[Difficulty]\n', '[Events]\n', '[TimingPoints]\n', '[Colours]\n', '[HitObjects]\n'),
+  'types': ('kvp', 'kvp', 'kvp', 'kvp', 'csl', 'csl', 'kvp', 'csl')
 }
