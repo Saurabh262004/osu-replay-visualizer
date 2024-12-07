@@ -3,7 +3,7 @@ from json import dumps
 
 def beatmap(file, clientVer):
   bm = {
-    'entrySize': (lambda: integer(file) if clientVer < 20191106 else None)(),
+    'entrySize': integer(file) if clientVer < 20191106 else None,
     'artistName' : string(file),
     'artistNameUnicode' : string(file),
     'songTitle' : string(file),
@@ -18,15 +18,15 @@ def beatmap(file, clientVer):
     'totalSliders' : short(file),
     'totalSpinners' : short(file),
     'lastModificationTime' : dateTime(file),
-    'approachRate' : (lambda: byte(file) if clientVer < 20140609 else single(file))(),
-    'circleSize' : (lambda: byte(file) if clientVer < 20140609 else single(file))(),
-    'hpDrain' : (lambda: byte(file) if clientVer < 20140609 else single(file))(),
-    'overallDifficulty' : (lambda: byte(file) if clientVer < 20140609 else single(file))(),
+    'approachRate' : byte(file) if clientVer < 20140609 else single(file),
+    'circleSize' : byte(file) if clientVer < 20140609 else single(file),
+    'hpDrain' : byte(file) if clientVer < 20140609 else single(file),
+    'overallDifficulty' : byte(file) if clientVer < 20140609 else single(file),
     'sliderVelocity' : double(file),
-    'standartStarRatings' : (lambda: getStarRatings(file) if clientVer >= 20140609 else None)(),
-    'taikoStarRatings' : (lambda: getStarRatings(file) if clientVer >= 20140609 else None)(),
-    'CTBStarRatings' : (lambda: getStarRatings(file) if clientVer >= 20140609 else None)(),
-    'maniaStarRatings' : (lambda: getStarRatings(file) if clientVer >= 20140609 else None)(),
+    'standartStarRatings' : getStarRatings(file) if clientVer >= 20140609 else None,
+    'taikoStarRatings' : getStarRatings(file) if clientVer >= 20140609 else None,
+    'CTBStarRatings' : getStarRatings(file) if clientVer >= 20140609 else None,
+    'maniaStarRatings' : getStarRatings(file) if clientVer >= 20140609 else None,
     'drainTime(s)' : integer(file),
     'totalTime(ms)' : integer(file),
     'previewPoint(ms)' : integer(file),
@@ -55,7 +55,7 @@ def beatmap(file, clientVer):
     'disableStoryboard' : boolean(file),
     'disableVideo' : boolean(file),
     'visualOverride' : boolean(file),
-    'aShortThatWasHereBeforeVer20140609ForSomeReason' : (lambda: short(file) if clientVer < 20140609 else None)(),
+    'aShortThatWasHereBeforeVer20140609ForSomeReason' : short(file) if clientVer < 20140609 else None,
     'lastModificationTimeInt' : integer(file),
     'maniaScrollSpeed' : byte(file)
   }

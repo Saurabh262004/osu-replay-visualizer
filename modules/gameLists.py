@@ -35,7 +35,7 @@ MODS = {
   'pairs': (('doubleTime', 'nightCore'), ('key4', 'key5', 'key6', 'key7', 'key8')),
   'pairNames' : ('nightCore', 'keyMod')
 }
-
+## some mods don't have an abbriviation ##
 MODS_ABRV = {
   'arr': (
     'NF',
@@ -93,7 +93,7 @@ RANKED_STATUS = (
 MAP_FILE_SECTIONS = {
   'total': 8,
   'sectionEnd': '\n\n',
-  'names': ('general', 'editor', 'metadata', 'difficulty', 'events', 'timingPoints', 'colours', 'hitobjects'),
+  'names': ('general', 'editor', 'metadata', 'difficulty', 'events', 'timingPoints', 'colors', 'hitobjects'),
   'headers': ('[General]\n', '[Editor]\n', '[Metadata]\n', '[Difficulty]\n', '[Events]\n', '[TimingPoints]\n', '[Colours]\n', '[HitObjects]\n'),
   'types': ('kvp', 'kvp', 'kvp', 'kvp', 'csl', 'csl', 'kvp', 'csl')
 }

@@ -1,176 +1,220 @@
-from json import loads, dumps
+from json import dumps
+from typing import Union, Optional, List, Dict
+from modules.helpers import tryToNum
+from modules.gameLists import MAP_FILE_SECTIONS
 
-def separateByColon(string, intValue=False):
-  stringJson = '{'
+ALLOWED_RETURN_TYPES = ('pyObject', 'json')
 
-  stringElement = ''
-  for i in range(len(string)):
-    if string[i] == ':':
-      stringJson += f'\"{stringElement}\": '
-      stringElement = ''
-    elif string[i] == '\n':
-      if intValue and len(stringElement) > 0:
-        stringJson += f'{stringElement}, '
+def hitSample(s: str) -> dict:
+  separateS = s.split(':')
+
+  return {
+    'normal': int(separateS[0]),
+    'addition': int(separateS[1]),
+    'index': int(separateS[2]),
+    'volume': int(separateS[3]),
+    'filename': separateS[4]
+  }
+
+def processSliderParams(rawValues: list) -> dict:
+  slider = {}
+  rawValuesLen = len(rawValues)
+
+  cTypeAndcPoints = rawValues[5].split('|')
+  slider['curveType'] = cTypeAndcPoints[0]
+  cPointsRaw = cTypeAndcPoints[1:]
+  slider['curvePoints'] = []
+
+  for point in cPointsRaw:
+    separateXY = point.split(':')
+    slider['curvePoints'].append({
+      'x': int(separateXY[0]),
+      'y': int(separateXY[1])
+    })
+  
+  slider['slides'] = rawValues[6]
+  slider['length'] = rawValues[7]
+
+  if rawValuesLen > 9:
+    edgeSoundsRaw = rawValues[8].split('|')
+    slider['edgeSounds'] = [int(v) for v in edgeSoundsRaw]
+
+    edgeSetsRaw = rawValues[9].split('|')
+    edgeSetsSeparate = [[int(v1) for v1 in v.split(':')] for v in edgeSetsRaw]
+    slider['edgeSets'] = [{'normal': v[0], 'addition': v[1]} for v in edgeSetsSeparate]
+
+    if rawValuesLen > 10:
+      slider['hitSample'] = hitSample(rawValues[10])
+
+  return slider
+
+def processSpinnerParams(rawValues: list) -> dict:
+  spinner = {
+    'endTime': int(rawValues[5]),
+    'hitSample': hitSample(rawValues[6]) if len(rawValues) > 6 else None
+  }
+  return spinner
+
+def processHitobjectParams(rawValues: list) -> dict:
+  hitobject = {}
+
+  hitobject['x'] = rawValues[0]
+  hitobject['y'] = rawValues[1]
+  hitobject['time'] = rawValues[2]
+
+  objectType = bin(rawValues[3])[2:].zfill(8)
+
+  hitobject['type'] = (
+    'hitcircle' if objectType[7] == '1'
+    else 'slider' if objectType[6] == '1'
+    else 'spinner' if objectType[4] == '1'
+    else 'uncategorized'
+  )
+
+  hitobject['newCombo'] = (objectType[5] == '1')
+
+  hitobject['comboColorsSkip'] = int(objectType[1:4], 2)
+
+  if objectType[0] == '1':
+    hitobject['maniaHoldNote'] = True
+  else:
+    hitobject['maniaHoldNote'] = False
+
+  hitobject['hitSound'] = rawValues[4]
+
+  updateObject = (
+    {'hitSample': hitSample(rawValues[5])} if hitobject['type'] == 'hitcircle'
+    else processSliderParams(rawValues) if hitobject['type'] == 'slider'
+    else processSpinnerParams(rawValues) if hitobject['type'] == 'spinner'
+    else {}
+  )
+
+  hitobject.update(updateObject)
+
+  return hitobject
+
+def processTimingPoints(timingPoints: List[List[Union[int, float]]]) -> List[Dict[str, Union[int, float]]]:
+  processedTimingPoints = []
+
+  for point in timingPoints:
+    newPoint = {
+      'time': point[0],
+      'beatLength': point[1],
+      'meter': point[2],
+      'sampleSet': point[3],
+      'sampleIndex': point[4],
+      'volume': point[5],
+      'uninherited': point[6],
+      'effects': point[7]
+    }
+
+    if newPoint['uninherited'] == 0:
+      newPoint['inverseSliderVelocityMultiplier'] = newPoint.pop('beatLength')
+
+    processedTimingPoints.append(newPoint)
+
+  return processedTimingPoints
+
+def separateByComma(sectionSTR: str, convertValuesToNum: Optional[bool] = False) -> Union[List[Union[int, float, str]], List[List[Union[int, float, str]]]]:
+  lines = sectionSTR.splitlines()
+  data = []
+
+  if len(lines) > 1:
+    for line in lines:
+      if convertValuesToNum:
+        data.append([tryToNum(value.strip()) for value in line.split(',')])
       else:
-        stringJson += f'\"{stringElement}\", '
-      stringElement = ''
+        data.append([value.strip() for value in line.split(',')])
+  else:
+    data = [tryToNum(value.strip()) for value in lines[0].split(',')]
+
+  return data
+
+def keyValuePairs(sectionSTR: str, convertValuesToNum: Optional[bool] = False) -> dict:
+  lines = sectionSTR.splitlines()
+  pairs = {}
+
+  for line in lines:
+    containsMultipleValues = False
+    pair = line.split(':')
+
+    value = pair[1].strip()
+
+    if value.find(',') > -1:
+      containsMultipleValues = True
+
+    if not containsMultipleValues:
+      if convertValuesToNum:
+        value = tryToNum(value)
     else:
-      stringElement += string[i]
+      value = separateByComma(value, convertValuesToNum)
 
-  stringJson = stringJson[0:len(stringJson)-6]
-  stringJson += '}'
+    pairs[pair[0].strip()] = value
 
-  return stringJson
+  return pairs
 
-def readMap(mapURL, returnType='pyObject', dumpJsonURL=None):
-  map = open(mapURL, 'r', encoding='utf-8')
-  newJson = '{'
-  audioFileNameRaw = ''
-  metadataRaw = ''
-  diffRaw = ''
-  hitobjectDataRaw = ''
-  hitobjectJson = '\"hitobjects\": ['
-  generalMark = False
-  metadataMark = False
-  diffMark = False
-  hitobjectsMark = False
-  fileVerMark = True
-  fileVer = -1
+def getMapSections(mapContent: str) -> dict:
+  sectionsData = {}
 
-  for line in map:
-    if fileVerMark:
-      fileVer = int(line[17:-1])
-      fileVerMark = False
+  for i in range(MAP_FILE_SECTIONS['total']):
+    section = MAP_FILE_SECTIONS['headers'][i]
+    sectionStart = mapContent.find(section)
 
-    if generalMark:
-      audioFileNameRaw = line
-      generalMark = False
-    elif metadataMark:
-      metadataRaw += line
-    elif diffMark:
-      diffRaw += line
-    elif hitobjectsMark:
-      hitobjectDataRaw += line
+    if sectionStart == -1:
+      continue
 
-    if line == '[General]\n':
-      generalMark = True
-    elif line == '[Metadata]\n':
-      metadataMark = True
-    elif line == '[Difficulty]\n':
-      diffMark = True
-    elif line == '[HitObjects]\n':
-      hitobjectsMark = True
-    elif line == '\n':
-      generalMark = False
-      metadataMark = False
-      diffMark = False
-      hitobjectsMark = False
+    singleSectionData = mapContent[sectionStart + len(section) : mapContent[sectionStart:].find(MAP_FILE_SECTIONS['sectionEnd']) + sectionStart]
+    sectionsData[MAP_FILE_SECTIONS['names'][i]] = singleSectionData
 
-  map.close()
+  return sectionsData
 
-  newJson += f'\"ver\": {fileVer}, '
+## !!!FUNCTION IN PROGRESS!!! ##
+def readMap(mapURL: str, returnType: Optional[str] = 'pyObject', dumpJsonURL: Optional[str] = None) -> Union[dict, str, None]:
+  if returnType not in ALLOWED_RETURN_TYPES:
+    raise ValueError(f'Invalid return type: \'{returnType}\'. Allowed values are: {ALLOWED_RETURN_TYPES}.')
 
-  newJson += f'\"audioFileName\": \"{audioFileNameRaw[15:len(audioFileNameRaw)-1]}\", '
+  if not mapURL.endswith('.osu'):
+    raise ValueError(f'Invalid url: expected a .osu file, received : {mapURL}')
 
-  newJson += '\"metadata\": ' + separateByColon(metadataRaw) + ', '
+  try:
+    with open(mapURL, 'r', encoding = 'utf-8') as mapFile:
+      mapContent = mapFile.read() + '\n'
 
-  newJson += '\"difficulty\": ' + separateByColon(diffRaw, True) + ', '
+      mapObject = {}
+      mapObject['fileVer'] = int(mapContent.split('\n')[0][17:])
 
-  hitobjectLine = ''
-  hitobjectNum = 0
+      sections = getMapSections(mapContent)
 
-  for i in range(len(hitobjectDataRaw)):
-    if not hitobjectDataRaw[i] == '\n':
-      hitobjectLine += hitobjectDataRaw[i]
-    else:
-      hitobjectLine += ','
-      hitobject = '{'
-      paramNum = 0
-      hitobjectParam = ''
+      for i in range(MAP_FILE_SECTIONS['total']):
+        sectionName = MAP_FILE_SECTIONS['names'][i]
 
-      for j in range(len(hitobjectLine)):
-        if not hitobjectLine[j] == ',':
-          hitobjectParam += hitobjectLine[j]
-        else:
-          paramNum += 1
-          paramName = ''
+        if not sectionName in sections:
+          continue
 
-          if (paramNum == 1):
-            paramName = 'x'
-          elif (paramNum == 2):
-            paramName = 'y'
-          elif (paramNum == 3):
-            paramName = 'time'
-          elif (paramNum == 4):
-            paramName = 'type'
-            if (hitobjectParam == '12'):
-              hitobjectParam = 2
-          elif (paramNum == 6 and (hitobjectParam[0] == 'B' or hitobjectParam[0] == 'C' or hitobjectParam[0] == 'L' or hitobjectParam[0] == 'P')):
-            paramName = 'objectParams'
-            hitobjectParam += '|'
-            newObjectParams = '{\"curveType\": \"' + hitobjectParam[0] + '\", \"anchors\": ['
-            anchorCoordinate = ''
-            anchorsCoordinateList = []
+        if MAP_FILE_SECTIONS['types'][i] == 'kvp':
+          mapObject[sectionName] = keyValuePairs(sections[sectionName], True)
+        elif MAP_FILE_SECTIONS['types'][i] == 'csl':
+          mapObject[sectionName] = separateByComma(sections[sectionName], True)
 
-            for k in range(2, len(hitobjectParam)):
-              currentChar = hitobjectParam[k]
-              if currentChar == ':' or currentChar == '|':
-                anchorsCoordinateList.append(anchorCoordinate)
-                anchorCoordinate = ''
-              else:
-                anchorCoordinate += currentChar
+      mapObject['timingPoints'] = processTimingPoints(mapObject['timingPoints'])
+      mapObject['hitobjects'] = [processHitobjectParams(raw) for raw in mapObject['hitobjects']]
 
-            skipAnchorIndex = -1
-            for k in range(0, len(anchorsCoordinateList), 2):
-              anchorType = '0'
+      if dumpJsonURL:
+        try:
+          with open(dumpJsonURL, 'w') as jsonFile:
+            jsonFile.write(dumps(mapObject, indent = 2))
+        except FileNotFoundError:
+          print(f"The file at URL '{dumpJsonURL}' does not exist. Please provide a valid path.")
+        except PermissionError:
+          print(f"Access to the file '{dumpJsonURL}' is denied. Check file permissions.")
 
-              if len(anchorsCoordinateList) > 2 and k < len(anchorsCoordinateList)-3:
-                if anchorsCoordinateList[k] == anchorsCoordinateList[k+2] and anchorsCoordinateList[k+1] == anchorsCoordinateList[k+3]:
-                  skipAnchorIndex = k+2
-                  anchorType = '1'
-
-              if not (k == skipAnchorIndex):
-                newObjectParams += '{\"anchorType\": ' + anchorType + f', \"x\": {anchorsCoordinateList[k]}, \"y\": {anchorsCoordinateList[k+1]}' + '}, '
-
-            newObjectParams = newObjectParams[0:len(newObjectParams)-2] + ']}'
-            hitobjectParam = newObjectParams
-          else:
-            paramName = f'param{paramNum}'
-            hitobjectParam = f'\"{hitobjectParam}\"' # temporary
-
-          hitobject += f'\"{paramName}\": {hitobjectParam},'
-          hitobjectParam = ''
-
-      hitobjectLine = ''
-      hitobject = hitobject[0:len(hitobject)-1]
-      hitobject += '}'
-      hitobjectPyobj = loads(hitobject)
-
-      if ('objectParams' in hitobjectPyobj):
-        hitobjectPyobj['type'] = 1
-      elif (not hitobjectPyobj['type'] == 2):
-        hitobjectPyobj['type'] = 0
-      else:
-        hitobjectPyobj['endTime'] = int(hitobjectPyobj.pop('param6'))
-
-      hitobject = dumps(hitobjectPyobj)
-      hitobjectJson += f'{hitobject}, '
-      hitobjectNum += 1
-
-  hitobjectJson = hitobjectJson[0:len(hitobjectJson)-2]
-  hitobjectJson += ']'
-
-  newJson += hitobjectJson
-  newJson += '}'
-
-  if (dumpJsonURL):
-    dumpFile = open(dumpJsonURL, 'w')
-    dumpFile.write(newJson)
-    dumpFile.close()
-
-  if returnType == 'pyObject':
-    return loads(newJson)
-  elif returnType == 'JSON':
-    return newJson
-
-  return None
+      if returnType == 'pyObject':
+        return mapObject
+      elif returnType == 'json':
+        return dumps(mapObject)
+  except FileNotFoundError:
+    print(f"The file at URL '{mapURL}' does not exist. Please provide a valid path.")
+    return None
+  except PermissionError:
+    print(f"Access to the file '{mapURL}' is denied. Check file permissions.")
+    return None
