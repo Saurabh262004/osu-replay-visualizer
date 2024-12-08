@@ -1,7 +1,7 @@
 from json import dumps
 from typing import Union, Optional, List, Dict
-from modules.helpers import tryToNum
-from modules.gameLists import MAP_FILE_SECTIONS
+from modules.misc.helpers import tryToNum
+from modules.misc.gameLists import MAP_FILE_SECTIONS
 
 ALLOWED_RETURN_TYPES = ('pyObject', 'json')
 
@@ -168,7 +168,6 @@ def getMapSections(mapContent: str) -> dict:
 
   return sectionsData
 
-## !!!FUNCTION IN PROGRESS!!! ##
 def readMap(mapURL: str, returnType: Optional[str] = 'pyObject', dumpJsonURL: Optional[str] = None) -> Union[dict, str, None]:
   if returnType not in ALLOWED_RETURN_TYPES:
     raise ValueError(f'Invalid return type: \'{returnType}\'. Allowed values are: {ALLOWED_RETURN_TYPES}.')

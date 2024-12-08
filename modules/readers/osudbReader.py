@@ -1,4 +1,4 @@
-from modules.osuDataTypes import *
+from modules.readers.osuDataTypes import *
 from json import dumps
 
 def beatmap(file, clientVer):

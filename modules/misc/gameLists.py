@@ -35,7 +35,7 @@ MODS = {
   'pairs': (('doubleTime', 'nightCore'), ('key4', 'key5', 'key6', 'key7', 'key8')),
   'pairNames' : ('nightCore', 'keyMod')
 }
-## some mods don't have an abbriviation ##
+
 MODS_ABRV = {
   'arr': (
     'NF',
