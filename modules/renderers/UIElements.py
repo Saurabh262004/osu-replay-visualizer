@@ -1,6 +1,6 @@
 # a module that helps render stuff on screen with pygame
 import pygame as pg
-from typing import Union, Optional, Callable, Dict
+from typing import Union, Optional, Callable, Dict, Iterable
 
 numType = Union[int, float]
 containerType = Union['Section', pg.Rect]
@@ -57,7 +57,7 @@ class Section:
     elif isinstance(self.background, pg.Color):
       pg.draw.rect(surface, self.background, self.rect)
 
-  def __getRel(self, typ):
+  def __getRel(self, typ: str):
     if typ == 'x':
       return self.container.x
     if typ == 'y':
@@ -67,7 +67,7 @@ class Section:
     if typ == 'h':
       return self.container.height
 
-  def __getPadding(self, key):
+  def __getPadding(self, key: str):
     if key == 'x':
       return self.container.x
     if key == 'y':
@@ -90,7 +90,7 @@ class Section:
     return False
 
   @staticmethod
-  def createDimObject(arr):
+  def createDimObject(arr: Iterable):
     return {
       'x': {'type': arr[0], 'value': arr[1]},
       'y': {'type': arr[2], 'value': arr[3]},
