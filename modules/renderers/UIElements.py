@@ -1,7 +1,8 @@
 # a module that helps render stuff on screen with pygame
+# reusing code is not something I know
 import pygame as pg
-from modules.misc.helpers import mapRange
-from typing import Union, Optional, Callable, Dict, List, Iterable
+from modules.misc.helpers import mapRange, allIn
+from typing import Union, Optional, Callable, Dict, Iterable
 
 numType = Union[int, float]
 containerType = Union['Section', pg.Rect]
@@ -337,8 +338,6 @@ class RangeSlider:
 
     self.value = mapRange(self.dragPosition, self.section.x, self.section.x + self.section.width, self.sliderRange[0], self.sliderRange[1])
 
-    print(self.value)
-
   def draw(self, surface: pg.Surface):
     self.section.draw(surface)
     self.fullLengthSlider.draw(surface)
@@ -351,10 +350,6 @@ class RangeSlider:
       self.pressed = True
       self.update()
       return True
-    # elif self.pressed and event.type == pg.MOUSEMOTION:
-    #   self.dragPosition = event.pos[0]
-    #   self.update()
-    #   return True
     elif event.type == pg.MOUSEBUTTONUP:
       self.pressed = False
     return False
@@ -398,7 +393,7 @@ class System:
     if elementIDs == None:
       return self.elements
 
-    if not set(elementIDs) == set(self.elements.keys()):
+    if not allIn(elementIDs, self.elements):
       print('The given iterable contains id(s) that do not exist in this system, please enter a valid iterable')
       return None
 
