@@ -1,10 +1,12 @@
 # a module that helps render stuff on screen with pygame
 import pygame as pg
-from typing import Union, Optional, Callable, Dict, Iterable
+from modules.misc.helpers import mapRange
+from typing import Union, Optional, Callable, Dict, List, Iterable
 
 numType = Union[int, float]
 containerType = Union['Section', pg.Rect]
 backgroundType = Union[pg.Color, pg.Surface]
+elementType = Union['Section', 'Circle', 'Button', 'Toggle', 'RangeSlider']
 
 ALLOWED_DIMENSIONS_KEYVALS = (
   ('x', 'y', 'w', 'h'),
@@ -284,12 +286,21 @@ class RangeSlider:
   def __init__(self, section: containerType, sliderRange: Iterable, emptySliderColor: pg.Color, fullSliderColor: pg.color, dragCircleRadius: numType, dragCircleColor: pg.color):
     self.section = section
     self.sliderRange = sliderRange
+    self.sliderValue = 0
     self.rangeLength = abs(self.sliderRange[0] - self.sliderRange[1])
     self.fullLengthSliderColor = emptySliderColor
     self.filledSliderColor = fullSliderColor
     self.dragCircleRadius = dragCircleRadius
     self.dragCircleColor = dragCircleColor
     self.dragPosition = self.section.x
+    self.pressed = False
+
+    self.oldDim = {
+      'x': 0,
+      'y': 0,
+      'w': 0,
+      'h': 0
+    }
 
     self.fullLengthSlider = Section(
       Section.createDimObject(('rx', 0, 'ry', 0, 'rw', 1, 'a', 8)),
@@ -306,14 +317,27 @@ class RangeSlider:
     )
 
   def update(self):
+    self.oldDim = {
+      'x': self.section.x,
+      'y': self.section.y,
+      'w': self.section.width,
+      'h': self.section.height
+    }
+
     if not isinstance(self.section, pg.Rect):
       self.section.update()
 
     self.fullLengthSlider.update()
 
+    self.dragPosition = mapRange(self.dragPosition, self.oldDim['x'], self.oldDim['x'] + self.oldDim['w'], self.section.x, self.section.x + self.section.width)
+
     self.filledSlider.update(self.section.x, self.section.y, self.dragPosition - self.section.x, 8)
 
     self.dragCircle.update()
+
+    self.value = mapRange(self.dragPosition, self.section.x, self.section.x + self.section.width, self.sliderRange[0], self.sliderRange[1])
+
+    print(self.value)
 
   def draw(self, surface: pg.Surface):
     self.section.draw(surface)
@@ -324,6 +348,85 @@ class RangeSlider:
   def checkEvent(self, event: pg.event.Event) -> bool:
     if event.type == pg.MOUSEBUTTONDOWN and event.button == 1 and self.fullLengthSlider.rect.collidepoint(event.pos):
       self.dragPosition = event.pos[0]
+      self.pressed = True
       self.update()
       return True
+    # elif self.pressed and event.type == pg.MOUSEMOTION:
+    #   self.dragPosition = event.pos[0]
+    #   self.update()
+    #   return True
+    elif event.type == pg.MOUSEBUTTONUP:
+      self.pressed = False
     return False
+
+  def drag(self, mouseX: numType):
+    if (self.pressed) and (mouseX >= self.section.x) and (mouseX <= (self.section.x + self.section.width)):
+      self.dragPosition = mouseX
+      self.update()
+
+class System:
+  def __init__(self, surface: pg.Surface):
+    self.surface = surface
+    self.elements: Dict[str, elementType] = {}
+    self.sections: Dict[str, Section] = {}
+    self.circles: Dict[str, Circle] = {}
+    self.buttons: Dict[str, Button] = {}
+    self.toggles: Dict[str, Toggle] = {}
+    self.rangeSliders: Dict[str, RangeSlider] = {}
+
+  def addElement(self, element: elementType, elementID: str) -> bool:
+    if elementID in self.elements:
+      print(f'An element with id: {elementID} already exists, please enter a unique id.')
+      return False
+
+    self.elements[elementID] = element
+
+    if isinstance(element, Section):
+      self.sections[id] = element
+    elif isinstance(element, Circle):
+      self.circles[id] = element
+    elif isinstance(element, Button):
+      self.buttons[id] = element
+    elif isinstance(element, Toggle):
+      self.toggles[id] = element
+    elif isinstance(element, RangeSlider):
+      self.rangeSliders[id] = element
+
+    return True
+
+  def __validateIDs(self, elementIDs: Optional[Iterable] = None) -> Union[Iterable, None, dict]:
+    if elementIDs == None:
+      return self.elements
+
+    if not set(elementIDs) == set(self.elements.keys()):
+      print('The given iterable contains id(s) that do not exist in this system, please enter a valid iterable')
+      return None
+
+    return elementIDs
+
+  def draw(self, elementIDs: Optional[Iterable] = None):
+    idList = self.__validateIDs(elementIDs)
+
+    if not idList == None:
+      for elementID in idList:
+        self.elements[elementID].draw(self.surface)
+
+  def update(self, elementIDs: Optional[Iterable] = None):
+    idList = self.__validateIDs(elementIDs)
+    # print(idList)
+
+    if not idList == None:
+      for elementID in idList:
+        self.elements[elementID].update()
+        # print(elementID)
+
+  def handleEvents(self, event: pg.event.Event, mouseX: numType):
+    for buttonID in self.buttons:
+      self.buttons[buttonID].checkEvent(event)
+
+    for toggleID in self.toggles:
+      self.toggles[toggleID].checkEvent(event)
+
+    for rangeSliderID in self.rangeSliders:
+      self.rangeSliders[rangeSliderID].checkEvent(event)
+      self.rangeSliders[rangeSliderID].drag(mouseX)
