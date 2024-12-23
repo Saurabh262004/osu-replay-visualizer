@@ -17,11 +17,12 @@ ALLOWED_DIMENSIONS_KEYVALS = (
 )
 
 class Section:
-  def __init__(self, dimensions: Dict[str, Dict[str, Union[str, int, float]]], background: backgroundType, container: Optional[containerType] = None):
+  def __init__(self, dimensions: Dict[str, Dict[str, Union[str, int, float]]], background: backgroundType, container: Optional[containerType] = None, borderRadius: Optional[numType] = 0):
     self.dimensions = dimensions
     self.background = background
     self.container = container
     self.rect = pg.Rect(0, 0, 0, 0)
+    self.borderRadius = borderRadius
 
     if not self.__validDims():
       print('invalid dimension object')
@@ -59,7 +60,7 @@ class Section:
     if isinstance(self.background, pg.Surface):
       surface.blit(self.background, self.rect)
     elif isinstance(self.background, pg.Color):
-      pg.draw.rect(surface, self.background, self.rect)
+      pg.draw.rect(surface, self.background, self.rect, border_radius = self.borderRadius)
 
   def __getRel(self, typ: str):
     if typ == 'x':
@@ -231,9 +232,9 @@ class Button:
   def draw(self, surface: pg.Surface):
     if self.border > 0:
       if self.pressed:
-        pg.draw.rect(surface, self.borderColorPressed, self.borderRect)
+        pg.draw.rect(surface, self.borderColorPressed, self.borderRect, border_radius = self.section.borderRadius)
       else:
-        pg.draw.rect(surface, self.borderColor, self.borderRect)
+        pg.draw.rect(surface, self.borderColor, self.borderRect, border_radius = self.section.borderRadius)
 
     self.section.draw(surface)
 
@@ -277,9 +278,9 @@ class Toggle:
   def draw(self, surface: pg.Surface):
     if self.border > 0:
       if self.toggled:
-        pg.draw.rect(surface, self.borderColorToggled, self.borderRect)
+        pg.draw.rect(surface, self.borderColorToggled, self.borderRect, border_radius = self.section.borderRadius)
       else:
-        pg.draw.rect(surface, self.borderColor, self.borderRect)
+        pg.draw.rect(surface, self.borderColor, self.borderRect, border_radius = self.section.borderRadius)
 
     self.section.draw(surface)
 
@@ -306,7 +307,8 @@ class RangeSlider:
     self.fullLengthSlider = Section(
       Section.createDimObject(('rx', 0, 'ry', 0, 'rw', 1, 'a', 8)),
       self.fullLengthSliderColor,
-      self.section
+      self.section,
+      self.section.borderRadius
     )
 
     self.filledSlider = pg.Rect(self.section.x, self.section.y,  self.dragPosition - self.section.x, 8)
@@ -341,7 +343,7 @@ class RangeSlider:
   def draw(self, surface: pg.Surface):
     self.section.draw(surface)
     self.fullLengthSlider.draw(surface)
-    pg.draw.rect(surface, self.filledSliderColor, self.filledSlider)
+    pg.draw.rect(surface, self.filledSliderColor, self.filledSlider, border_radius = self.section.borderRadius)
     self.dragCircle.draw(surface)
 
   def checkEvent(self, event: pg.event.Event) -> bool:
@@ -354,7 +356,8 @@ class RangeSlider:
       self.pressed = False
     return False
 
-  def drag(self, mouseX: numType):
+  def drag(self):
+    mouseX = pg.mouse.get_pos()[0]
     if (self.pressed) and (mouseX >= self.section.x) and (mouseX <= (self.section.x + self.section.width)):
       self.dragPosition = mouseX
       self.update()
@@ -408,20 +411,33 @@ class System:
 
   def update(self, elementIDs: Optional[Iterable] = None):
     idList = self.__validateIDs(elementIDs)
-    # print(idList)
 
     if not idList == None:
       for elementID in idList:
         self.elements[elementID].update()
-        # print(elementID)
 
-  def handleEvents(self, event: pg.event.Event, mouseX: numType):
+  def handleEvents(self, event: pg.event.Event):
+    changeCursor = False
     for buttonID in self.buttons:
+      if self.buttons[buttonID].section.rect.collidepoint(pg.mouse.get_pos()):
+        changeCursor = 'hand'
+
       self.buttons[buttonID].checkEvent(event)
 
     for toggleID in self.toggles:
+      if self.toggles[toggleID].section.rect.collidepoint(pg.mouse.get_pos()):
+        changeCursor = 'hand'
+
       self.toggles[toggleID].checkEvent(event)
 
     for rangeSliderID in self.rangeSliders:
+      if self.rangeSliders[rangeSliderID].section.rect.collidepoint(pg.mouse.get_pos()):
+        changeCursor = 'hand'
+
       self.rangeSliders[rangeSliderID].checkEvent(event)
-      self.rangeSliders[rangeSliderID].drag(mouseX)
+      self.rangeSliders[rangeSliderID].drag()
+
+    if changeCursor == 'hand':
+      pg.mouse.set_cursor(pg.SYSTEM_CURSOR_HAND)
+    else:
+      pg.mouse.set_cursor(pg.SYSTEM_CURSOR_ARROW)
