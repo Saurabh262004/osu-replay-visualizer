@@ -25,13 +25,12 @@ class Section:
     self.borderRadius = borderRadius
 
     if not self.__validDims():
-      print('invalid dimension object')
-      return None
+      raise ValueError('Invalid dimension object')
 
-    if self.container == None:
+    if self.container is None:
       dim = self.dimensions
       for d in dim:
-        if not dim[d]['type'] == 'a':
+        if dim[d]['type'] != 'a':
           dim[d]['type'] = 'a'
 
     self.update()
@@ -108,13 +107,12 @@ class Circle:
     self.container = container
 
     if not self.__validDims():
-      print('invalid dimension object')
-      return None
+      raise ValueError('Invalid dimension object')
 
-    if self.container == None:
+    if self.container is None:
       dim = self.dimensions
       for d in dim:
-        if not dim[d]['type'] == 'a':
+        if dim[d]['type'] != 'a':
           dim[d]['type'] = 'a'
 
     self.update()
@@ -374,21 +372,20 @@ class System:
 
   def addElement(self, element: elementType, elementID: str) -> bool:
     if elementID in self.elements:
-      print(f'An element with id: {elementID} already exists, please enter a unique id.')
-      return False
+      raise ValueError(f'An element with id: {elementID} already exists, please enter a unique id.')
 
     self.elements[elementID] = element
 
     if isinstance(element, Section):
-      self.sections[id] = element
+      self.sections[elementID] = element
     elif isinstance(element, Circle):
-      self.circles[id] = element
+      self.circles[elementID] = element
     elif isinstance(element, Button):
-      self.buttons[id] = element
+      self.buttons[elementID] = element
     elif isinstance(element, Toggle):
-      self.toggles[id] = element
+      self.toggles[elementID] = element
     elif isinstance(element, RangeSlider):
-      self.rangeSliders[id] = element
+      self.rangeSliders[elementID] = element
 
     return True
 
