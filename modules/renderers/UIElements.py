@@ -239,16 +239,17 @@ class Button:
     surface.blit(self.textSurface, self.textRect)
 
 class Toggle:
-  def __init__(self, section: Section, toggledColor: pg.Color, borderColor: pg.Color, borderColorToggled: pg.Color, onClick: Optional[Callable] = None, border: int = 0):
+  def __init__(self, section: Section, indicatorColor: pg.Color, borderColor: pg.Color, borderColorToggled: pg.Color, onClick: Optional[Callable] = None, border: int = 0):
     self.section = section
     self.onClick = onClick
     self.border = border
     self.toggled = False
     self.defaultBackground = section.background
-    self.toggledBackground = toggledColor
+    self.toggledBackground = indicatorColor
     self.borderColor = borderColor
     self.borderColorToggled = borderColorToggled
-    self.borderRect = pg.Rect(section.x - border, section.y - border, section.width + (border * 2), section.height + (border * 2))
+    self.innerBox = pg.Rect(self.section.x + 4, self.section.y + 4, (self.section.width / 2) - 4, self.section.height - 8)
+    self.borderRect = pg.Rect(self.section.x - border, self.section.y - border, self.section.width + (border * 2), self.section.height + (border * 2))
 
   def checkEvent(self, event: pg.event.Event) -> bool:
     if event.type == pg.MOUSEBUTTONDOWN and event.button == 1 and self.section.rect.collidepoint(event.pos):
@@ -256,8 +257,10 @@ class Toggle:
 
       if self.toggled:
         self.section.background = self.toggledBackground
+        self.innerBox.update(self.section.x + (self.section.width / 2), self.innerBox.y, self.innerBox.width, self.innerBox.height)
       else:
         self.section.background = self.defaultBackground
+        self.innerBox.update(self.section.x + 4, self.section.y + 4, self.innerBox.width, self.innerBox.height)
 
       if self.onClick:
         self.onClick(self.toggled)
@@ -268,10 +271,17 @@ class Toggle:
   def update(self):
     self.section.update()
 
-    newX, newY = self.section.x - self.border, self.section.y - self.border
-    newWidth, newHeight = self.section.width + (self.border * 2), self.section.height + (self.border * 2)
+    newBorderX, newBorderY = self.section.x - self.border, self.section.y - self.border
+    newBorderWidth, newBorderHeight = self.section.width + (self.border * 2), self.section.height + (self.border * 2)
 
-    self.borderRect.update(newX, newY, newWidth, newHeight)
+    newInnerX, newInnerY = self.section.x + 4, self.section.y + 4
+    if self.toggled:
+      newInnerX = self.section.x + (self.section.width / 2)
+
+    newInnerWidth, newInnerHeight = (self.section.width / 2) - 4, self.section.height - 8
+
+    self.borderRect.update(newBorderX, newBorderY, newBorderWidth, newBorderHeight)
+    self.innerBox.update(newInnerX, newInnerY, newInnerWidth, newInnerHeight)
 
   def draw(self, surface: pg.Surface):
     if self.border > 0:
@@ -281,6 +291,11 @@ class Toggle:
         pg.draw.rect(surface, self.borderColor, self.borderRect, border_radius = self.section.borderRadius)
 
     self.section.draw(surface)
+
+    if self.toggled:
+      pg.draw.rect(surface, self.defaultBackground, self.innerBox, border_radius = self.section.borderRadius)
+    else:
+      pg.draw.rect(surface, self.toggledBackground, self.innerBox, border_radius = self.section.borderRadius)
 
 class RangeSlider:
   def __init__(self, section: containerType, sliderRange: Iterable, emptySliderColor: pg.Color, fullSliderColor: pg.color, dragCircleRadius: numType, dragCircleColor: pg.color):
