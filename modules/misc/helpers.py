@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, Iterable
 
 numType = Union[int, float]
 
@@ -21,8 +21,15 @@ def tryToNum(s: str) -> Union[int, float, str]:
   return s
 
 # maps a number from one range to another
-def mapRange(x: numType, a: numType, b: numType, c: numType, d: numType) -> numType:
-  return c + (x - a) * (d - c) / (b - a)
+def mapRange(num: numType, start1: numType, start2: numType, end1: numType, end2: numType) -> numType:
+  return end1 + (num - start1) * (end2 - end1) / (start2 - start1)
+
+# check if all the values are in an iterable if yes return True else return False
+def allIn(values: Iterable, itr: Iterable) -> bool:
+  for v in values:
+    if not v in itr:
+      return False
+  return True
 
 # finds a value in array and return the index of the found value else returns `False`
 def find(value, arr: Union[list, tuple]) -> int:
