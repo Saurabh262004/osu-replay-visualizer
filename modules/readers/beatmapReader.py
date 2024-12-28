@@ -173,7 +173,7 @@ def readMap(mapURL: str, returnType: Optional[str] = 'pyObject', dumpJsonURL: Op
     raise ValueError(f'Invalid return type: \'{returnType}\'. Allowed values are: {ALLOWED_RETURN_TYPES}.')
 
   if not mapURL.endswith('.osu'):
-    raise ValueError(f'Invalid url: expected a .osu file, received : {mapURL}')
+    raise ValueError(f'Invalid URL: The file URL must end with ".osu". Received: {mapURL}')
 
   try:
     with open(mapURL, 'r', encoding = 'utf-8') as mapFile:
@@ -200,20 +200,19 @@ def readMap(mapURL: str, returnType: Optional[str] = 'pyObject', dumpJsonURL: Op
 
       if dumpJsonURL:
         try:
-          with open(dumpJsonURL, 'w') as jsonFile:
+          with open(dumpJsonURL, 'w', encoding='utf-8') as jsonFile:
             jsonFile.write(dumps(mapObject, indent = 2))
         except FileNotFoundError:
           print(f"The file at URL '{dumpJsonURL}' does not exist. Please provide a valid path.")
         except PermissionError:
-          print(f"Access to the file '{dumpJsonURL}' is denied. Check file permissions.")
+          print(f"Access to the file '{dumpJsonURL}' is denied. Please check file permissions.")
+          
 
       if returnType == 'pyObject':
         return mapObject
       elif returnType == 'json':
         return dumps(mapObject)
   except FileNotFoundError:
-    print(f"The file at URL '{mapURL}' does not exist. Please provide a valid path.")
-    return None
+    raise FileNotFoundError(f"The file at URL '{mapURL}' does not exist. Please provide a valid path.")
   except PermissionError:
-    print(f"Access to the file '{mapURL}' is denied. Check file permissions.")
-    return None
+    raise PermissionError(f"Access to the file '{mapURL}' is denied. Please check file permissions.")
