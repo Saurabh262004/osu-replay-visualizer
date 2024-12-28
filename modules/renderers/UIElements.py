@@ -178,6 +178,29 @@ class Circle:
       'r': {'type': arr[4], 'value': arr[5]}
     }
 
+class TextBox:
+  def __init__(self, section: Section, text: str, fontPath: str, textColor: pg.Color, drawSectionDefault: bool):
+    self.section = section
+    self.text = text
+    self.fontPath = fontPath
+    self.textColor = textColor
+    self.drawSectionDefault = drawSectionDefault
+
+  def update(self):
+    self.section.update()
+
+    self.fontSize = max(10, int(self.section.height * .6))
+    self.font = pg.font.SysFont(self.fontPath, self.fontSize)
+
+    self.textSurface = self.font.render(self.text, True, self.textColor)
+    self.textRect = self.textSurface.get_rect(center = self.section.rect.center)
+
+  def draw(self, surface: pg.Surface, drawSection: Optional[bool] = None):
+    if (drawSection is None and self.drawSectionDefault) or drawSection:
+      self.section.draw(surface)
+
+    surface.blit(self.textSurface, self.textRect)
+
 class Button:
   def __init__(self, section: Section, text: str, fontPath: str, textColor: pg.Color, pressedColor: pg.Color, borderColor: pg.Color, borderColorPressed: pg.Color, onClick: Optional[Callable] = None, border: int = 0):
     self.section = section
@@ -189,10 +212,7 @@ class Button:
     self.borderColor = borderColor
     self.borderColorPressed = borderColorPressed
     self.borderRect = pg.Rect(section.x - border, section.y - border, section.width + (border * 2), section.height + (border * 2))
-
-    self.text = text
-    self.textColor = textColor
-    self.fontPath = fontPath
+    self.textBox = TextBox(section, text, fontPath, textColor, True)
 
     self.update()
 
@@ -214,18 +234,12 @@ class Button:
 
   def update(self):
     if not isinstance(self.section, pg.Rect):
-      self.section.update()
+      self.textBox.update()
 
     newX, newY = self.section.x - self.border, self.section.y - self.border
     newWidth, newHeight = self.section.width + (self.border * 2), self.section.height + (self.border * 2)
 
     self.borderRect.update(newX, newY, newWidth, newHeight)
-
-    self.fontSize = max(10, int(self.section.height * .6))
-    self.font = pg.font.SysFont(self.fontPath, self.fontSize)
-
-    self.textSurface = self.font.render(self.text, True, self.textColor)
-    self.textRect = self.textSurface.get_rect(center = self.section.rect.center)
 
   def draw(self, surface: pg.Surface):
     if self.border > 0:
@@ -234,9 +248,7 @@ class Button:
       else:
         pg.draw.rect(surface, self.borderColor, self.borderRect, border_radius = self.section.borderRadius)
 
-    self.section.draw(surface)
-
-    surface.blit(self.textSurface, self.textRect)
+    self.textBox.draw(surface)
 
 class Toggle:
   def __init__(self, section: Section, indicatorColor: pg.Color, borderColor: pg.Color, borderColorToggled: pg.Color, onClick: Optional[Callable] = None, border: int = 0):
@@ -381,6 +393,7 @@ class System:
     self.elements: Dict[str, elementType] = {}
     self.sections: Dict[str, Section] = {}
     self.circles: Dict[str, Circle] = {}
+    self.textBoxes: Dict[str, TextBox] = {}
     self.buttons: Dict[str, Button] = {}
     self.toggles: Dict[str, Toggle] = {}
     self.rangeSliders: Dict[str, RangeSlider] = {}
@@ -395,6 +408,8 @@ class System:
       self.sections[elementID] = element
     elif isinstance(element, Circle):
       self.circles[elementID] = element
+    elif isinstance(element, TextBox):
+      self.textBoxes[elementID] = element
     elif isinstance(element, Button):
       self.buttons[elementID] = element
     elif isinstance(element, Toggle):
