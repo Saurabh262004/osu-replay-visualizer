@@ -31,11 +31,11 @@ def processSliderParams(rawValues: list) -> dict:
     newPoint = {
       'x': int(separateXY[0]),
       'y': int(separateXY[1]),
-      'type': 'white'
+      'red': False
     }
 
     if (len(slider['curvePoints']) > 0) and (slider['curvePoints'][-1]['x'] == newPoint['x'] and slider['curvePoints'][-1]['y'] == newPoint['y']):
-      slider['curvePoints'][-1]['type'] = 'red'
+      slider['curvePoints'][-1]['red'] = True
     else:
       slider['curvePoints'].append(newPoint)
 
