@@ -27,11 +27,18 @@ def processSliderParams(rawValues: list) -> dict:
 
   for point in cPointsRaw:
     separateXY = point.split(':')
-    slider['curvePoints'].append({
+
+    newPoint = {
       'x': int(separateXY[0]),
-      'y': int(separateXY[1])
-    })
-  
+      'y': int(separateXY[1]),
+      'type': 'white'
+    }
+
+    if (len(slider['curvePoints']) > 0) and (slider['curvePoints'][-1]['x'] == newPoint['x'] and slider['curvePoints'][-1]['y'] == newPoint['y']):
+      slider['curvePoints'][-1]['type'] = 'red'
+    else:
+      slider['curvePoints'].append(newPoint)
+
   slider['slides'] = rawValues[6]
   slider['length'] = rawValues[7]
 
