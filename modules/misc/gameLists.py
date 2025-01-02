@@ -97,3 +97,22 @@ MAP_FILE_SECTIONS = {
   'headers': ('[General]\n', '[Editor]\n', '[Metadata]\n', '[Difficulty]\n', '[Events]\n', '[TimingPoints]\n', '[Colours]\n', '[HitObjects]\n'),
   'types': ('kvp', 'kvp', 'kvp', 'kvp', 'csl', 'csl', 'kvp', 'csl')
 }
+
+# in testing phase, will update later
+NECESSARY_SKIN_ELEMENT_NAMES = (
+  'approachcircle',
+  'cursor',
+  'cursortrail',
+  'hit0',
+  'hit50',
+  'hit100',
+  'hit300'
+)
+
+SKIN_CONFIG_SECTIONS = {
+  'total': 3,
+  'sectionEnd': '\n\n',
+  'names': ('General', 'Colours', 'Fonts'),
+  'headers': ('[General]\n', '[Colours]\n', '[Fonts]\n'),
+  'types': ('kvp', 'kvp', 'kvp')
+}
