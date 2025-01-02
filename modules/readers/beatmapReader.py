@@ -1,6 +1,6 @@
 from json import dumps
 from typing import Union, Optional, List, Dict
-from modules.readers.parsingHelpers import separateByComma, keyValuePairs, getFileSections
+from modules.misc.helpers import tryToNum
 from modules.misc.gameLists import MAP_FILE_SECTIONS
 
 ALLOWED_RETURN_TYPES = ('pyObject', 'json')
@@ -122,6 +122,59 @@ def processTimingPoints(timingPoints: List[List[Union[int, float]]]) -> List[Dic
 
   return processedTimingPoints
 
+def separateByComma(sectionSTR: str, convertValuesToNum: Optional[bool] = False) -> Union[List[Union[int, float, str]], List[List[Union[int, float, str]]]]:
+  lines = sectionSTR.splitlines()
+  data = []
+
+  if len(lines) > 1:
+    for line in lines:
+      if convertValuesToNum:
+        data.append([tryToNum(value.strip()) for value in line.split(',')])
+      else:
+        data.append([value.strip() for value in line.split(',')])
+  else:
+    data = [tryToNum(value.strip()) for value in lines[0].split(',')]
+
+  return data
+
+def keyValuePairs(sectionSTR: str, convertValuesToNum: Optional[bool] = False) -> dict:
+  lines = sectionSTR.splitlines()
+  pairs = {}
+
+  for line in lines:
+    containsMultipleValues = False
+    pair = line.split(':')
+
+    value = pair[1].strip()
+
+    if value.find(',') > -1:
+      containsMultipleValues = True
+
+    if not containsMultipleValues:
+      if convertValuesToNum:
+        value = tryToNum(value)
+    else:
+      value = separateByComma(value, convertValuesToNum)
+
+    pairs[pair[0].strip()] = value
+
+  return pairs
+
+def getMapSections(mapContent: str) -> dict:
+  sectionsData = {}
+
+  for i in range(MAP_FILE_SECTIONS['total']):
+    section = MAP_FILE_SECTIONS['headers'][i]
+    sectionStart = mapContent.find(section)
+
+    if sectionStart == -1:
+      continue
+
+    singleSectionData = mapContent[sectionStart + len(section) : mapContent[sectionStart:].find(MAP_FILE_SECTIONS['sectionEnd']) + sectionStart]
+    sectionsData[MAP_FILE_SECTIONS['names'][i]] = singleSectionData
+
+  return sectionsData
+
 def readMap(mapURL: str, returnType: Optional[str] = 'pyObject', dumpJsonURL: Optional[str] = None) -> Union[dict, str, None]:
   if returnType not in ALLOWED_RETURN_TYPES:
     raise ValueError(f'Invalid return type: \'{returnType}\'. Allowed values are: {ALLOWED_RETURN_TYPES}.')
@@ -136,7 +189,7 @@ def readMap(mapURL: str, returnType: Optional[str] = 'pyObject', dumpJsonURL: Op
       mapObject = {}
       mapObject['fileVer'] = int(mapContent.split('\n')[0][17:])
 
-      sections = getFileSections(mapContent, MAP_FILE_SECTIONS)
+      sections = getMapSections(mapContent)
 
       for i in range(MAP_FILE_SECTIONS['total']):
         sectionName = MAP_FILE_SECTIONS['names'][i]
@@ -160,8 +213,7 @@ def readMap(mapURL: str, returnType: Optional[str] = 'pyObject', dumpJsonURL: Op
           print(f"The file at URL '{dumpJsonURL}' does not exist. Please provide a valid path.")
         except PermissionError:
           print(f"Access to the file '{dumpJsonURL}' is denied. Please check file permissions.")
-        except Exception as e:
-          print(e)
+          
 
       if returnType == 'pyObject':
         return mapObject
@@ -171,5 +223,3 @@ def readMap(mapURL: str, returnType: Optional[str] = 'pyObject', dumpJsonURL: Op
     raise FileNotFoundError(f"The file at URL '{mapURL}' does not exist. Please provide a valid path.")
   except PermissionError:
     raise PermissionError(f"Access to the file '{mapURL}' is denied. Please check file permissions.")
-  except Exception as e:
-    raise e
