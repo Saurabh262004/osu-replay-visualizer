@@ -1,6 +1,6 @@
 import os
 from pygame import image
-from modules.misc.gameLists import NECESSARY_SKIN_ELEMENT_NAMES, SKIN_CONFIG_SECTIONS
+from modules.misc.gameLists import SKIN_ELEMENTS, SKIN_CONFIG_SECTIONS
 from modules.readers.parsingHelpers import keyValuePairs, getFileSections
 
 def importSkin(skinName: str, osuURL: str) -> dict:
@@ -20,11 +20,12 @@ def importSkin(skinName: str, osuURL: str) -> dict:
     'config': {}
   }
 
-  for element in NECESSARY_SKIN_ELEMENT_NAMES:
+  for element in SKIN_ELEMENTS:
     imageURL = skin['url'] + '/' + element + '.png'
 
     if not os.path.isfile(imageURL):
-      raise FileNotFoundError(f"One of the necessary skin elements, '{element}', is missing from the skin '{skinName}'. Please provide a valid skin.")
+      continue
+      # raise FileNotFoundError(f"One of the necessary skin elements, '{element}', is missing from the skin '{skinName}'. Please provide a valid skin.")
 
     skin['elements'][element] = image.load(imageURL)
 
