@@ -102,93 +102,13 @@ MAP_FILE_SECTIONS = {
 # !! IN TESTING PHASE, PLEASE UPDATE LATER !! #
 #---------------------------------------------#
 SKIN_ELEMENTS = {
-  'default-0': {
-    'animetable': False,
-    'blendMode': 'normal',
-    'origin': 'center',
-    'tintType': 'noTint',
-    'alter': None,
-    'imp': True
-  },
-  'default-1': {
-    'animetable': False,
-    'blendMode': 'normal',
-    'origin': 'center',
-    'tintType': 'noTint',
-    'alter': None,
-    'imp': True
-  },
-  'default-2': {
-    'animetable': False,
-    'blendMode': 'normal',
-    'origin': 'center',
-    'tintType': 'noTint',
-    'alter': None,
-    'imp': True
-  },
-  'default-3': {
-    'animetable': False,
-    'blendMode': 'normal',
-    'origin': 'center',
-    'tintType': 'noTint',
-    'alter': None,
-    'imp': True
-  },
-  'default-4': {
-    'animetable': False,
-    'blendMode': 'normal',
-    'origin': 'center',
-    'tintType': 'noTint',
-    'alter': None,
-    'imp': True
-  },
-  'default-5': {
-    'animetable': False,
-    'blendMode': 'normal',
-    'origin': 'center',
-    'tintType': 'noTint',
-    'alter': None,
-    'imp': True
-  },
-  'default-6': {
-    'animetable': False,
-    'blendMode': 'normal',
-    'origin': 'center',
-    'tintType': 'noTint',
-    'alter': None,
-    'imp': True
-  },
-  'default-7': {
-    'animetable': False,
-    'blendMode': 'normal',
-    'origin': 'center',
-    'tintType': 'noTint',
-    'alter': None,
-    'imp': True
-  },
-  'default-8': {
-    'animetable': False,
-    'blendMode': 'normal',
-    'origin': 'center',
-    'tintType': 'noTint',
-    'alter': None,
-    'imp': True
-  },
-  'default-9': {
-    'animetable': False,
-    'blendMode': 'normal',
-    'origin': 'center',
-    'tintType': 'noTint',
-    'alter': None,
-    'imp': True
-  },
   'approachcircle': {
     'animetable': False,
     'blendMode': 'mul',
     'origin': 'center',
     'tintType': 'combo',
     'alter': None,
-    'imp': True
+    'required': True
   },
   'hitcircle': {
     'animetable': False,
@@ -196,7 +116,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'combo',
     'alter': None,
-    'imp': True
+    'required': True
   },
   'hitcircleoverlay': {
     'animetable': False,
@@ -204,7 +124,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': True
+    'required': True
   },
   'followpoint': {
     'animetable': True,
@@ -213,7 +133,7 @@ SKIN_ELEMENTS = {
     'tintType': 'noTint',
     'alter': None,
     'animationName': 'followpoint-*',
-    'imp': True
+    'required': True
   },
   'lighting': {
     'animetable': False,
@@ -221,7 +141,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'combo',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'sliderstartcircle': {
     'animetable': False,
@@ -229,7 +149,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'combo',
     'alter': 'hitcircle',
-    'imp': False
+    'required': False
   },
   'sliderstartcircleoverlay': {
     'animetable': False,
@@ -237,7 +157,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': 'hitcircleoverlay',
-    'imp': False
+    'required': False
   },
   'sliderendcircle': {
     'animetable': False,
@@ -245,7 +165,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'combo',
     'alter': 'hitcircle',
-    'imp': False
+    'required': False
   },
   'sliderendcircleoverlay': {
     'animetable': False,
@@ -253,7 +173,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': 'hitcircleoverlay',
-    'imp': False
+    'required': False
   },
   'reversearrow': {
     'animetable': False,
@@ -261,7 +181,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': True
+    'required': True
   },
   'sliderfollowcircle': {
     'animetable': True,
@@ -269,7 +189,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': True,
+    'required': True,
     'animationName': 'sliderfollowcircle-*'
   },
   'sliderb': {
@@ -278,7 +198,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'combo',
     'alter': 'sliderb-nd',
-    'imp': True,
+    'required': True,
     'animationName': 'sliderb*'
   },
   'sliderb-nd': {
@@ -288,7 +208,7 @@ SKIN_ELEMENTS = {
     'tintType': 'specific',
     'tintColor': (0, 0, 0),
     'alter': None,
-    'imp': False
+    'required': False
   },
   'sliderb-spec': {
     'animetable': False,
@@ -296,7 +216,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'sliderpoint10': {
     'animetable': False,
@@ -304,7 +224,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'sliderpoint30': {
     'animetable': False,
@@ -312,7 +232,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'sliderscorepoint': {
     'animetable': False,
@@ -320,7 +240,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': True
+    'required': False
   },
   'spinner-rpm': {
     'animetable': False,
@@ -328,7 +248,7 @@ SKIN_ELEMENTS = {
     'origin': 'topLeft',
     'tintType': 'noTint',
     'alter': None,
-    'imp': True
+    'required': False
   },
   'spinner-clear': {
     'animetable': False,
@@ -336,7 +256,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': True
+    'required': False
   },
   'spinner-spin': {
     'animetable': False,
@@ -344,7 +264,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'spinner-glow': {
     'animetable': False,
@@ -356,7 +276,7 @@ SKIN_ELEMENTS = {
       'blink': [255, 255, 255]
     },
     'alter': None,
-    'imp': False
+    'required': False
   },
   'spinner-bottom': {
     'animetable': False,
@@ -364,7 +284,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': True
+    'required': False
   },
   'spinner-top': {
     'animetable': False,
@@ -372,7 +292,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': True
+    'required': False
   },
   'spinner-middle2': {
     'animetable': False,
@@ -380,7 +300,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': True
+    'required': False
   },
   'spinner-middle': {
     'animetable': False,
@@ -392,7 +312,7 @@ SKIN_ELEMENTS = {
       'end': [255, 0, 0]
     },
     'alter': None,
-    'imp': True
+    'required': False
   },
   'particle50': {
     'animetable': False,
@@ -400,7 +320,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'particle100': {
     'animetable': False,
@@ -408,7 +328,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'particle300': {
     'animetable': False,
@@ -416,7 +336,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'cursor': {
     'animetable': False,
@@ -424,7 +344,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': True
+    'required': True
   },
   'cursormiddle': {
     'animetable': False,
@@ -432,7 +352,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'cursor-smoke': {
     'animetable': False,
@@ -440,7 +360,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'cursortrail': {
     'animetable': False,
@@ -448,7 +368,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'cursor-ripple': {
     'animetable': False,
@@ -456,7 +376,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-autoplay': {
     'animetable': False,
@@ -464,7 +384,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-cinema': {
     'animetable': False,
@@ -472,7 +392,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-doubletime': {
     'animetable': False,
@@ -480,7 +400,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-easy': {
     'animetable': False,
@@ -488,7 +408,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-fadein': {
     'animetable': False,
@@ -496,7 +416,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-flashlight': {
     'animetable': False,
@@ -504,7 +424,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-halftime': {
     'animetable': False,
@@ -512,7 +432,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-hardrock': {
     'animetable': False,
@@ -520,7 +440,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-hidden': {
     'animetable': False,
@@ -528,7 +448,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-key1': {
     'animetable': False,
@@ -536,7 +456,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-key2': {
     'animetable': False,
@@ -544,7 +464,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-key3': {
     'animetable': False,
@@ -552,7 +472,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-key4': {
     'animetable': False,
@@ -560,7 +480,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-key5': {
     'animetable': False,
@@ -568,7 +488,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-key6': {
     'animetable': False,
@@ -576,7 +496,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-key7': {
     'animetable': False,
@@ -584,7 +504,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-key8': {
     'animetable': False,
@@ -592,7 +512,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-key9': {
     'animetable': False,
@@ -600,7 +520,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-keycoop': {
     'animetable': False,
@@ -608,7 +528,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-mirror': {
     'animetable': False,
@@ -616,7 +536,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-nightcore': {
     'animetable': False,
@@ -624,7 +544,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-nofail': {
     'animetable': False,
@@ -632,7 +552,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-perfect': {
     'animetable': False,
@@ -640,7 +560,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-random': {
     'animetable': False,
@@ -648,7 +568,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-relax': {
     'animetable': False,
@@ -656,7 +576,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-relax2': {
     'animetable': False,
@@ -664,7 +584,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-scorev2': {
     'animetable': False,
@@ -672,7 +592,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-spunout': {
     'animetable': False,
@@ -680,7 +600,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-suddendeath': {
     'animetable': False,
@@ -688,7 +608,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-target': {
     'animetable': False,
@@ -696,7 +616,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-freemodallowed': {
     'animetable': False,
@@ -704,7 +624,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'selection-mod-touchdevice': {
     'animetable': False,
@@ -712,7 +632,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'play-skip': {
     'animetable': True,
@@ -720,7 +640,7 @@ SKIN_ELEMENTS = {
     'origin': 'bottonRight',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False,
+    'required': False,
     'animationName': 'play-skip-*'
   },
   'play-unranked': {
@@ -729,7 +649,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'play-warningarrow': {
     'animetable': False,
@@ -744,7 +664,7 @@ SKIN_ELEMENTS = {
       }
     },
     'alter': None,
-    'imp': False
+    'required': False
   },
   'arrow-pause': {
     'animetable': False,
@@ -753,7 +673,7 @@ SKIN_ELEMENTS = {
     'tintType': 'specific',
     'tintColor': [0, 0, 255],
     'alter': ('play-warningarrow'),
-    'imp': False
+    'required': False
   },
   'arrow-warning': {
     'animetable': False,
@@ -765,7 +685,7 @@ SKIN_ELEMENTS = {
       'v2.0+': [255, 0, 0]
     },
     'alter': ('play-warningarrow'),
-    'imp': False
+    'required': False
   },
   'section-fail': {
     'animetable': False,
@@ -773,7 +693,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'section-pass': {
     'animetable': False,
@@ -781,7 +701,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'hit0': {
     'animetable': True,
@@ -789,7 +709,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'imp': True,
+    'required': True,
     'animationName': 'hit0-*'
   },
   'hit50': {
@@ -798,7 +718,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'imp': True,
+    'required': True,
     'animationName': 'hit50-*'
   },
   'hit100': {
@@ -807,7 +727,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'imp': True,
+    'required': True,
     'animationName': 'hit100-*'
   },
   'hit100k': {
@@ -816,7 +736,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'imp': True,
+    'required': True,
     'animationName': 'hit100k-*'
   },
   'hit300': {
@@ -825,7 +745,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'imp': True,
+    'required': True,
     'animationName': 'hit300-*'
   },
   'hit300k': {
@@ -834,7 +754,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'imp': True,
+    'required': True,
     'animationName': 'hit300k-*'
   },
   'hit300g': {
@@ -843,7 +763,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'imp': True,
+    'required': True,
     'animationName': 'hit300g-*'
   },
   'inputoverlay-background': {
@@ -852,7 +772,7 @@ SKIN_ELEMENTS = {
     'origin': 'topRight',
     'tintType': 'noTing',
     'alter': None,
-    'imp': False
+    'required': False
   },
   'inputoverlay-key': {
     'animetable': False,
@@ -867,7 +787,7 @@ SKIN_ELEMENTS = {
       }
     },
     'alter': None,
-    'imp': False
+    'required': False
   },
   'scorebar-bg': {
     'animetable': False,
@@ -875,7 +795,7 @@ SKIN_ELEMENTS = {
     'origin': 'topLeft',
     'tintType': 'noTing',
     'alter': None,
-    'imp': True
+    'required': True
   },
   'scorebar-colour': {
     'animetable': True,
@@ -883,7 +803,7 @@ SKIN_ELEMENTS = {
     'origin': 'topLeft',
     'tintType': 'noTing',
     'alter': None,
-    'imp': True,
+    'required': True,
     'animationName': 'scorebar-colour-*'
   },
   'scorebar-marker': {
@@ -892,111 +812,40 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'imp': False
-  },
-  'score-1': {
-    'animetable': False,
-    'blendMode': 'add',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
-    'alter': None,
-    'imp': False
-  },
-  'score-2': {
-    'animetable': False,
-    'blendMode': 'add',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
-    'alter': None,
-    'imp': False
-  },
-  'score-3': {
-    'animetable': False,
-    'blendMode': 'add',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
-    'alter': None,
-    'imp': False
-  },
-  'score-4': {
-    'animetable': False,
-    'blendMode': 'add',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
-    'alter': None,
-    'imp': False
-  },
-  'score-5': {
-    'animetable': False,
-    'blendMode': 'add',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
-    'alter': None,
-    'imp': False
-  },
-  'score-6': {
-    'animetable': False,
-    'blendMode': 'add',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
-    'alter': None,
-    'imp': False
-  },
-  'score-7': {
-    'animetable': False,
-    'blendMode': 'add',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
-    'alter': None,
-    'imp': False
-  },
-  'score-8': {
-    'animetable': False,
-    'blendMode': 'add',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
-    'alter': None,
-    'imp': False
-  },
-  'score-9': {
-    'animetable': False,
-    'blendMode': 'add',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
-    'alter': None,
-    'imp': False
-  },
-  'score-comma': {
+    'required': False
+  }
+}
+
+FONT_ELEMENTS = {
+  'default': {
     'animetable': False,
     'blendMode': 'normal',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
+    'origin': 'center',
+    'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False,
+    'urls': ['-0', '-1', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9'],
+    'prefixIdentifier': 'HitCirclePrefix',
   },
-  'score-dot': {
+  'combo': {
     'animetable': False,
     'blendMode': 'normal',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
+    'origin': 'center',
+    'tintType': 'noTint',
     'alter': None,
-    'imp': False
+    'required': False,
+    'urls': ['-0', '-1', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-x'],
+    'prefixIdentifier': 'ComboPrefix',
   },
-  'score-percent': {
+  'score': {
     'animetable': False,
     'blendMode': 'normal',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
+    'origin': 'center',
+    'tintType': 'noTint',
     'alter': None,
-    'imp': False
-  },
-  'score-x': {
-    'animetable': False,
-    'blendMode': 'add',
-    'origin': 'topLeft',
-    'tintType': 'noTing',
-    'alter': None,
-    'imp': False
+    'required': False,
+    'urls': ['-0', '-1', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-comma', '-dot', '-percent', '-x'],
+    'prefixIdentifier': 'ScorePrefix'
   }
 }
 
