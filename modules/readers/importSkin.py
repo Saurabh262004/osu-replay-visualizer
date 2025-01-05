@@ -44,12 +44,10 @@ def importSkin(skinName: str, osuURL: str) -> dict:
 
   # load the skin elements
   for element in SKIN_ELEMENTS:
-    imageURL = f"{skin['url']}/{element}.png"
+    stillImageURL = f"{skin['url']}/{element}.png"
     requiredElementNotFound = False
 
-    if os.path.isfile(imageURL):
-      skin['elements'][element] = image.load(imageURL)
-    elif (SKIN_ELEMENTS[element]['animetable']):
+    if (SKIN_ELEMENTS[element]['animetable']):
       skin['elements'][element] = []
       i = 0
       imageURL = f"{skin['url']}/{SKIN_ELEMENTS[element]['animationName'].replace('*', str(i))}.png"
@@ -59,9 +57,14 @@ def importSkin(skinName: str, osuURL: str) -> dict:
         i += 1
         imageURL = f"{skin['url']}/{SKIN_ELEMENTS[element]['animationName'].replace('*', str(i))}.png"
 
-      if len(skin['elements'][element]) == 0 and SKIN_ELEMENTS[element]['required']:
-        skin['elements'].pop(element)
-        requiredElementNotFound = True
+      if len(skin['elements'][element]) == 0:
+        if os.path.isfile(stillImageURL):
+          skin['elements'][element] = image.load(stillImageURL)
+        elif SKIN_ELEMENTS[element]['required']:
+          skin['elements'].pop(element)
+          requiredElementNotFound = True
+    elif os.path.isfile(stillImageURL):
+      skin['elements'][element] = image.load(stillImageURL)
     elif SKIN_ELEMENTS[element]['required']:
       requiredElementNotFound = True
 
