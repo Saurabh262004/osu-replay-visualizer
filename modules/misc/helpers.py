@@ -41,3 +41,20 @@ def find(value, arr: Union[list, tuple]) -> int:
     index += 1
 
   return -1
+
+# returns a string with the leading and trailing characters removed
+def customStrip(string: str, chars: Iterable):
+  start = 0
+  end = -1
+
+  for i in range(len(string)):
+    if not string[i] in chars:
+      start = i
+      break
+
+  for i in range(len(string) - 1, start, -1):
+    if not string[i] in chars:
+      end = i
+      break
+  
+  return string[start:end + 1]

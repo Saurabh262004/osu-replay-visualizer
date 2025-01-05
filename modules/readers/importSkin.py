@@ -1,5 +1,6 @@
 import os
 from pygame import image
+from modules.misc.helpers import customStrip
 from modules.misc.gameLists import SKIN_ELEMENTS, FONT_ELEMENTS
 from modules.readers.parsingHelpers import keyValuePairs
 
@@ -27,10 +28,8 @@ def importSkin(skinName: str, osuURL: str) -> dict:
       processedLines = ''
 
       for line in configLines:
-        stripChars = [' ', '\t']
-        for _ in range(len(stripChars)):
-          for c in stripChars:
-            line = line.strip(c)
+        line = customStrip(line, ['\t', ' '])
+
         if len(line) > 0 and line[0].isalpha():
           processedLines += line
 
