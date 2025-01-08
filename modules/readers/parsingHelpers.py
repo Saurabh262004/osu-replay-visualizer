@@ -11,7 +11,7 @@ def separateByComma(sectionSTR: str, convertValuesToNum: Optional[bool] = False)
         data.append([tryToNum(value.strip()) for value in line.split(',')])
       else:
         data.append([value.strip() for value in line.split(',')])
-  else:
+  elif len(lines) == 1:
     data = [tryToNum(value.strip()) for value in lines[0].split(',')]
 
   return data

@@ -149,7 +149,7 @@ def decodeBinValue(value, table):
   if not (('arr' in table) and ('pairs' in table) and ('pairNames' in table)):
     return None
 
-  if not ((type(table['arr']) is list) and (type(table['pairs']) is list) and (type(table['pairNames']) is list)):
+  if not ((type(table['arr']) is tuple) and (type(table['pairs']) is tuple) and (type(table['pairNames']) is tuple)):
     return None
 
   if len(table['pairs']) != len(table['pairNames']):

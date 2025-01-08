@@ -272,8 +272,8 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'specific',
     'tintColor': {
-      'default': [0, 255, 255],
-      'blink': [255, 255, 255]
+      'default': (0, 255, 255),
+      'blink': (255, 255, 255)
     },
     'alter': None,
     'required': False
@@ -308,8 +308,8 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'gradient',
     'tintColor': {
-      'start': [255, 255, 255],
-      'end': [255, 0, 0]
+      'start': (255, 255, 255),
+      'end': (255, 0, 0)
     },
     'alter': None,
     'required': False
@@ -657,10 +657,10 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'specific',
     'tintColor': {
-      'pauseScreen': [0, 0, 255],
+      'pauseScreen': (0, 0, 255),
       'exitingBreaks': {
-        'v1.0': [255, 255, 255],
-        'v2.0+': [255, 0, 0]
+        'v1.0': (255, 255, 255),
+        'v2.0+': (255, 0, 0)
       }
     },
     'alter': None,
@@ -671,7 +671,7 @@ SKIN_ELEMENTS = {
     'blendMode': 'normal',
     'origin': 'center',
     'tintType': 'specific',
-    'tintColor': [0, 0, 255],
+    'tintColor': (0, 0, 255),
     'alter': ('play-warningarrow'),
     'required': False
   },
@@ -681,8 +681,8 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'specific',
     'tintColor': {
-      'v1.0': [255, 255, 255],
-      'v2.0+': [255, 0, 0]
+      'v1.0': (255, 255, 255),
+      'v2.0+': (255, 0, 0)
     },
     'alter': ('play-warningarrow'),
     'required': False
@@ -780,10 +780,10 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'specific',
     'tintColor': {
-      'default': [255, 255, 255],
+      'default': (255, 255, 255),
       'pressed': {
-        'topHalf': [255, 255, 0],
-        'bottomHalf': [128, 0, 128]
+        'topHalf': (255, 255, 0),
+        'bottomHalf': (128, 0, 128)
       }
     },
     'alter': None,
@@ -824,7 +824,7 @@ FONT_ELEMENTS = {
     'tintType': 'noTint',
     'alter': None,
     'required': False,
-    'urls': ['-0', '-1', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9'],
+    'urls': ('-0', '-1', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9'),
     'prefixIdentifier': 'HitCirclePrefix',
   },
   'combo': {
@@ -834,7 +834,7 @@ FONT_ELEMENTS = {
     'tintType': 'noTint',
     'alter': None,
     'required': False,
-    'urls': ['-0', '-1', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-x'],
+    'urls': ('-0', '-1', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-x'),
     'prefixIdentifier': 'ComboPrefix',
   },
   'score': {
@@ -844,7 +844,7 @@ FONT_ELEMENTS = {
     'tintType': 'noTint',
     'alter': None,
     'required': False,
-    'urls': ['-0', '-1', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-comma', '-dot', '-percent', '-x'],
+    'urls': ('-0', '-1', '-2', '-3', '-4', '-5', '-6', '-7', '-8', '-9', '-comma', '-dot', '-percent', '-x'),
     'prefixIdentifier': 'ScorePrefix'
   }
 }

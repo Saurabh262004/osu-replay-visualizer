@@ -2,6 +2,7 @@ from modules.readers.osuDataTypes import *
 from json import dumps
 from lzma import decompress
 from modules.misc.gameLists import MODS_ABRV, KEYS
+from modules.readers.parsingHelpers import separateByComma
 
 def replayArray(file):
   # read the compressed LZMA byte array containing the replay data from a ".osr" file
@@ -57,14 +58,14 @@ def getReplayData(replayURL, dumpJsonURL=None):
       'combo' : short(file),
       'pfc' : byte(file),
       'mods' : decodeBinValue(integer(file), MODS_ABRV),
-      'lifeBar' : string(file),
+      'lifeBar' : separateByComma(string(file)),
       'timeStamp' : dateTime(file),
       'replayArray' : replayArray(file),
       'onlineScoreID' : long(file)
     }
 
     # convert the data in json format and bump it in a file if a URL to the file is given
-    if (dumpJsonURL):
+    if dumpJsonURL:
       with open(dumpJsonURL, 'w') as dumpFile:
         dumpFile.write(dumps(replayData, indent=2))
 
