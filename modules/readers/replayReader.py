@@ -2,6 +2,7 @@ from modules.readers.osuDataTypes import *
 from json import dumps
 from lzma import decompress
 from modules.misc.gameLists import MODS_ABRV, KEYS
+from modules.misc.helpers import tryToNum
 from modules.readers.parsingHelpers import separateByComma
 
 def replayArray(file):
@@ -63,6 +64,17 @@ def getReplayData(replayURL, dumpJsonURL=None):
       'replayArray' : replayArray(file),
       'onlineScoreID' : long(file)
     }
+
+    # process life bar data
+    if replayData['lifeBar'][-1] == '':
+      replayData['lifeBar'].pop()
+
+    for i in range(len(replayData['lifeBar'])):
+      values = replayData['lifeBar'][i].split('|')
+      replayData['lifeBar'][i] = {
+        'time': tryToNum(values[0]),
+        'life': tryToNum(values[1])
+      }
 
     # convert the data in json format and bump it in a file if a URL to the file is given
     if dumpJsonURL:
