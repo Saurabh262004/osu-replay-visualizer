@@ -848,11 +848,3 @@ FONT_ELEMENTS = {
     'prefixIdentifier': 'ScorePrefix'
   }
 }
-
-SKIN_CONFIG_SECTIONS = {
-  'total': 3,
-  'sectionEnd': '\n\n',
-  'names': ('General', 'Colours', 'Fonts'),
-  'headers': ('[General]\n', '[Colours]\n', '[Fonts]\n'),
-  'types': ('kvp', 'kvp', 'kvp')
-}
