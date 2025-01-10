@@ -179,7 +179,7 @@ class Circle:
     }
 
 class TextBox:
-  def __init__(self, section: Section, text: str, fontPath: str, textColor: pg.Color, drawSectionDefault: bool):
+  def __init__(self, section: Section, text: str, fontPath: str, textColor: pg.Color, drawSectionDefault: Optional[bool] = False):
     self.section = section
     self.text = text
     self.fontPath = fontPath
@@ -202,9 +202,10 @@ class TextBox:
     surface.blit(self.textSurface, self.textRect)
 
 class Button:
-  def __init__(self, section: Section, text: str, fontPath: str, textColor: pg.Color, pressedColor: pg.Color, borderColor: pg.Color, borderColorPressed: pg.Color, onClick: Optional[Callable] = None, border: int = 0):
+  def __init__(self, section: Section, pressedColor: pg.Color, borderColor: pg.Color, borderColorPressed: pg.Color, text: Optional[str] = None, fontPath: Optional[str] = None, textColor: Optional[pg.Color] = None, onClick: Optional[Callable] = None, onClickParams = None, border: int = 0):
     self.section = section
     self.onClick = onClick
+    self.onClickParams = onClickParams
     self.border = border
     self.pressed = False
     self.defaultBackground = section.background
@@ -212,7 +213,12 @@ class Button:
     self.borderColor = borderColor
     self.borderColorPressed = borderColorPressed
     self.borderRect = pg.Rect(section.x - border, section.y - border, section.width + (border * 2), section.height + (border * 2))
-    self.textBox = TextBox(section, text, fontPath, textColor, True)
+    
+    if text:
+      self.textBox = TextBox(section, text, fontPath, textColor, False)
+      self.hasText = True
+    else:
+      self.hasText = False
 
     self.update()
 
@@ -222,7 +228,7 @@ class Button:
       self.section.background = self.pressedBackground
 
       if self.onClick:
-        self.onClick()
+        self.onClick(self.onClickParams)
 
       return True
     elif event.type == pg.MOUSEBUTTONUP and self.pressed:
@@ -234,7 +240,10 @@ class Button:
 
   def update(self):
     if not isinstance(self.section, pg.Rect):
-      self.textBox.update()
+      if self.hasText:
+        self.textBox.update()
+      else:
+        self.section.update()
 
     newX, newY = self.section.x - self.border, self.section.y - self.border
     newWidth, newHeight = self.section.width + (self.border * 2), self.section.height + (self.border * 2)
@@ -248,12 +257,17 @@ class Button:
       else:
         pg.draw.rect(surface, self.borderColor, self.borderRect, border_radius = self.section.borderRadius)
 
-    self.textBox.draw(surface)
+    self.section.draw(surface)
+
+    if self.hasText:
+      self.textBox.draw(surface)
 
 class Toggle:
-  def __init__(self, section: Section, indicatorColor: pg.Color, borderColor: pg.Color, borderColorToggled: pg.Color, onClick: Optional[Callable] = None, border: int = 0):
+  def __init__(self, section: Section, indicatorColor: pg.Color, borderColor: pg.Color, borderColorToggled: pg.Color, onClick: Optional[Callable] = None, onClickParams = None, sendStateInfoOnClick: Optional[bool] = False, border: int = 0):
     self.section = section
     self.onClick = onClick
+    self.sendStateInfoOnClick = sendStateInfoOnClick
+    self.onClickParams = onClickParams
     self.border = border
     self.toggled = False
     self.defaultBackground = section.background
@@ -275,7 +289,10 @@ class Toggle:
         self.innerBox.update(self.section.x + 4, self.section.y + 4, self.innerBox.width, self.innerBox.height)
 
       if self.onClick:
-        self.onClick(self.toggled)
+        if self.sendStateInfoOnClick:
+          self.onClick(self.onClickParams, self.toggled)
+        else:
+          self.onClick(self.onClickParams)
 
       return True
     return False
@@ -310,7 +327,7 @@ class Toggle:
       pg.draw.rect(surface, self.toggledBackground, self.innerBox, border_radius = self.section.borderRadius)
 
 class RangeSlider:
-  def __init__(self, section: containerType, sliderRange: Iterable, emptySliderColor: pg.Color, fullSliderColor: pg.color, dragCircleRadius: numType, dragCircleColor: pg.color, onChange = Optional[Callable]):
+  def __init__(self, section: containerType, sliderRange: Iterable, emptySliderColor: pg.Color, fullSliderColor: pg.color, dragCircleRadius: numType, dragCircleColor: pg.color, onChange: Optional[Callable] = None, onChangeParams = None, sendValueInfoOnChange: Optional[bool] = False):
     self.section = section
     self.sliderRange = sliderRange
     self.sliderValue = 0
@@ -322,6 +339,8 @@ class RangeSlider:
     self.dragPosition = self.section.x
     self.pressed = False
     self.onChange = onChange
+    self.onChangeParams = onChangeParams
+    self.sendValueInfoOnChange = sendValueInfoOnChange
 
     self.oldDim = {
       'x': 0,
@@ -381,7 +400,10 @@ class RangeSlider:
     elif event.type == pg.MOUSEBUTTONUP:
       if self.pressed:
         if self.onChange:
-          self.onChange(self.value)
+          if self.sendValueInfoOnChange:
+            self.onChange(self.onChangeParams, self.value)
+          else:
+            self.onChange(self.onChangeParams)
         self.pressed = False
     return False
 
