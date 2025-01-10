@@ -202,7 +202,7 @@ class TextBox:
     surface.blit(self.textSurface, self.textRect)
 
 class Button:
-  def __init__(self, section: Section, pressedColor: pg.Color, borderColor: pg.Color, borderColorPressed: pg.Color, text: Optional[str] = None, fontPath: Optional[str] = None, textColor: Optional[pg.Color] = None, onClick: Optional[Callable] = None, onClickParams = None, border: int = 0):
+  def __init__(self, section: Section, pressedColor: Optional[pg.Color] = None, borderColor: Optional[pg.Color] = None, borderColorPressed: Optional[pg.Color] = None, text: Optional[str] = None, fontPath: Optional[str] = None, textColor: Optional[pg.Color] = None, onClick: Optional[Callable] = None, onClickParams = None, border: int = 0):
     self.section = section
     self.onClick = onClick
     self.onClickParams = onClickParams
@@ -212,8 +212,9 @@ class Button:
     self.pressedBackground = pressedColor
     self.borderColor = borderColor
     self.borderColorPressed = borderColorPressed
-    self.borderRect = pg.Rect(section.x - border, section.y - border, section.width + (border * 2), section.height + (border * 2))
-    
+    if self.border > 0:
+      self.borderRect = pg.Rect(section.x - border, section.y - border, section.width + (border * 2), section.height + (border * 2))
+
     if text:
       self.textBox = TextBox(section, text, fontPath, textColor, False)
       self.hasText = True
@@ -248,7 +249,8 @@ class Button:
     newX, newY = self.section.x - self.border, self.section.y - self.border
     newWidth, newHeight = self.section.width + (self.border * 2), self.section.height + (self.border * 2)
 
-    self.borderRect.update(newX, newY, newWidth, newHeight)
+    if self.border > 0:
+      self.borderRect.update(newX, newY, newWidth, newHeight)
 
   def draw(self, surface: pg.Surface):
     if self.border > 0:

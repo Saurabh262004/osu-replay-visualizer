@@ -5,7 +5,8 @@ from modules.renderers.UIElements import *
 numType = Union[int, float]
 
 class Window:
-  def __init__(self, screenRes: Iterable[int], screenResMultiplier: Optional[int] = 1, fps : Optional[int] = 60):
+  def __init__(self, title: str, screenRes: Iterable[int], screenResMultiplier: Optional[int] = 1, fps : Optional[int] = 60):
+    self.title = title
     self.screenRes = screenRes
     self.screenResMultiplier = screenResMultiplier
     self.screenWidth = max(self.screenRes[0] * self.screenResMultiplier, 100)
@@ -41,7 +42,7 @@ class Window:
 
     time = pg.time
     clock = time.Clock()
-    pg.display.set_caption('renderer test')
+    pg.display.set_caption(self.title)
     self.screen = pg.display.set_mode((self.screenWidth, self.screenHeight), pg.RESIZABLE)
 
     self.currentSystem = self.systems[systemID]
@@ -88,7 +89,7 @@ class Window:
     self.currentSystem.draw()
     print(f'current system: {systemID}')
 
-  def __handleEvents(self) -> str:
+  def __handleEvents(self):
     if not self.running:
       return None
 

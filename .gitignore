@@ -1,6 +1,6 @@
 *test.py
 data/
 testFiles/
+assets/
 *.pyc
-appUI/replayList.py
 __init__.py
