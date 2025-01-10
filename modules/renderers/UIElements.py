@@ -310,7 +310,7 @@ class Toggle:
       pg.draw.rect(surface, self.toggledBackground, self.innerBox, border_radius = self.section.borderRadius)
 
 class RangeSlider:
-  def __init__(self, section: containerType, sliderRange: Iterable, emptySliderColor: pg.Color, fullSliderColor: pg.color, dragCircleRadius: numType, dragCircleColor: pg.color):
+  def __init__(self, section: containerType, sliderRange: Iterable, emptySliderColor: pg.Color, fullSliderColor: pg.color, dragCircleRadius: numType, dragCircleColor: pg.color, onChange = Optional[Callable]):
     self.section = section
     self.sliderRange = sliderRange
     self.sliderValue = 0
@@ -321,6 +321,7 @@ class RangeSlider:
     self.dragCircleColor = dragCircleColor
     self.dragPosition = self.section.x
     self.pressed = False
+    self.onChange = onChange
 
     self.oldDim = {
       'x': 0,
@@ -378,7 +379,10 @@ class RangeSlider:
       self.update()
       return True
     elif event.type == pg.MOUSEBUTTONUP:
-      self.pressed = False
+      if self.pressed:
+        if self.onChange:
+          self.onChange(self.value)
+        self.pressed = False
     return False
 
   def drag(self):
@@ -388,8 +392,16 @@ class RangeSlider:
       self.update()
 
 class System:
-  def __init__(self, surface: pg.Surface):
-    self.surface = surface
+  def __init__(self, surface: Optional[pg.Surface], preLoadState: Optional[bool] = False):
+    self.locked = preLoadState
+
+    if not self.locked:
+      if not surface:
+        self.locked = True
+        print('No surface provided, the system is locked by default.\nIt can be initiated manually by providing a surface')
+      else:
+        self.surface = surface
+
     self.elements: Dict[str, elementType] = {}
     self.sections: Dict[str, Section] = {}
     self.circles: Dict[str, Circle] = {}
@@ -430,6 +442,10 @@ class System:
     return elementIDs
 
   def draw(self, elementIDs: Optional[Iterable] = None):
+    if self.locked:
+      print('System is currently locked')
+      return None
+    
     idList = self.__validateIDs(elementIDs)
 
     if not idList == None:
@@ -437,6 +453,10 @@ class System:
         self.elements[elementID].draw(self.surface)
 
   def update(self, elementIDs: Optional[Iterable] = None):
+    if self.locked:
+      print('System is currently locked')
+      return None
+
     idList = self.__validateIDs(elementIDs)
 
     if not idList == None:
@@ -444,6 +464,10 @@ class System:
         self.elements[elementID].update()
 
   def handleEvents(self, event: pg.event.Event):
+    if self.locked:
+      print('System is currently locked')
+      return None
+
     changeCursor = False
     for buttonID in self.buttons:
       if self.buttons[buttonID].section.rect.collidepoint(pg.mouse.get_pos()):
@@ -468,3 +492,8 @@ class System:
       pg.mouse.set_cursor(pg.SYSTEM_CURSOR_HAND)
     else:
       pg.mouse.set_cursor(pg.SYSTEM_CURSOR_ARROW)
+
+  def initiate(self, surface: pg.Surface):
+    self.surface = surface
+
+    self.locked = False
