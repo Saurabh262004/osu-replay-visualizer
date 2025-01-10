@@ -392,7 +392,7 @@ class RangeSlider:
       self.update()
 
 class System:
-  def __init__(self, surface: Optional[pg.Surface], preLoadState: Optional[bool] = False):
+  def __init__(self, surface: Optional[pg.Surface] = None, preLoadState: Optional[bool] = False):
     self.locked = preLoadState
 
     if not self.locked:
