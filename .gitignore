@@ -2,5 +2,5 @@
 data/
 testFiles/
 *.pyc
-appUI/
+appUI/replayList.py
 __init__.py
