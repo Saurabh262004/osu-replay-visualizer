@@ -81,7 +81,7 @@ def fit(image: Surface, containerSize: Iterable) -> Surface:
   return transform.scale(image, (newWidth, newHeight))
 
 # resizes the image to the largest possible fit while preserving the original aspect ratio
-def fit(image: Surface, containerSize: Iterable) -> Surface:
+def fill(image: Surface, containerSize: Iterable) -> Surface:
   containerWidth, containerHeight = containerSize
   imageWidth, imageHeight = image.get_width(), image.get_height()
 
