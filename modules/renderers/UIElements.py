@@ -1,7 +1,7 @@
 # a module that helps render stuff on screen with pygame
 # reusing code is not something I know
 import pygame as pg
-from modules.misc.helpers import mapRange, allIn
+from modules.misc.helpers import mapRange, allIn, squish, fit, fill
 from typing import Union, Optional, Callable, Dict, Iterable
 
 numType = Union[int, float]
@@ -16,16 +16,23 @@ ALLOWED_DIMENSIONS_KEYVALS = (
   ('a', 'r')
 )
 
+VALID_SIZE_TYPES = ('fit', 'fill', 'squish')
+
 class Section:
-  def __init__(self, dimensions: Dict[str, Dict[str, Union[str, int, float]]], background: backgroundType, container: Optional[containerType] = None, borderRadius: Optional[numType] = 0):
+  def __init__(self, dimensions: Dict[str, Dict[str, Union[str, int, float]]], background: backgroundType, container: Optional[containerType] = None, borderRadius: Optional[numType] = 0, backgroundSizeType: Optional[str] = 'fit'):
     self.dimensions = dimensions
     self.background = background
+    self.drawImage = None
     self.container = container
     self.rect = pg.Rect(0, 0, 0, 0)
     self.borderRadius = borderRadius
-
+    self.backgroundSizeType = backgroundSizeType
+    
     if not self.__validDims():
       raise ValueError('Invalid dimension object')
+
+    if not self.backgroundSizeType in VALID_SIZE_TYPES:
+      raise ValueError(f'Invalid \"backgroundSizeType\" value, must be one of the following values: {VALID_SIZE_TYPES}')
 
     if self.container is None:
       dim = self.dimensions
@@ -55,9 +62,17 @@ class Section:
 
     self.rect.update(self.x, self.y, self.width, self.height)
 
+    if isinstance(self.background, pg.Surface):
+      if self.backgroundSizeType == 'fit':
+        self.drawImage = fit(self.background, (self.width, self.height))
+      elif self.backgroundSizeType == 'fill':
+        self.drawImage = fill(self.background, (self.width, self.height))
+      else:
+        self.drawImage = squish(self.background, (self.width, self.height))
+
   def draw(self, surface: pg.Surface):
     if isinstance(self.background, pg.Surface):
-      surface.blit(self.background, self.rect)
+      surface.blit(self.drawImage, self.rect)
     elif isinstance(self.background, pg.Color):
       pg.draw.rect(surface, self.background, self.rect, border_radius = self.borderRadius)
 

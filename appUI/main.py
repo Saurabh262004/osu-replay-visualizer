@@ -11,8 +11,8 @@ def addMain(window: Window):
   system.addElement(
     Section(
       Section.createDimObject(('a', 0, 'a', 0, 'rw', 1, 'rh', 1)),
-      pg.Color(31, 31, 31),
-      pg.Rect(0, 0, 0, 0)
+      colors.background1,
+      pg.Rect(0, 0, 100, 100)
     ), 'mainSection'
   )
   

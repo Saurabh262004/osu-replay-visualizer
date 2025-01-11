@@ -5,12 +5,14 @@ from modules.renderers.UIElements import *
 numType = Union[int, float]
 
 class Window:
-  def __init__(self, title: str, screenRes: Iterable[int], screenResMultiplier: Optional[int] = 1, fps : Optional[int] = 60):
+  def __init__(self, title: str, screenRes: Iterable[int], minRes: Optional[Iterable[int]] = (480, 270), customLoopProcess: Optional[callable] = None, customEventHandler: Optional[callable] = None, fps : Optional[int] = 60):
     self.title = title
     self.screenRes = screenRes
-    self.screenResMultiplier = screenResMultiplier
-    self.screenWidth = max(self.screenRes[0] * self.screenResMultiplier, 100)
-    self.screenHeight = max(self.screenRes[1] * self.screenResMultiplier, 100)
+    self.customLoopProcess = customLoopProcess
+    self.customEventHandler = customEventHandler
+    self.minRes = minRes
+    self.screenWidth = max(self.screenRes[0], self.minRes[0])
+    self.screenHeight = max(self.screenRes[1], self.minRes[1])
     self.fps = fps
     self.running = False
     self.systems: Dict[str, System] = {}
@@ -60,6 +62,9 @@ class Window:
         secondResize = not secondResize
         self.__resetUI()
 
+      if self.customLoopProcess:
+        self.customLoopProcess()
+
       self.screen.fill((0, 0, 0))
       self.currentSystem.draw()
 
@@ -68,6 +73,8 @@ class Window:
 
   def closeWindow(self):
     self.running = False
+    self.currentSystem.locked = True
+    self.currentSystem.surface = None
     self.currentSystem = None
     self.screen = None
     pg.quit()
@@ -94,8 +101,15 @@ class Window:
       return None
 
     for event in pg.event.get():
+      if self.customEventHandler:
+        self.customEventHandler(event)
+
       if event.type == pg.QUIT:
         self.running = False
+      elif event.type == pg.VIDEORESIZE:
+        new_width = max(self.minRes[0], event.w)
+        new_height = max(self.minRes[1], event.h)
+        self.screen = pg.display.set_mode((new_width, new_height), pg.RESIZABLE)
       else:
         self.currentSystem.handleEvents(event)
 

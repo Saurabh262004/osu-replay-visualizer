@@ -1,4 +1,5 @@
 from typing import Union, Iterable
+from pygame import Surface, transform
 
 numType = Union[int, float]
 
@@ -58,3 +59,39 @@ def customStrip(string: str, chars: Iterable):
       break
   
   return string[start:end + 1]
+
+# deforms the image to fit in the container
+def squish(image: Surface, containerSize: Iterable) -> Surface:
+  return transform.scale(image, containerSize)
+
+# resizes the image to the smallest possible fit while preserving the original aspect ratio
+def fit(image: Surface, containerSize: Iterable) -> Surface:
+  containerWidth, containerHeight = containerSize
+  imageWidth, imageHeight = image.get_width(), image.get_height()
+
+  imageResRatio = imageWidth / imageHeight
+
+  if containerWidth < containerHeight:
+    newWidth = containerWidth
+    newHeight = imageResRatio * newWidth
+    return transform.scale(image, (newWidth, newHeight))
+
+  newHeight = containerHeight
+  newWidth = imageResRatio * newHeight
+  return transform.scale(image, (newWidth, newHeight))
+
+# resizes the image to the largest possible fit while preserving the original aspect ratio
+def fit(image: Surface, containerSize: Iterable) -> Surface:
+  containerWidth, containerHeight = containerSize
+  imageWidth, imageHeight = image.get_width(), image.get_height()
+
+  imageResRatio = imageWidth / imageHeight
+
+  if containerWidth > containerHeight:
+    newWidth = containerWidth
+    newHeight = imageResRatio * newWidth
+    return transform.scale(image, (newWidth, newHeight))
+
+  newHeight = containerHeight
+  newWidth = imageResRatio * newHeight
+  return transform.scale(image, (newWidth, newHeight))
