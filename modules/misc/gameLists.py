@@ -98,9 +98,6 @@ MAP_FILE_SECTIONS = {
   'types': ('kvp', 'kvp', 'kvp', 'kvp', 'csl', 'csl', 'kvp', 'csl')
 }
 
-#---------------------------------------------#
-# !! IN TESTING PHASE, PLEASE UPDATE LATER !! #
-#---------------------------------------------#
 SKIN_ELEMENTS = {
   'approachcircle': {
     'animetable': False,
