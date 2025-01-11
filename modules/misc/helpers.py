@@ -32,7 +32,7 @@ def allIn(values: Iterable, itr: Iterable) -> bool:
       return False
   return True
 
-# finds a value in array and return the index of the found value else returns `False`
+# finds a value in array and return the index of the found value else returns -1
 def find(value, arr: Union[list, tuple]) -> int:
   index = 0
 
