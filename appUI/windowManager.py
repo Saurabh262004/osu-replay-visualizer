@@ -5,11 +5,12 @@ from modules.renderers.UIElements import *
 numType = Union[int, float]
 
 class Window:
-  def __init__(self, title: str, screenRes: Iterable[int], minRes: Optional[Iterable[int]] = (480, 270), customLoopProcess: Optional[callable] = None, customEventHandler: Optional[callable] = None, fps : Optional[int] = 60):
+  def __init__(self, title: str, screenRes: Iterable[int], minRes: Optional[Iterable[int]] = (480, 270), customLoopProcess: Optional[callable] = None, customUpdateProcess: Optional[callable] = None, customEventHandler: Optional[callable] = None, fps : Optional[int] = 60):
     self.title = title
     self.screenRes = screenRes
     self.customLoopProcess = customLoopProcess
     self.customEventHandler = customEventHandler
+    self.customUpdateProcess = customUpdateProcess
     self.minRes = minRes
     self.screenWidth = max(self.screenRes[0], self.minRes[0])
     self.screenHeight = max(self.screenRes[1], self.minRes[1])
@@ -132,5 +133,8 @@ class Window:
 
     self.currentSystem.elements['mainSection'].container.width = self.screenWidth
     self.currentSystem.elements['mainSection'].container.height = self.screenHeight
+
+    if self.customUpdateProcess:
+      self.customUpdateProcess()
 
     self.currentSystem.update()
