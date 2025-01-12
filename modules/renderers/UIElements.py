@@ -512,9 +512,21 @@ class RangeSliderHorizontal:
         elif event.y != 0:
           scrollTo = self.dragPosition + event.y * self.scrollSpeed
 
-        if (scrollTo >= self.section.x) and (scrollTo <= (self.section.x + self.section.width)):
+        if (scrollTo < self.section.x):
+          scrollTo = self.section.x
+        elif (scrollTo > (self.section.x + self.section.width)):
+          scrollTo = (self.section.x + self.section.width)
+
+        if self.dragPosition != scrollTo:
           self.dragPosition = scrollTo
           self.update()
+
+          if self.onChange:
+            if self.sendValueInfoOnChange:
+              self.onChange(self.onChangeParams, self.value)
+            else:
+              self.onChange(self.onChangeParams)
+
           return True
     return False
 
@@ -631,13 +643,25 @@ class RangeSliderVertical:
 
       if scroll:
         if event.y != 0:
-          scrollTo = self.dragPosition - event.y * self.scrollSpeed
+          scrollTo = self.dragPosition + (event.y * self.scrollSpeed)
         elif event.x != 0:
-          scrollTo = self.dragPosition - event.x * self.scrollSpeed
+          scrollTo = self.dragPosition + (event.x * self.scrollSpeed)
 
-        if (scrollTo >= self.section.y) and (scrollTo <= (self.section.y + self.section.height)):
+        if (scrollTo < self.section.y):
+          scrollTo = self.section.y
+        elif (scrollTo > (self.section.y + self.section.height)):
+          scrollTo = (self.section.y + self.section.height)
+
+        if self.dragPosition != scrollTo:
           self.dragPosition = scrollTo
           self.update()
+
+          if self.onChange:
+            if self.sendValueInfoOnChange:
+              self.onChange(self.onChangeParams, self.value)
+            else:
+              self.onChange(self.onChangeParams)
+
           return True
     return False
 
