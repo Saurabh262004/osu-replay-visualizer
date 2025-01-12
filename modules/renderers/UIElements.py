@@ -1,5 +1,6 @@
 # a module that helps render stuff on screen with pygame
 # reusing code is not something I know
+from math import sqrt
 import pygame as pg
 from modules.misc.helpers import mapRange, allIn, squish, fit, fill
 from typing import Union, Optional, Callable, Dict, Iterable
@@ -27,6 +28,7 @@ class Section:
     self.rect = pg.Rect(0, 0, 0, 0)
     self.borderRadius = borderRadius
     self.backgroundSizeType = backgroundSizeType
+    self.active = True
     
     if not self.__validDims():
       raise ValueError('Invalid dimension object')
@@ -43,6 +45,9 @@ class Section:
     self.update()
 
   def update(self):
+    if not self.active:
+      return None
+
     dim = self.dimensions
     for d in dim:
       typ = dim[d]['type']
@@ -71,6 +76,9 @@ class Section:
         self.drawImage = squish(self.background, (self.width, self.height))
 
   def draw(self, surface: pg.Surface):
+    if not self.active:
+      return None
+
     if isinstance(self.background, pg.Surface):
       surface.blit(self.drawImage, self.rect)
     elif isinstance(self.background, pg.Color):
@@ -116,13 +124,20 @@ class Section:
     }
 
 class Circle:
-  def __init__(self, dimensions: Dict[str, Dict[str, Union[str, int, float]]], background: backgroundType, container: Optional[containerType] = None):
+  def __init__(self, dimensions: Dict[str, Dict[str, Union[str, int, float]]], background: backgroundType, container: Optional[containerType] = None, backgroundSizeType: Optional[str] = 'fit'):
     self.dimensions = dimensions
     self.background = background
+    self.drawImage = None
+    self.backgroundSizeType = backgroundSizeType
     self.container = container
+    self.sqrt2 = sqrt(2)
+    self.active = True
 
     if not self.__validDims():
       raise ValueError('Invalid dimension object')
+
+    if not self.backgroundSizeType in VALID_SIZE_TYPES:
+      raise ValueError(f'Invalid \"backgroundSizeType\" value, must be one of the following values: {VALID_SIZE_TYPES}')
 
     if self.container is None:
       dim = self.dimensions
@@ -133,6 +148,9 @@ class Circle:
     self.update()
 
   def update(self):
+    if not self.active:
+      return None
+
     dim = self.dimensions
     for d in dim:
       typ = dim[d]['type']
@@ -148,10 +166,21 @@ class Circle:
     self.x = self.dimensions['x']['calcVal']
     self.y = self.dimensions['y']['calcVal']
     self.radius = self.dimensions['r']['calcVal']
+    
+    if isinstance(self.background, pg.Surface):
+      if self.backgroundSizeType == 'fit':
+        self.drawImage = fit(self.background, (self.radius * self.sqrt2, self.radius * self.sqrt2))
+      elif self.backgroundSizeType == 'fill':
+        self.drawImage = fill(self.background, (self.radius * 2, self.radius * 2))
+      else:
+        self.drawImage = squish(self.background, (self.radius * 2, self.radius * 2))
 
   def draw(self, surface: pg.Surface):
+    if not self.active:
+      return None
+
     if isinstance(self.background, pg.Surface):
-      surface.blit(self.background, (self.x, self.y))
+      surface.blit(self.drawImage, (self.x - (self.drawImage.get_width() / 2), self.y - (self.drawImage.get_height() / 2)))
     elif isinstance(self.background, pg.Color):
       pg.draw.circle(surface, self.background, (self.x, self.y), self.radius)
 
@@ -200,8 +229,12 @@ class TextBox:
     self.fontPath = fontPath
     self.textColor = textColor
     self.drawSectionDefault = drawSectionDefault
+    self.active = True
 
   def update(self):
+    if not self.active:
+      return None
+
     self.section.update()
 
     self.fontSize = max(10, int(self.section.height * .6))
@@ -211,22 +244,27 @@ class TextBox:
     self.textRect = self.textSurface.get_rect(center = self.section.rect.center)
 
   def draw(self, surface: pg.Surface, drawSection: Optional[bool] = None):
+    if not self.active:
+      return None
+
     if (drawSection is None and self.drawSectionDefault) or drawSection:
       self.section.draw(surface)
 
     surface.blit(self.textSurface, self.textRect)
 
 class Button:
-  def __init__(self, section: Section, pressedColor: Optional[pg.Color] = None, borderColor: Optional[pg.Color] = None, borderColorPressed: Optional[pg.Color] = None, text: Optional[str] = None, fontPath: Optional[str] = None, textColor: Optional[pg.Color] = None, onClick: Optional[Callable] = None, onClickParams = None, border: int = 0):
+  def __init__(self, section: Section, pressedBackground: Optional[backgroundType] = None, borderColor: Optional[pg.Color] = None, borderColorPressed: Optional[pg.Color] = None, text: Optional[str] = None, fontPath: Optional[str] = None, textColor: Optional[pg.Color] = None, onClick: Optional[Callable] = None, onClickParams = None, border: int = 0):
     self.section = section
     self.onClick = onClick
     self.onClickParams = onClickParams
     self.border = border
     self.pressed = False
     self.defaultBackground = section.background
-    self.pressedBackground = pressedColor
+    self.pressedBackground = pressedBackground
     self.borderColor = borderColor
     self.borderColorPressed = borderColorPressed
+    self.active = True
+
     if self.border > 0:
       self.borderRect = pg.Rect(section.x - border, section.y - border, section.width + (border * 2), section.height + (border * 2))
 
@@ -239,9 +277,15 @@ class Button:
     self.update()
 
   def checkEvent(self, event: pg.event.Event) -> bool:
+    if not self.active:
+      return None
+
     if event.type == pg.MOUSEBUTTONDOWN and event.button == 1 and self.section.rect.collidepoint(event.pos):
       self.pressed = True
-      self.section.background = self.pressedBackground
+
+      if self.pressedBackground:
+        self.section.background = self.pressedBackground
+        self.section.update()
 
       if self.onClick:
         self.onClick(self.onClickParams)
@@ -250,11 +294,15 @@ class Button:
     elif event.type == pg.MOUSEBUTTONUP and self.pressed:
       self.pressed = False
       self.section.background = self.defaultBackground
+      self.section.update()
 
       return True
     return False
 
   def update(self):
+    if not self.active:
+      return None
+
     if not isinstance(self.section, pg.Rect):
       if self.hasText:
         self.textBox.update()
@@ -268,6 +316,9 @@ class Button:
       self.borderRect.update(newX, newY, newWidth, newHeight)
 
   def draw(self, surface: pg.Surface):
+    if not self.active:
+      return None
+
     if self.border > 0:
       if self.pressed:
         pg.draw.rect(surface, self.borderColorPressed, self.borderRect, border_radius = self.section.borderRadius)
@@ -293,8 +344,12 @@ class Toggle:
     self.borderColorToggled = borderColorToggled
     self.innerBox = pg.Rect(self.section.x + 4, self.section.y + 4, (self.section.width / 2) - 4, self.section.height - 8)
     self.borderRect = pg.Rect(self.section.x - border, self.section.y - border, self.section.width + (border * 2), self.section.height + (border * 2))
+    self.active = True
 
   def checkEvent(self, event: pg.event.Event) -> bool:
+    if not self.active:
+      return None
+
     if event.type == pg.MOUSEBUTTONDOWN and event.button == 1 and self.section.rect.collidepoint(event.pos):
       self.toggled = not self.toggled
 
@@ -315,6 +370,9 @@ class Toggle:
     return False
 
   def update(self):
+    if not self.active:
+      return None
+
     self.section.update()
 
     newBorderX, newBorderY = self.section.x - self.border, self.section.y - self.border
@@ -330,6 +388,9 @@ class Toggle:
     self.innerBox.update(newInnerX, newInnerY, newInnerWidth, newInnerHeight)
 
   def draw(self, surface: pg.Surface):
+    if not self.active:
+      return None
+
     if self.border > 0:
       if self.toggled:
         pg.draw.rect(surface, self.borderColorToggled, self.borderRect, border_radius = self.section.borderRadius)
@@ -358,6 +419,7 @@ class RangeSlider:
     self.onChange = onChange
     self.onChangeParams = onChangeParams
     self.sendValueInfoOnChange = sendValueInfoOnChange
+    self.active = True
 
     self.oldDim = {
       'x': 0,
@@ -382,6 +444,9 @@ class RangeSlider:
     )
 
   def update(self):
+    if not self.active:
+      return None
+
     self.oldDim = {
       'x': self.section.x,
       'y': self.section.y,
@@ -403,12 +468,18 @@ class RangeSlider:
     self.value = mapRange(self.dragPosition, self.section.x, self.section.x + self.section.width, self.sliderRange[0], self.sliderRange[1])
 
   def draw(self, surface: pg.Surface):
+    if not self.active:
+      return None
+
     self.section.draw(surface)
     self.fullLengthSlider.draw(surface)
     pg.draw.rect(surface, self.filledSliderColor, self.filledSlider, border_radius = self.section.borderRadius)
     self.dragCircle.draw(surface)
 
   def checkEvent(self, event: pg.event.Event) -> bool:
+    if not self.active:
+      return None
+
     if event.type == pg.MOUSEBUTTONDOWN and event.button == 1 and self.fullLengthSlider.rect.collidepoint(event.pos):
       self.dragPosition = event.pos[0]
       self.pressed = True
@@ -425,6 +496,9 @@ class RangeSlider:
     return False
 
   def drag(self):
+    if not self.active:
+      return None
+
     mouseX = pg.mouse.get_pos()[0]
     if (self.pressed) and (mouseX >= self.section.x) and (mouseX <= (self.section.x + self.section.width)):
       self.dragPosition = mouseX
@@ -489,7 +563,8 @@ class System:
 
     if not idList == None:
       for elementID in idList:
-        self.elements[elementID].draw(self.surface)
+        if self.elements[elementID].active:
+          self.elements[elementID].draw(self.surface)
 
   def update(self, elementIDs: Optional[Iterable] = None):
     if self.locked:
@@ -500,7 +575,8 @@ class System:
 
     if not idList == None:
       for elementID in idList:
-        self.elements[elementID].update()
+        if self.elements[elementID].active:
+          self.elements[elementID].update()
 
   def handleEvents(self, event: pg.event.Event):
     if self.locked:
@@ -509,23 +585,26 @@ class System:
 
     changeCursor = False
     for buttonID in self.buttons:
-      if self.buttons[buttonID].section.rect.collidepoint(pg.mouse.get_pos()):
-        changeCursor = 'hand'
+      if self.buttons[buttonID].active:
+        if self.buttons[buttonID].section.rect.collidepoint(pg.mouse.get_pos()):
+          changeCursor = 'hand'
 
       self.buttons[buttonID].checkEvent(event)
 
     for toggleID in self.toggles:
-      if self.toggles[toggleID].section.rect.collidepoint(pg.mouse.get_pos()):
-        changeCursor = 'hand'
+      if self.toggles[toggleID].active:
+        if self.toggles[toggleID].section.rect.collidepoint(pg.mouse.get_pos()):
+          changeCursor = 'hand'
 
       self.toggles[toggleID].checkEvent(event)
 
     for rangeSliderID in self.rangeSliders:
-      if self.rangeSliders[rangeSliderID].section.rect.collidepoint(pg.mouse.get_pos()):
-        changeCursor = 'hand'
+      if self.rangeSliders[rangeSliderID].active:
+        if self.rangeSliders[rangeSliderID].section.rect.collidepoint(pg.mouse.get_pos()):
+          changeCursor = 'hand'
 
-      self.rangeSliders[rangeSliderID].checkEvent(event)
-      self.rangeSliders[rangeSliderID].drag()
+        self.rangeSliders[rangeSliderID].checkEvent(event)
+        self.rangeSliders[rangeSliderID].drag()
 
     if changeCursor == 'hand':
       pg.mouse.set_cursor(pg.SYSTEM_CURSOR_HAND)

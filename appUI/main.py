@@ -5,6 +5,9 @@ from appUI.windowManager import Window
 
 colors = AppColors()
 
+def toggleActivation(system):
+  system.elements['replayListButton'].active = not system.elements['replayListButton'].active
+
 def addMain(window: Window):
   system = System(preLoadState=True)
 
@@ -15,7 +18,20 @@ def addMain(window: Window):
       pg.Rect(0, 0, 100, 100)
     ), 'mainSection'
   )
-  
+
+  system.addElement(
+    Button(
+      Section(
+        Section.createDimObject(('a', 0, 'a', 0, 'rw', .1, 'rw', .1)),
+        pg.image.load('assets/UI/pfp.png'),
+        system.elements['mainSection']
+      ),
+      pg.image.load('assets/UI/don\'t starve logo.png'),
+      onClick = toggleActivation,
+      onClickParams = system
+    ), 'replayListButtonActivation'
+  )
+
   system.addElement(
     Button(
       Section(
@@ -23,7 +39,6 @@ def addMain(window: Window):
         pg.image.load('assets/UI/pfp.png'),
         system.elements['mainSection']
       ),
-      colors.listElement1Heighlight1,
       onClick = window.switchSystem,
       onClickParams = 'replayList'
     ), 'replayListButton'

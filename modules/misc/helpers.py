@@ -62,7 +62,7 @@ def customStrip(string: str, chars: Iterable):
 
 # deforms the image to fit in the container
 def squish(image: Surface, containerSize: Iterable) -> Surface:
-  return transform.scale(image, containerSize)
+  return transform.smoothscale(image, containerSize)
 
 # resizes the image to the smallest possible fit while preserving the original aspect ratio
 def fit(image: Surface, containerSize: Iterable) -> Surface:
@@ -74,11 +74,11 @@ def fit(image: Surface, containerSize: Iterable) -> Surface:
   if containerWidth < containerHeight:
     newWidth = containerWidth
     newHeight = imageResRatio * newWidth
-    return transform.scale(image, (newWidth, newHeight))
+    return transform.smoothscale(image, (newWidth, newHeight))
 
   newHeight = containerHeight
   newWidth = imageResRatio * newHeight
-  return transform.scale(image, (newWidth, newHeight))
+  return transform.smoothscale(image, (newWidth, newHeight))
 
 # resizes the image to the largest possible fit while preserving the original aspect ratio
 def fill(image: Surface, containerSize: Iterable) -> Surface:
@@ -90,8 +90,8 @@ def fill(image: Surface, containerSize: Iterable) -> Surface:
   if containerWidth > containerHeight:
     newWidth = containerWidth
     newHeight = imageResRatio * newWidth
-    return transform.scale(image, (newWidth, newHeight))
+    return transform.smoothscale(image, (newWidth, newHeight))
 
   newHeight = containerHeight
   newWidth = imageResRatio * newHeight
-  return transform.scale(image, (newWidth, newHeight))
+  return transform.smoothscale(image, (newWidth, newHeight))
