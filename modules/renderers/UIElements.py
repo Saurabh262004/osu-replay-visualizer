@@ -8,7 +8,7 @@ from typing import Union, Optional, Callable, Dict, Iterable
 numType = Union[int, float]
 containerType = Union['Section', pg.Rect]
 backgroundType = Union[pg.Color, pg.Surface]
-elementType = Union['Section', 'Circle', 'Button', 'Toggle', 'RangeSlider']
+elementType = Union['Section', 'Circle', 'Button', 'Toggle', 'RangeSliderHorizontal', 'RangeSliderVertical']
 
 ALLOWED_DIMENSIONS_KEYVALS = (
   ('x', 'y', 'w', 'h'),
@@ -404,8 +404,8 @@ class Toggle:
     else:
       pg.draw.rect(surface, self.toggledBackground, self.innerBox, border_radius = self.section.borderRadius)
 
-class RangeSlider:
-  def __init__(self, section: containerType, sliderRange: Iterable, emptySliderColor: pg.Color, fullSliderColor: pg.color, dragCircleRadius: numType, dragCircleColor: pg.color, onChange: Optional[Callable] = None, onChangeParams = None, sendValueInfoOnChange: Optional[bool] = False):
+class RangeSliderHorizontal:
+  def __init__(self, section: containerType, sliderRange: Iterable, emptySliderColor: pg.Color, fullSliderColor: pg.color, dragCircleRadius: numType, dragCircleColor: pg.color, onChange: Optional[Callable] = None, onChangeParams = None, sendValueInfoOnChange: Optional[bool] = False, hoverToScroll: Optional[bool] = True, scrollSpeed: Optional[int] = 1):
     self.section = section
     self.sliderRange = sliderRange
     self.sliderValue = 0
@@ -419,6 +419,8 @@ class RangeSlider:
     self.onChange = onChange
     self.onChangeParams = onChangeParams
     self.sendValueInfoOnChange = sendValueInfoOnChange
+    self.hoverToScroll = hoverToScroll
+    self.scrollSpeed = scrollSpeed
     self.active = True
 
     self.oldDim = {
@@ -493,6 +495,27 @@ class RangeSlider:
           else:
             self.onChange(self.onChangeParams)
         self.pressed = False
+    elif event.type == pg.MOUSEWHEEL:
+      scroll = False
+      scrollTo = 0
+      mouseX, mouseY = pg.mouse.get_pos()
+
+      if self.hoverToScroll:
+        if self.fullLengthSlider.rect.collidepoint((mouseX, mouseY)):
+          scroll = True
+      else:
+        scroll = True
+
+      if scroll:
+        if event.x != 0:
+          scrollTo = self.dragPosition + event.x * self.scrollSpeed
+        elif event.y != 0:
+          scrollTo = self.dragPosition + event.y * self.scrollSpeed
+
+        if (scrollTo >= self.section.x) and (scrollTo <= (self.section.x + self.section.width)):
+          self.dragPosition = scrollTo
+          self.update()
+          return True
     return False
 
   def drag(self):
@@ -502,6 +525,129 @@ class RangeSlider:
     mouseX = pg.mouse.get_pos()[0]
     if (self.pressed) and (mouseX >= self.section.x) and (mouseX <= (self.section.x + self.section.width)):
       self.dragPosition = mouseX
+      self.update()
+
+class RangeSliderVertical:
+  def __init__(self, section: containerType, sliderRange: Iterable, emptySliderColor: pg.Color, fullSliderColor: pg.color, dragCircleRadius: numType, dragCircleColor: pg.color, onChange: Optional[Callable] = None, onChangeParams = None, sendValueInfoOnChange: Optional[bool] = False, hoverToScroll: Optional[bool] = True, scrollSpeed: Optional[int] = 1):
+    self.section = section
+    self.sliderRange = sliderRange
+    self.sliderValue = 0
+    self.rangeLength = abs(self.sliderRange[0] - self.sliderRange[1])
+    self.fullLengthSliderColor = emptySliderColor
+    self.filledSliderColor = fullSliderColor
+    self.dragCircleRadius = dragCircleRadius
+    self.dragCircleColor = dragCircleColor
+    self.dragPosition = self.section.y
+    self.pressed = False
+    self.onChange = onChange
+    self.onChangeParams = onChangeParams
+    self.sendValueInfoOnChange = sendValueInfoOnChange
+    self.hoverToScroll = hoverToScroll
+    self.scrollSpeed = scrollSpeed
+    self.active = True
+
+    self.oldDim = {
+      'x': 0,
+      'y': 0,
+      'w': 0,
+      'h': 0
+    }
+
+    self.fullLengthSlider = Section(
+      Section.createDimObject(('rx', 0, 'ry', 0, 'a', 8, 'rh', 1)),
+      self.fullLengthSliderColor,
+      self.section,
+      self.section.borderRadius
+    )
+
+    self.filledSlider = pg.Rect(self.section.x, self.section.y, 8, self.dragPosition - self.section.y)
+
+    self.dragCircle = Circle(
+      Circle.createDimObject(('rw', .5, 'rh', 1, 'a', self.dragCircleRadius)),
+      self.dragCircleColor,
+      self.filledSlider
+    )
+
+  def update(self):
+    if not self.active:
+      return None
+
+    self.oldDim = {
+      'x': self.section.x,
+      'y': self.section.y,
+      'w': self.section.width,
+      'h': self.section.height
+    }
+
+    if not isinstance(self.section, pg.Rect):
+      self.section.update()
+
+    self.fullLengthSlider.update()
+
+    self.dragPosition = mapRange(self.dragPosition, self.oldDim['y'], self.oldDim['y'] + self.oldDim['h'], self.section.y, self.section.y + self.section.height)
+
+    self.filledSlider.update(self.section.x, self.section.y, 8, self.dragPosition - self.section.y)
+
+    self.dragCircle.update()
+
+    self.value = mapRange(self.dragPosition, self.section.y, self.section.y + self.section.height, self.sliderRange[0], self.sliderRange[1])
+
+  def draw(self, surface: pg.Surface):
+    if not self.active:
+      return None
+
+    self.section.draw(surface)
+    self.fullLengthSlider.draw(surface)
+    pg.draw.rect(surface, self.filledSliderColor, self.filledSlider, border_radius = self.section.borderRadius)
+    self.dragCircle.draw(surface)
+
+  def checkEvent(self, event: pg.event.Event) -> bool:
+    if not self.active:
+      return None
+
+    if event.type == pg.MOUSEBUTTONDOWN and event.button == 1 and self.fullLengthSlider.rect.collidepoint(event.pos):
+      self.dragPosition = event.pos[0]
+      self.pressed = True
+      self.update()
+      return True
+    elif event.type == pg.MOUSEBUTTONUP:
+      if self.pressed:
+        if self.onChange:
+          if self.sendValueInfoOnChange:
+            self.onChange(self.onChangeParams, self.value)
+          else:
+            self.onChange(self.onChangeParams)
+        self.pressed = False
+    elif event.type == pg.MOUSEWHEEL:
+      scroll = False
+      scrollTo = 0
+      mouseX, mouseY = pg.mouse.get_pos()
+
+      if self.hoverToScroll:
+        if self.fullLengthSlider.rect.collidepoint((mouseX, mouseY)):
+          scroll = True
+      else:
+        scroll = True
+
+      if scroll:
+        if event.y != 0:
+          scrollTo = self.dragPosition - event.y * self.scrollSpeed
+        elif event.x != 0:
+          scrollTo = self.dragPosition - event.x * self.scrollSpeed
+
+        if (scrollTo >= self.section.y) and (scrollTo <= (self.section.y + self.section.height)):
+          self.dragPosition = scrollTo
+          self.update()
+          return True
+    return False
+
+  def drag(self):
+    if not self.active:
+      return None
+
+    mouseY = pg.mouse.get_pos()[1]
+    if (self.pressed) and (mouseY >= self.section.y) and (mouseY <= (self.section.y + self.section.height)):
+      self.dragPosition = mouseY
       self.update()
 
 class System:
@@ -521,7 +667,7 @@ class System:
     self.textBoxes: Dict[str, TextBox] = {}
     self.buttons: Dict[str, Button] = {}
     self.toggles: Dict[str, Toggle] = {}
-    self.rangeSliders: Dict[str, RangeSlider] = {}
+    self.rangeSliders: Dict[str, Union[RangeSliderHorizontal, RangeSliderVertical]] = {}
 
   def addElement(self, element: elementType, elementID: str) -> bool:
     if elementID in self.elements:
@@ -539,7 +685,7 @@ class System:
       self.buttons[elementID] = element
     elif isinstance(element, Toggle):
       self.toggles[elementID] = element
-    elif isinstance(element, RangeSlider):
+    elif isinstance(element, RangeSliderHorizontal) or isinstance(element, RangeSliderVertical):
       self.rangeSliders[elementID] = element
 
     return True

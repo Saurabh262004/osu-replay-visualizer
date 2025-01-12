@@ -32,7 +32,7 @@ def addReplayList(window: Window):
   )
 
   system.addElement(
-    RangeSlider(
+    RangeSliderHorizontal(
       Section(
         Section.createDimObject(('rw', .25, 'rh', .5, 'rw', .5, 'a', 8)),
         colors.background1,
@@ -42,8 +42,27 @@ def addReplayList(window: Window):
       colors.gray,
       colors.primary1,
       8,
-      colors.primary1
-    ), 'dummyRange'
+      colors.primary1,
+      hoverToScroll=False,
+      scrollSpeed=10
+    ), 'dummyRange1'
+  )
+
+  system.addElement(
+    RangeSliderVertical(
+      Section(
+        Section.createDimObject(('rw', .85, 'rh', .25, 'a', 8, 'rh', .5)),
+        colors.background1,
+        system.elements['mainSection']
+      ),
+      (1, 100),
+      colors.gray,
+      colors.gray,
+      8,
+      colors.primary1,
+      hoverToScroll=True,
+      scrollSpeed=10
+    ), 'dummyRange2'
   )
 
   window.addSystem(system, 'replayList')
