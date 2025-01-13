@@ -3,44 +3,91 @@
 from math import sqrt
 import pygame as pg
 from modules.misc.helpers import mapRange, allIn, squish, fit, fill
-from typing import Union, Optional, Callable, Dict, Iterable
+from typing import Union, Optional, Callable, Dict, Iterable, Any
 
 numType = Union[int, float]
 containerType = Union['Section', pg.Rect]
 backgroundType = Union[pg.Color, pg.Surface]
 elementType = Union['Section', 'Circle', 'Button', 'Toggle', 'RangeSliderHorizontal', 'RangeSliderVertical']
 
-ALLOWED_DIMENSIONS_KEYVALS = (
-  ('x', 'y', 'w', 'h'),
-  ('x', 'y', 'r'),
-  ('type', 'value'),
-  ('a', 'r')
-)
-
 VALID_SIZE_TYPES = ('fit', 'fill', 'squish')
+DIMENSION_REFERENCE_TYPES = ('number', 'percent', 'dictNum', 'classNum', 'dictPer', 'classPer', 'customCallable')
+
+class DynamicValue:
+  def __init__(self, referenceType: str, reference: Union[Callable, numType, Dict[str, numType], object], callableParameters: Optional[Any] = None, dictKey: Optional[str] = None, classAttr: Optional[str] = None, percent: Optional[numType] = None):
+    self.referenceType = referenceType
+    self.reference = reference
+    self.callableParameters = callableParameters
+    self.dictKey = dictKey
+    self.classAttr = classAttr
+    self.percent = percent
+    self.value = None
+
+    if not self.referenceType in DIMENSION_REFERENCE_TYPES:
+      raise ValueError(f'Invalid dimType value received, value must be one of the following: {DIMENSION_REFERENCE_TYPES}')
+
+    if (self.referenceType == 'customCallable') and not callable(self.reference):
+      raise ValueError('If referenceType is custumCallable then reference must be callable')
+
+    if (self.referenceType == 'dictNum' or self.referenceType == 'dictPer') and not (isinstance(self.reference, dict)):
+      raise ValueError('If referenceType is dictNum or dictPer then given reference must be a dict object')
+
+    if (self.referenceType == 'dictNum' or self.referenceType == 'dictPer') and (self.dictKey is None):
+      raise ValueError('If referenceType is dictNum or dictPer then dictKey must be defined')
+
+    if (self.referenceType == 'classNum' or self.referenceType == 'classPer') and not (isinstance(self.reference, object)):
+      raise ValueError('If referenceType is classNum or classPer then given reference must be an object')
+
+    if (self.referenceType == 'classNum' or self.referenceType == 'classPer') and (self.classAttr is None):
+      raise ValueError('If referenceType is classNum or classPer then classAttr must be defined')
+
+    if (self.referenceType == 'percent' or self.referenceType == 'dictPer' or self.referenceType == 'classPer') and (self.percent is None):
+      raise ValueError('If referenceType is percent, dictPer or classPer percent must be defined')
+
+    self.resolveValue()
+
+  def resolveValue(self):
+    if self.referenceType == 'number':
+      self.value = self.reference
+    elif self.referenceType == 'percent':
+      self.value = self.reference * (self.percent / 100)
+    elif self.referenceType == 'customCallable':
+      if not self.callableParameters is None:
+        self.value = self.reference(self.callableParameters)
+      else:
+        self.value = self.reference()
+    elif self.referenceType == 'dictNum':
+      self.value = self.reference[self.dictKey]
+    elif self.referenceType == 'dictPer':
+      self.value = self.reference[self.dictKey] * (self.percent / 100)
+    elif self.referenceType == 'classNum':
+      self.value = getattr(self.reference, self.classAttr, 0)
+    elif self.referenceType == 'classPer':
+      self.value = getattr(self.reference, self.classAttr, 0) * (self.percent / 100)
 
 class Section:
-  def __init__(self, dimensions: Dict[str, Dict[str, Union[str, int, float]]], background: backgroundType, container: Optional[containerType] = None, borderRadius: Optional[numType] = 0, backgroundSizeType: Optional[str] = 'fit'):
+  def __init__(self, dimensions: Dict['str', DynamicValue], background: backgroundType, borderRadius: Optional[numType] = 0, backgroundSizeType: Optional[str] = 'fit'):
     self.dimensions = dimensions
     self.background = background
     self.drawImage = None
-    self.container = container
     self.rect = pg.Rect(0, 0, 0, 0)
     self.borderRadius = borderRadius
     self.backgroundSizeType = backgroundSizeType
     self.active = True
-    
-    if not self.__validDims():
-      raise ValueError('Invalid dimension object')
+
+    if len(self.dimensions) != 4:
+      raise ValueError(f'dimensions must contain 4 Dimension objects, received: {len(self.dimensions)}')
+
+    if not allIn(('x', 'y', 'width', 'height'), self.dimensions):
+      raise ValueError('dimensions must contain all of the following keys: \'x\', \'y\', \'width\' \'height\'')
 
     if not self.backgroundSizeType in VALID_SIZE_TYPES:
       raise ValueError(f'Invalid \"backgroundSizeType\" value, must be one of the following values: {VALID_SIZE_TYPES}')
 
-    if self.container is None:
-      dim = self.dimensions
-      for d in dim:
-        if dim[d]['type'] != 'a':
-          dim[d]['type'] = 'a'
+    self.x = self.dimensions['x'].value
+    self.y = self.dimensions['y'].value
+    self.width = self.dimensions['width'].value
+    self.height = self.dimensions['height'].value
 
     self.update()
 
@@ -48,22 +95,30 @@ class Section:
     if not self.active:
       return None
 
-    dim = self.dimensions
-    for d in dim:
-      typ = dim[d]['type']
-      if typ == 'a':
-        dim[d]['calcVal'] = dim[d]['value']
-      elif typ[0] == 'r':
-        rel = self.__getRel(typ[1])
-        val = dim[d]['value']
-        padding = self.__getPadding(d)
+    # This is really not ideal but I don't know what else I can do
+    unstable = True
+    totalIterations = 0
+    maxIterations = len(self.dimensions)
+    while unstable:
+      if totalIterations > maxIterations:
+        raise ValueError('Provided dimensions are referencing each other in a cyclic pattern, please provide valid dimenisons')
 
-        dim[d]['calcVal'] = padding + (rel * val)
+      for dim in self.dimensions:
+        self.dimensions[dim].resolveValue()
 
-    self.x = self.dimensions['x']['calcVal']
-    self.y = self.dimensions['y']['calcVal']
-    self.width = self.dimensions['w']['calcVal']
-    self.height = self.dimensions['h']['calcVal']
+      if (
+        self.x == self.dimensions['x'].value and
+        self.y == self.dimensions['y'].value and
+        self.width == self.dimensions['width'].value and
+        self.height == self.dimensions['height'].value
+        ): unstable = False
+      else:
+        totalIterations += 1
+
+      self.x = self.dimensions['x'].value
+      self.y = self.dimensions['y'].value
+      self.width = self.dimensions['width'].value
+      self.height = self.dimensions['height'].value
 
     self.rect.update(self.x, self.y, self.width, self.height)
 
@@ -84,89 +139,57 @@ class Section:
     elif isinstance(self.background, pg.Color):
       pg.draw.rect(surface, self.background, self.rect, border_radius = self.borderRadius)
 
-  def __getRel(self, typ: str):
-    if typ == 'x':
-      return self.container.x
-    if typ == 'y':
-      return self.container.y
-    if typ == 'w':
-      return self.container.width
-    if typ == 'h':
-      return self.container.height
-
-  def __getPadding(self, key: str):
-    if key == 'x':
-      return self.container.x
-    if key == 'y':
-      return self.container.y
-    return 0
-
-  def __validDims(self):
-    dim = self.dimensions
-    if (set(self.dimensions.keys()) == set(ALLOWED_DIMENSIONS_KEYVALS[0])):
-      for d in dim:
-        if ((set(dim[d].keys()) == set(ALLOWED_DIMENSIONS_KEYVALS[2])) and (dim[d]['type'][0] in ALLOWED_DIMENSIONS_KEYVALS[3])):
-          if dim[d]['type'][0] == 'r':
-            if (len(dim[d]['type']) == 2) and dim[d]['type'][1] in ALLOWED_DIMENSIONS_KEYVALS[0]:
-              return True
-            else: break
-          return True
-        else: break
-    return False
-
-  @staticmethod
-  def createDimObject(arr: Iterable):
-    return {
-      'x': {'type': arr[0], 'value': arr[1]},
-      'y': {'type': arr[2], 'value': arr[3]},
-      'w': {'type': arr[4], 'value': arr[5]},
-      'h': {'type': arr[6], 'value': arr[7]}
-    }
-
 class Circle:
-  def __init__(self, dimensions: Dict[str, Dict[str, Union[str, int, float]]], background: backgroundType, container: Optional[containerType] = None, backgroundSizeType: Optional[str] = 'fit'):
+  def __init__(self, dimensions: Dict[str, DynamicValue], background: backgroundType, backgroundSizeType: Optional[str] = 'fit'):
     self.dimensions = dimensions
     self.background = background
     self.drawImage = None
     self.backgroundSizeType = backgroundSizeType
-    self.container = container
     self.sqrt2 = sqrt(2)
     self.active = True
 
-    if not self.__validDims():
-      raise ValueError('Invalid dimension object')
+    if len(self.dimensions) != 3:
+      raise ValueError(f'dimensions must contain 4 Dimension objects, received: {len(self.dimensions)}')
+
+    if not allIn(('x', 'y', 'radius'), self.dimensions):
+      raise ValueError('dimensions must contain all of the following keys: \'x\', \'y\', \'radius\'')
 
     if not self.backgroundSizeType in VALID_SIZE_TYPES:
       raise ValueError(f'Invalid \"backgroundSizeType\" value, must be one of the following values: {VALID_SIZE_TYPES}')
 
-    if self.container is None:
-      dim = self.dimensions
-      for d in dim:
-        if dim[d]['type'] != 'a':
-          dim[d]['type'] = 'a'
+    self.x = self.dimensions['x'].value
+    self.y = self.dimensions['y'].value
+    self.radius = self.dimensions['radius'].value
 
     self.update()
 
   def update(self):
     if not self.active:
       return None
-
-    dim = self.dimensions
-    for d in dim:
-      typ = dim[d]['type']
-      if typ == 'a':
-        dim[d]['calcVal'] = dim[d]['value']
-      elif typ[0] == 'r':
-        rel = self.__getRel(typ[1])
-        val = dim[d]['value']
-        padding = self.__getPadding(d)
-
-        dim[d]['calcVal'] = padding + (rel * val)
-
-    self.x = self.dimensions['x']['calcVal']
-    self.y = self.dimensions['y']['calcVal']
-    self.radius = self.dimensions['r']['calcVal']
     
+    # Same as before... not ideal but I don't know what else I can do
+    unstable = True
+    totalIterations = 0
+    maxIterations = len(self.dimensions)
+    while unstable:
+      if totalIterations > maxIterations:
+        raise ValueError('Provided dimensions are referencing each other in a cyclic pattern, please provide valid dimenisons')
+
+      for dim in self.dimensions:
+        self.dimensions[dim].resolveValue()
+
+      if (
+        self.x == self.dimensions['x'].value and
+        self.y == self.dimensions['y'].value and
+        self.radius == self.dimensions['radius'].value
+        ): unstable = False
+      else:
+        totalIterations += 1
+
+      self.x = self.dimensions['x'].value
+      self.y = self.dimensions['y'].value
+      self.radius = self.dimensions['radius'].value
+
     if isinstance(self.background, pg.Surface):
       if self.backgroundSizeType == 'fit':
         self.drawImage = fit(self.background, (self.radius * self.sqrt2, self.radius * self.sqrt2))
@@ -183,44 +206,6 @@ class Circle:
       surface.blit(self.drawImage, (self.x - (self.drawImage.get_width() / 2), self.y - (self.drawImage.get_height() / 2)))
     elif isinstance(self.background, pg.Color):
       pg.draw.circle(surface, self.background, (self.x, self.y), self.radius)
-
-  def __getRel(self, typ: str):
-    if typ == 'x':
-      return self.container.x
-    if typ == 'y':
-      return self.container.y
-    if typ == 'w':
-      return self.container.width
-    if typ == 'h':
-      return self.container.height
-
-  def __getPadding(self, key: str):
-    if key == 'x':
-      return self.container.x
-    if key == 'y':
-      return self.container.y
-    return 0
-
-  def __validDims(self):
-    dim = self.dimensions
-    if (set(self.dimensions.keys()) == set(ALLOWED_DIMENSIONS_KEYVALS[1])):
-      for d in dim:
-        if ((set(dim[d].keys()) == set(ALLOWED_DIMENSIONS_KEYVALS[2])) and (dim[d]['type'][0] in ALLOWED_DIMENSIONS_KEYVALS[3])):
-          if dim[d]['type'][0] == 'r':
-            if (len(dim[d]['type']) == 2) and dim[d]['type'][1] in ALLOWED_DIMENSIONS_KEYVALS[0]:
-              return True
-            else: break
-          return True
-        else: break
-    return False
-
-  @staticmethod
-  def createDimObject(arr: Iterable):
-    return {
-      'x': {'type': arr[0], 'value': arr[1]},
-      'y': {'type': arr[2], 'value': arr[3]},
-      'r': {'type': arr[4], 'value': arr[5]}
-    }
 
 class TextBox:
   def __init__(self, section: Section, text: str, fontPath: str, textColor: pg.Color, drawSectionDefault: Optional[bool] = False):
@@ -431,18 +416,28 @@ class RangeSliderHorizontal:
     }
 
     self.fullLengthSlider = Section(
-      Section.createDimObject(('rx', 0, 'ry', 0, 'rw', 1, 'a', 8)),
+      {
+        'x': DynamicValue('classNum', self.section, classAttr='x'),
+        'y': DynamicValue('classNum', self.section, classAttr='y'),
+        'width': DynamicValue('classNum', self.section, classAttr='width'),
+        'height': DynamicValue('number', 8)
+      },
       self.fullLengthSliderColor,
-      self.section,
       self.section.borderRadius
     )
 
     self.filledSlider = pg.Rect(self.section.x, self.section.y,  self.dragPosition - self.section.x, 8)
 
+    def getSliderY(filledSlider):
+      return filledSlider.y + (filledSlider.height / 2)
+
     self.dragCircle = Circle(
-      Circle.createDimObject(('rw', 1, 'rh', .5, 'a', self.dragCircleRadius)),
-      self.dragCircleColor,
-      self.filledSlider
+      {
+        'x': DynamicValue('classNum', self.filledSlider, classAttr='width'),
+        'y': DynamicValue('customCallable', getSliderY, callableParameters=self.filledSlider),
+        'radius': DynamicValue('number', self.dragCircleRadius)
+      },
+      self.dragCircleColor
     )
 
   def update(self):
@@ -566,18 +561,28 @@ class RangeSliderVertical:
     }
 
     self.fullLengthSlider = Section(
-      Section.createDimObject(('rx', 0, 'ry', 0, 'a', 8, 'rh', 1)),
+      {
+        'x': DynamicValue('classNum', self.section, classAttr='x'),
+        'y': DynamicValue('classNum', self.section, classAttr='y'),
+        'width': DynamicValue('number', 8),
+        'height': DynamicValue('classNum', self.section, classAttr='height')
+      },
       self.fullLengthSliderColor,
-      self.section,
       self.section.borderRadius
     )
 
     self.filledSlider = pg.Rect(self.section.x, self.section.y, 8, self.dragPosition - self.section.y)
 
+    def getSliderX(filledSlider):
+      return filledSlider.x + (filledSlider.width / 2)
+
     self.dragCircle = Circle(
-      Circle.createDimObject(('rw', .5, 'rh', 1, 'a', self.dragCircleRadius)),
-      self.dragCircleColor,
-      self.filledSlider
+      {
+        'x': DynamicValue('customCallable', getSliderX, callableParameters=self.filledSlider),
+        'y': DynamicValue('classNum', self.filledSlider, classAttr='height'),
+        'radius': DynamicValue('number', self.dragCircleRadius)
+      },
+      self.dragCircleColor
     )
 
   def update(self):

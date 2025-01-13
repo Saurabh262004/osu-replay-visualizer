@@ -131,8 +131,8 @@ class Window:
     if not self.running:
       return None
 
-    self.currentSystem.elements['mainSection'].container.width = self.screenWidth
-    self.currentSystem.elements['mainSection'].container.height = self.screenHeight
+    self.currentSystem.elements['mainSection'].dimensions['width'].reference = self.screenWidth
+    self.currentSystem.elements['mainSection'].dimensions['height'].reference = self.screenHeight
 
     if self.customUpdateProcess:
       self.customUpdateProcess()

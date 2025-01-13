@@ -5,64 +5,72 @@ from appUI.windowManager import Window
 
 colors = AppColors()
 
+def dynamicScrollX(params):
+  mainSectionWidth = params[0].width
+  scrollbarWidth = params[1].value
+
+  return mainSectionWidth - scrollbarWidth
+
 def addReplayList(window: Window):
   system = System(preLoadState=True)
 
+  mainDim = {
+    'x': DynamicValue('number', 1),
+    'y': DynamicValue('number', 1),
+    'width': DynamicValue('number', 1),
+    'height': DynamicValue('number', 1)
+  }
+
   system.addElement(
-    Section(
-      Section.createDimObject(('a', 0, 'a', 0, 'rw', 1, 'rh', 1)),
-      colors.background1,
-      pg.Rect(0, 0, 100, 100)
-    ), 'mainSection'
+    Section(mainDim, colors.background1), 'mainSection'
   )
+  
+  topNavDim = {
+    'x': DynamicValue('number', 0),
+    'y': DynamicValue('number', 0),
+    'width': DynamicValue('classNum', system.elements['mainSection'], classAttr='width'),
+    'height': DynamicValue('classPer', system.elements['mainSection'], classAttr='height', percent=10)
+  }
+
+  system.addElement(
+    Section(topNavDim, colors.listElement1), 'topNav'
+  )
+  
+  goToMainDim = {
+    'x': DynamicValue('number', 0),
+    'y': DynamicValue('number', 0),
+    'width': DynamicValue('classNum', system.elements['topNav'], classAttr='height'),
+    'height': DynamicValue('classNum', system.elements['topNav'], classAttr='height')
+  }
 
   system.addElement(
     Button(
-      Section(
-        Section.createDimObject(('rw', .4, 'rh', .7, 'rw', .2, 'rh', .2)),
-        colors.listElement1,
-        system.elements['mainSection']
-      ),
-      colors.listElement1Heighlight1,
-      colors.b,
-      colors.b,
+      Section(goToMainDim, colors.listElement1Heighlight2),
       onClick = window.switchSystem,
       onClickParams = 'main'
-    ), 'dumyButton'
+    ), 'goToMainButton'
   )
+  
+  scrollBarDim = {
+    'y': DynamicValue('number', 0),
+    'width': DynamicValue('classPer', system.elements['mainSection'], classAttr='width', percent=1),
+    'height': DynamicValue('classNum', system.elements['mainSection'], classAttr='height')
+  }
 
-  system.addElement(
-    RangeSliderHorizontal(
-      Section(
-        Section.createDimObject(('rw', .25, 'rh', .5, 'rw', .5, 'a', 8)),
-        colors.background1,
-        system.elements['mainSection']
-      ),
-      (1, 100),
-      colors.gray,
-      colors.primary1,
-      8,
-      colors.primary1,
-      hoverToScroll=False,
-      scrollSpeed=10
-    ), 'dummyRange1'
-  )
+  scrollBarDim['x'] = DynamicValue('customCallable', dynamicScrollX, (system.elements['mainSection'], scrollBarDim['width']))
 
   system.addElement(
     RangeSliderVertical(
-      Section(
-        Section.createDimObject(('rw', .85, 'rh', .25, 'a', 8, 'rh', .5)),
-        colors.background1,
-        system.elements['mainSection']
-      ),
+      Section(scrollBarDim, colors.background1),
       (1, 100),
-      colors.gray,
-      colors.gray,
-      8,
+      colors.listElement1,
+      colors.listElement1,
+      4,
       colors.primary1,
-      hoverToScroll=True,
-      scrollSpeed=10
-    ), 'dummyRange2'
+      hoverToScroll=False,
+      scrollSpeed=-10
+    ), 'scrollBar'
   )
 
   window.addSystem(system, 'replayList')
+ 

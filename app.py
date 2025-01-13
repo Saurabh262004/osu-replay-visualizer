@@ -8,4 +8,4 @@ addMain(window)
 
 addReplayList(window)
 
-window.openWindow('replayList')
+window.openWindow('main')

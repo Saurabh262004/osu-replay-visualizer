@@ -11,34 +11,43 @@ def toggleActivation(system):
 def addMain(window: Window):
   system = System(preLoadState=True)
 
+  mainDim = {
+    'x': DynamicValue('number', 0),
+    'y': DynamicValue('number', 0),
+    'width': DynamicValue('number', 0),
+    'height': DynamicValue('number', 0)
+  }
+
   system.addElement(
-    Section(
-      Section.createDimObject(('a', 0, 'a', 0, 'rw', 1, 'rh', 1)),
-      colors.background1,
-      pg.Rect(0, 0, 100, 100)
-    ), 'mainSection'
+    Section(mainDim, colors.background1), 'mainSection'
   )
+  
+  activationButtonDim = {
+    'x': DynamicValue('number', 0),
+    'y': DynamicValue('number', 0),
+    'width': DynamicValue('classPer', system.elements['mainSection'], classAttr='width', percent=10),
+    'height': DynamicValue('classPer', system.elements['mainSection'], classAttr='width', percent=10)
+  }
 
   system.addElement(
     Button(
-      Section(
-        Section.createDimObject(('a', 0, 'a', 0, 'rw', .1, 'rw', .1)),
-        pg.image.load('assets/UI/pfp.png'),
-        system.elements['mainSection']
-      ),
+      Section(activationButtonDim, pg.image.load('assets/UI/pfp.png')),
       pg.image.load('assets/UI/don\'t starve logo.png'),
       onClick = toggleActivation,
       onClickParams = system
     ), 'replayListButtonActivation'
   )
 
+  replayListButtonDim = {
+    'x': DynamicValue('classPer', system.elements['mainSection'], classAttr='width', percent=90),
+    'y': DynamicValue('number', 0),
+    'width': DynamicValue('classPer', system.elements['mainSection'], classAttr='width', percent=10),
+    'height': DynamicValue('classPer', system.elements['mainSection'], classAttr='width', percent=10)
+  }
+
   system.addElement(
     Button(
-      Section(
-        Section.createDimObject(('rw', .9, 'a', 0, 'rw', .1, 'rw', .1)),
-        pg.image.load('assets/UI/pfp.png'),
-        system.elements['mainSection']
-      ),
+      Section(replayListButtonDim, pg.image.load('assets/UI/pfp.png')),
       onClick = window.switchSystem,
       onClickParams = 'replayList'
     ), 'replayListButton'
