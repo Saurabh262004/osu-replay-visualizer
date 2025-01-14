@@ -66,13 +66,14 @@ class DynamicValue:
       self.value = getattr(self.reference, self.classAttr, 0) * (self.percent / 100)
 
 class Section:
-  def __init__(self, dimensions: Dict['str', DynamicValue], background: backgroundType, borderRadius: Optional[numType] = 0, backgroundSizeType: Optional[str] = 'fit'):
+  def __init__(self, dimensions: Dict['str', DynamicValue], background: backgroundType, borderRadius: Optional[numType] = 0, backgroundSizeType: Optional[str] = 'fit', backgroundSizePercent: Optional[int] = 100):
     self.dimensions = dimensions
     self.background = background
     self.drawImage = None
     self.rect = pg.Rect(0, 0, 0, 0)
     self.borderRadius = borderRadius
     self.backgroundSizeType = backgroundSizeType
+    self.backgroundSizePercent = backgroundSizePercent
     self.active = True
 
     if len(self.dimensions) != 4:
@@ -124,18 +125,21 @@ class Section:
 
     if isinstance(self.background, pg.Surface):
       if self.backgroundSizeType == 'fit':
-        self.drawImage = fit(self.background, (self.width, self.height))
+        self.drawImage = fit(self.background, (self.width, self.height), self.backgroundSizePercent)
       elif self.backgroundSizeType == 'fill':
-        self.drawImage = fill(self.background, (self.width, self.height))
+        self.drawImage = fill(self.background, (self.width, self.height), self.backgroundSizePercent)
       else:
-        self.drawImage = squish(self.background, (self.width, self.height))
+        self.drawImage = squish(self.background, (self.width, self.height), self.backgroundSizePercent)
+
+      self.imageX = self.x + ((self.width - self.drawImage.get_width()) / 2)
+      self.imageY = self.y + ((self.height - self.drawImage.get_height()) / 2)
 
   def draw(self, surface: pg.Surface):
     if not self.active:
       return None
 
     if isinstance(self.background, pg.Surface):
-      surface.blit(self.drawImage, self.rect)
+      surface.blit(self.drawImage, (self.imageX, self.imageY))
     elif isinstance(self.background, pg.Color):
       pg.draw.rect(surface, self.background, self.rect, border_radius = self.borderRadius)
 
@@ -238,10 +242,11 @@ class TextBox:
     surface.blit(self.textSurface, self.textRect)
 
 class Button:
-  def __init__(self, section: Section, pressedBackground: Optional[backgroundType] = None, borderColor: Optional[pg.Color] = None, borderColorPressed: Optional[pg.Color] = None, text: Optional[str] = None, fontPath: Optional[str] = None, textColor: Optional[pg.Color] = None, onClick: Optional[Callable] = None, onClickParams = None, border: int = 0):
+  def __init__(self, section: Section, pressedBackground: Optional[backgroundType] = None, borderColor: Optional[pg.Color] = None, borderColorPressed: Optional[pg.Color] = None, text: Optional[str] = None, fontPath: Optional[str] = None, textColor: Optional[pg.Color] = None, onClick: Optional[Callable] = None, onClickParams = None, border: Optional[int] = 0, onClickActuation: Optional[str] = 'buttonDown'):
     self.section = section
     self.onClick = onClick
     self.onClickParams = onClickParams
+    self.onClickActuation = onClickActuation
     self.border = border
     self.pressed = False
     self.defaultBackground = section.background
@@ -259,6 +264,9 @@ class Button:
     else:
       self.hasText = False
 
+    if not onClickActuation in ('buttonDown', 'buttonUp'):
+      raise ValueError('onClickActuation must be either \'buttonDown\' or \'buttonUp\'')
+
     self.update()
 
   def checkEvent(self, event: pg.event.Event) -> bool:
@@ -272,13 +280,17 @@ class Button:
         self.section.background = self.pressedBackground
         self.section.update()
 
-      if self.onClick:
+      if self.onClick and self.onClickActuation == 'buttonDown':
         self.onClick(self.onClickParams)
 
       return True
     elif event.type == pg.MOUSEBUTTONUP and self.pressed:
       self.pressed = False
       self.section.background = self.defaultBackground
+
+      if self.onClick and self.onClickActuation == 'buttonUp':
+        self.onClick(self.onClickParams)
+      
       self.section.update()
 
       return True

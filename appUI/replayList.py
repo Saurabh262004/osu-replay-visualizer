@@ -1,15 +1,10 @@
 import pygame as pg
 from appUI.colors import AppColors
+from modules.misc.helpers import tintImage
 from modules.renderers.UIElements import *
 from appUI.windowManager import Window
 
 colors = AppColors()
-
-def dynamicScrollX(params):
-  mainSectionWidth = params[0].width
-  scrollbarWidth = params[1].value
-
-  return mainSectionWidth - scrollbarWidth
 
 def addReplayList(window: Window):
   system = System(preLoadState=True)
@@ -24,7 +19,7 @@ def addReplayList(window: Window):
   system.addElement(
     Section(mainDim, colors.background1), 'mainSection'
   )
-  
+
   topNavDim = {
     'x': DynamicValue('number', 0),
     'y': DynamicValue('number', 0),
@@ -35,7 +30,7 @@ def addReplayList(window: Window):
   system.addElement(
     Section(topNavDim, colors.listElement1), 'topNav'
   )
-  
+
   goToMainDim = {
     'x': DynamicValue('number', 0),
     'y': DynamicValue('number', 0),
@@ -43,21 +38,26 @@ def addReplayList(window: Window):
     'height': DynamicValue('classNum', system.elements['topNav'], classAttr='height')
   }
 
+  homeIcon = pg.image.load('assets/UI/home.png')
+
+  tintImage(homeIcon, pg.Color(255, 255, 255))
+
   system.addElement(
     Button(
-      Section(goToMainDim, colors.listElement1Heighlight2),
+      Section(goToMainDim, homeIcon, backgroundSizeType='fit', backgroundSizePercent=50),
       onClick = window.switchSystem,
-      onClickParams = 'main'
+      onClickParams = 'main',
+      onClickActuation = 'buttonUp'
     ), 'goToMainButton'
   )
-  
+
   scrollBarDim = {
     'y': DynamicValue('number', 0),
-    'width': DynamicValue('classPer', system.elements['mainSection'], classAttr='width', percent=1),
+    'width': DynamicValue('number', 8),
     'height': DynamicValue('classNum', system.elements['mainSection'], classAttr='height')
   }
 
-  scrollBarDim['x'] = DynamicValue('customCallable', dynamicScrollX, (system.elements['mainSection'], scrollBarDim['width']))
+  scrollBarDim['x'] = DynamicValue('customCallable', lambda mainSection: mainSection.width - 8, system.elements['mainSection'])
 
   system.addElement(
     RangeSliderVertical(
@@ -73,4 +73,3 @@ def addReplayList(window: Window):
   )
 
   window.addSystem(system, 'replayList')
- 

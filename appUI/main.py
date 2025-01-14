@@ -21,7 +21,7 @@ def addMain(window: Window):
   system.addElement(
     Section(mainDim, colors.background1), 'mainSection'
   )
-  
+
   activationButtonDim = {
     'x': DynamicValue('number', 0),
     'y': DynamicValue('number', 0),
@@ -32,7 +32,6 @@ def addMain(window: Window):
   system.addElement(
     Button(
       Section(activationButtonDim, pg.image.load('assets/UI/pfp.png')),
-      pg.image.load('assets/UI/don\'t starve logo.png'),
       onClick = toggleActivation,
       onClickParams = system
     ), 'replayListButtonActivation'
@@ -49,7 +48,8 @@ def addMain(window: Window):
     Button(
       Section(replayListButtonDim, pg.image.load('assets/UI/pfp.png')),
       onClick = window.switchSystem,
-      onClickParams = 'replayList'
+      onClickParams = 'replayList',
+      onClickActuation = 'buttonUp'
     ), 'replayListButton'
   )
 
