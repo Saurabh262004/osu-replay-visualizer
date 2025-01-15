@@ -31,7 +31,7 @@ def addMain(window: Window):
 
   system.addElement(
     Button(
-      Section(activationButtonDim, pg.image.load('assets/UI/pfp.png')),
+      Section(activationButtonDim, pg.image.load('assets/UI/alert-circle.png')),
       onClick = toggleActivation,
       onClickParams = system
     ), 'replayListButtonActivation'
@@ -46,7 +46,7 @@ def addMain(window: Window):
 
   system.addElement(
     Button(
-      Section(replayListButtonDim, pg.image.load('assets/UI/pfp.png')),
+      Section(replayListButtonDim, pg.image.load('assets/UI/alert-circle.png')),
       onClick = window.switchSystem,
       onClickParams = 'replayList',
       onClickActuation = 'buttonUp'
