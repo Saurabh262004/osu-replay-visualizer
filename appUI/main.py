@@ -53,4 +53,62 @@ def addMain(window: Window):
     ), 'replayListButton'
   )
 
+  slider1 = Slider(
+    'horizontal',
+    Section(
+      {
+        'x': DynamicValue('classPer', system.elements['mainSection'], classAttr='width', percent=25),
+        'y': DynamicValue('classPer', system.elements['mainSection'], classAttr='height', percent=70),
+        'width': DynamicValue('classPer', system.elements['mainSection'], classAttr='width', percent=50),
+        'height': DynamicValue('number', 8)
+      }, colors.listElement1Heighlight1, 5
+    ),
+    Circle(
+      {
+        'x': DynamicValue('number', 0),
+        'y': DynamicValue('number', 0),
+        'radius': DynamicValue('number', 8)
+      }, colors.primary1
+    ),
+    (0, 99),
+    5,
+    colors.primary1,
+    {
+      'callable': lambda param: print(f'slider value: {param}'),
+      'params': None,
+      'sendValue': True
+    }
+  )
+  
+  slider2 = Slider(
+    'vertical',
+    Section(
+      {
+        'x': DynamicValue('classPer', system.elements['mainSection'], classAttr='width', percent=90),
+        'y': DynamicValue('classPer', system.elements['mainSection'], classAttr='height', percent=20),
+        'width': DynamicValue('number', 8),
+        'height': DynamicValue('classPer', system.elements['mainSection'], classAttr='height', percent=60)
+      }, colors.listElement1Heighlight1
+    ),
+    Section(
+      {
+        'x': DynamicValue('number', 0),
+        'y': DynamicValue('number', 0),
+        'width': DynamicValue('number', 8),
+        'height': DynamicValue('number', 12)
+      }, colors.primary1, 5
+    ),
+    (0, 99),
+    -5,
+    colors.listElement1Heighlight1,
+    {
+      'callable': lambda param: print(f'slider value: {param}'),
+      'params': None,
+      'sendValue': True
+    }
+  )
+
+  system.addElement(slider1, 'newTestSlider1')
+  system.addElement(slider2, 'newTestSlider2')
+
   window.addSystem(system, 'main')

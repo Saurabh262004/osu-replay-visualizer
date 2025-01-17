@@ -2,7 +2,7 @@ import os
 import json
 from appUI.windowManager import Window
 from appUI.main import addMain
-from appUI.replayList import addReplayList
+# from appUI.replayList import addReplayList
 
 try:
   with open('data/userData.json', 'r') as rawData:
@@ -17,9 +17,9 @@ try:
 
     addMain(window)
 
-    addReplayList(window, userData)
+    # addReplayList(window, userData)
 
-    window.openWindow('replayList')
+    window.openWindow('main')
 except Exception as e:
   # do something
-  print(e)
+  print(f'Exception: {e}')

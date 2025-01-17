@@ -114,17 +114,4 @@ def addReplayList(window: Window, userData: dict):
 
   scrollBarDim['x'] = DynamicValue('customCallable', lambda mainSection: mainSection.width - 8, system.elements['mainSection'])
 
-  system.addElement(
-    RangeSliderVertical(
-      Section(scrollBarDim, colors.background1),
-      (1, 100),
-      colors.listElement1,
-      colors.listElement1,
-      4,
-      colors.primary1,
-      hoverToScroll=False,
-      scrollSpeed=-10
-    ), 'scrollBar'
-  )
-
   window.addSystem(system, 'replayList')
