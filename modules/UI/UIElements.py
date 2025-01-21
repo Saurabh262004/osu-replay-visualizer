@@ -75,6 +75,8 @@ class Section:
     self.backgroundSizeType = backgroundSizeType
     self.backgroundSizePercent = backgroundSizePercent
     self.active = True
+    self.activeDraw = True
+    self.activeUpdate = True
 
     if len(self.dimensions) != 4:
       raise ValueError(f'dimensions must contain 4 Dimension objects, received: {len(self.dimensions)}')
@@ -93,7 +95,7 @@ class Section:
     self.update()
 
   def update(self):
-    if not self.active:
+    if not (self.active and self.activeUpdate):
       return None
 
     # This is really not ideal but I don't know what else I can do
@@ -135,7 +137,7 @@ class Section:
       self.imageY = self.y + ((self.height - self.drawImage.get_height()) / 2)
 
   def draw(self, surface: pg.Surface):
-    if not self.active:
+    if not (self.active and self.activeDraw):
       return None
 
     if isinstance(self.background, pg.Surface):
@@ -151,6 +153,8 @@ class Circle:
     self.backgroundSizeType = backgroundSizeType
     self.sqrt2 = sqrt(2)
     self.active = True
+    self.activeDraw = True
+    self.activeUpdate = True
 
     if len(self.dimensions) != 3:
       raise ValueError(f'dimensions must contain 4 Dimension objects, received: {len(self.dimensions)}')
@@ -168,9 +172,9 @@ class Circle:
     self.update()
 
   def update(self):
-    if not self.active:
+    if not (self.active and self.activeUpdate):
       return None
-    
+
     # Same as before... not ideal but I don't know what else I can do
     unstable = True
     totalIterations = 0
@@ -203,7 +207,7 @@ class Circle:
         self.drawImage = squish(self.background, (self.radius * 2, self.radius * 2))
 
   def draw(self, surface: pg.Surface):
-    if not self.active:
+    if not (self.active and self.activeDraw):
       return None
 
     if isinstance(self.background, pg.Surface):
@@ -219,9 +223,11 @@ class TextBox:
     self.textColor = textColor
     self.drawSectionDefault = drawSectionDefault
     self.active = True
+    self.activeDraw = True
+    self.activeUpdate = True
 
   def update(self):
-    if not self.active:
+    if not (self.active and self.activeUpdate):
       return None
 
     self.section.update()
@@ -233,7 +239,7 @@ class TextBox:
     self.textRect = self.textSurface.get_rect(center = self.section.rect.center)
 
   def draw(self, surface: pg.Surface, drawSection: Optional[bool] = None):
-    if not self.active:
+    if not (self.active and self.activeDraw):
       return None
 
     if (drawSection is None and self.drawSectionDefault) or drawSection:
@@ -254,6 +260,9 @@ class Button:
     self.borderColor = borderColor
     self.borderColorPressed = borderColorPressed
     self.active = True
+    self.activeDraw = True
+    self.activeUpdate = True
+    self.activeEvents = True
 
     if self.border > 0:
       self.borderRect = pg.Rect(section.x - border, section.y - border, section.width + (border * 2), section.height + (border * 2))
@@ -269,8 +278,8 @@ class Button:
 
     self.update()
 
-  def checkEvent(self, event: pg.event.Event) -> bool:
-    if not self.active:
+  def checkEvent(self, event: pg.event.Event) -> Optional[bool]:
+    if not (self.active and self.activeEvents):
       return None
 
     if event.type == pg.MOUSEBUTTONDOWN and event.button == 1 and self.section.rect.collidepoint(event.pos):
@@ -297,7 +306,7 @@ class Button:
     return False
 
   def update(self):
-    if not self.active:
+    if not (self.active and self.activeUpdate):
       return None
 
     if not isinstance(self.section, pg.Rect):
@@ -313,7 +322,7 @@ class Button:
       self.borderRect.update(newX, newY, newWidth, newHeight)
 
   def draw(self, surface: pg.Surface):
-    if not self.active:
+    if not (self.active and self.activeDraw):
       return None
 
     if self.border > 0:
@@ -342,9 +351,12 @@ class Toggle:
     self.innerBox = pg.Rect(self.section.x + 4, self.section.y + 4, (self.section.width / 2) - 4, self.section.height - 8)
     self.borderRect = pg.Rect(self.section.x - border, self.section.y - border, self.section.width + (border * 2), self.section.height + (border * 2))
     self.active = True
+    self.activeDraw = True
+    self.activeUpdate = True
+    self.activeEvents = True
 
-  def checkEvent(self, event: pg.event.Event) -> bool:
-    if not self.active:
+  def checkEvent(self, event: pg.event.Event) -> Optional[bool]:
+    if not (self.active and self.activeEvents):
       return None
 
     if event.type == pg.MOUSEBUTTONDOWN and event.button == 1 and self.section.rect.collidepoint(event.pos):
@@ -367,7 +379,7 @@ class Toggle:
     return False
 
   def update(self):
-    if not self.active:
+    if not (self.active and self.activeUpdate):
       return None
 
     self.section.update()
@@ -385,7 +397,7 @@ class Toggle:
     self.innerBox.update(newInnerX, newInnerY, newInnerWidth, newInnerHeight)
 
   def draw(self, surface: pg.Surface):
-    if not self.active:
+    if not (self.active and self.activeDraw):
       return None
 
     if self.border > 0:
@@ -413,6 +425,9 @@ class Slider():
     self.onChangeInfo = onChangeInfo
     self.hoverToScroll = hoverToScroll
     self.active = True
+    self.activeDraw = True
+    self.activeUpdate = True
+    self.activeEvents = True
     self.pressed = False
     self.value = self.valueRange[0]
 
@@ -432,12 +447,13 @@ class Slider():
     def getDragElementPos(params):
       returnValue = None
       offset = 0
-      axis = params[0]
-      elementType = params[1]
-      section = params[2].section
-      sliderValue = params[2].value
-      sliderValueRange = params[2].valueRange
-      dragElement = params[2].dragElement
+      axis: str = params[0]
+      elementType: str = params[1]
+      slider: Slider = params[2]
+      section = slider.section
+      sliderValue = slider.value
+      sliderValueRange = slider.valueRange
+      dragElement = slider.dragElement
 
       if axis == 'x':
         valueMappingCoords = (section.x, section.x + section.width)
@@ -501,7 +517,7 @@ class Slider():
     )
 
   def update(self):
-    if not self.active:
+    if not (self.active and self.activeUpdate):
       return None
 
     self.section.update()
@@ -535,7 +551,7 @@ class Slider():
     self.filledSlider.update()
 
   def draw(self, surface: pg.Surface):
-    if not self.active:
+    if not (self.active and self.activeDraw):
       return None
 
     self.section.draw(surface)
@@ -559,6 +575,9 @@ class Slider():
           self.onChangeInfo['callable']()
 
   def checkEvent(self, event: pg.event.Event) -> bool:
+    if not (self.active and self.activeEvents):
+      return None
+
     if event.type == pg.MOUSEBUTTONDOWN and event.button == 1 and self.section.rect.collidepoint(pg.mouse.get_pos()):
       self.pressed = True
     elif event.type == pg.MOUSEBUTTONUP and event.button == 1:
@@ -664,7 +683,7 @@ class System:
     if self.locked:
       print('System is currently locked')
       return None
-    
+
     idList = self.__validateIDs(elementIDs)
 
     if not idList == None:
