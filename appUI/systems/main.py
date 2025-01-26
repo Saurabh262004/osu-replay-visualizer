@@ -62,8 +62,8 @@ def addMain(window: Window):
         'x': DV('number', 0),
         'y': DV('number', 0),
         'width': DV('number', 8),
-        'height': DV('number', 12)
-      }, AppColors.primary1, 5
+        'height': DV('number', 14)
+      }, AppColors.primary1
     ),
     (0, 99),
     -5,

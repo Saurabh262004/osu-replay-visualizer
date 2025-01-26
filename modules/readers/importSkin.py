@@ -23,7 +23,7 @@ def importSkin(skinName: str, osuURL: str) -> dict:
 
   # parse the skin.ini config file
   try:
-    with open(skin['configURL'], 'r') as config:
+    with open(skin['configURL'], 'r', encoding='utf-8') as config:
       configLines = config.readlines()
       processedLines = ''
 
@@ -31,6 +31,9 @@ def importSkin(skinName: str, osuURL: str) -> dict:
         line = customStrip(line, ['\t', ' '])
 
         if len(line) > 0 and line[0].isalpha():
+          commentIndex = line.find('//')
+          if commentIndex != -1:
+            line = line[:commentIndex] + '\n'
           processedLines += line
 
       skin['config'] = keyValuePairs(processedLines, True)

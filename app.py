@@ -37,19 +37,18 @@ for url in userData['URLs']:
 
 window = Window('Replay Veiwer', (800, 450), customLoopProcess=windowCustomLoop)
 
+## add systems ##
 addNav(window)
-
 addMain(window)
-
 addReplayList(window, userData)
-
 addSettings(window)
 
+## define system z indexes ##
 window.setSystemZ('nav', 9)
 window.setSystemZ('main', 0)
 window.setSystemZ('replayList', 1)
 window.setSystemZ('settings', 2)
 
-window.activateSystems(['nav'])
+window.activateSystems(['nav', 'main'])
 
 window.openWindow()

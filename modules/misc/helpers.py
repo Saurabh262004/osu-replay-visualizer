@@ -1,5 +1,5 @@
 from typing import Union, Iterable, Optional
-from pygame import Surface, transform, Color
+from pygame import Surface as pgSurface, transform as pgTransform, Color as pgColor
 
 numType = Union[int, float]
 
@@ -65,11 +65,11 @@ def customStrip(string: str, chars: Iterable):
   return string[start:end + 1]
 
 # deforms the image to fit in the container
-def squish(image: Surface, containerSize: Iterable, scalePercent: Optional[int] = 100) -> Surface:
-  return transform.smoothscale(image, (containerSize[0] * (scalePercent / 100), containerSize[1] * (scalePercent / 100)))
+def squish(image: pgSurface, containerSize: Iterable, scalePercent: Optional[int] = 100) -> pgSurface:
+  return pgTransform.smoothscale(image, (containerSize[0] * (scalePercent / 100), containerSize[1] * (scalePercent / 100)))
 
 # resizes the image to the smallest possible fit while preserving the original aspect ratio
-def fit(image: Surface, containerSize: Iterable, scalePercent: Optional[int] = 100) -> Surface:
+def fit(image: pgSurface, containerSize: Iterable, scalePercent: Optional[int] = 100) -> pgSurface:
   containerWidth, containerHeight = containerSize
   containerWidth *= (scalePercent / 100)
   containerHeight *= (scalePercent / 100)
@@ -81,14 +81,14 @@ def fit(image: Surface, containerSize: Iterable, scalePercent: Optional[int] = 1
   if containerWidth < containerHeight:
     newWidth = containerWidth
     newHeight = imageResRatio * newWidth
-    return transform.smoothscale(image, (newWidth, newHeight))
+    return pgTransform.smoothscale(image, (newWidth, newHeight))
 
   newHeight = containerHeight
   newWidth = imageResRatio * newHeight
-  return transform.smoothscale(image, (newWidth, newHeight))
+  return pgTransform.smoothscale(image, (newWidth, newHeight))
 
 # resizes the image to the largest possible fit while preserving the original aspect ratio
-def fill(image: Surface, containerSize: Iterable, scalePercent: Optional[int] = 100) -> Surface:
+def fill(image: pgSurface, containerSize: Iterable, scalePercent: Optional[int] = 100) -> pgSurface:
   containerWidth, containerHeight = containerSize
   containerWidth *= (scalePercent / 100)
   containerHeight *= (scalePercent / 100)
@@ -99,25 +99,32 @@ def fill(image: Surface, containerSize: Iterable, scalePercent: Optional[int] = 
   if containerWidth > containerHeight:
     newWidth = containerWidth
     newHeight = imageResRatio * newWidth
-    return transform.smoothscale(image, (newWidth, newHeight))
+    return pgTransform.smoothscale(image, (newWidth, newHeight))
 
   newHeight = containerHeight
   newWidth = imageResRatio * newHeight
-  return transform.smoothscale(image, (newWidth, newHeight))
+  return pgTransform.smoothscale(image, (newWidth, newHeight))
 
-TINT_CONDITIONS = ('all', 'specific')
 # changes an images rgb value based on conditions
-def tintImage(image: Surface, tintColor: Color, condition: Optional[str] = 'all', conditionColor: Optional[Iterable[Color]] = None):
+def tintImage(image: pgSurface, tintColor: Union[pgColor, Iterable[numType]], conditionColor: Optional[Union[Iterable[pgColor], Iterable[Iterable[numType]]]] = None):
+  if conditionColor is not None:
+    for i in range(len(conditionColor)):
+      if not isinstance(conditionColor[i], pgColor):
+        if len(conditionColor[i]) != 3:
+          raise ValueError('Please provide a pygame Color object or an iterator with 3 r, g, b values')
+        else:
+          conditionColor[i] = pgColor((conditionColor[i][0], conditionColor[i][1], conditionColor[i][2]))
+
+  if not isinstance(tintColor, pgColor):
+    if len(tintColor) != 3:
+      raise ValueError('Please provide a pygame Color object or an iterator with 3 r, g, b values')
+    else:
+      tintColor = pgColor((tintColor[0], tintColor[1], tintColor[2]))
+
   image.lock()
   width, height = image.get_size()
 
-  if not condition in TINT_CONDITIONS:
-    raise ValueError(f'Tint condition must be one of the following: {TINT_CONDITIONS}')
-
-  if condition == 'specific' and conditionColor is None:
-    raise ValueError('If condition is set to specific the condition colors must be provided')
-
-  if condition == 'all':
+  if conditionColor is None:
     for x in range(width):
       for y in range(height):
         _, _, _, a = image.get_at((x, y))

@@ -446,7 +446,6 @@ class Slider():
 
     def getDragElementPos(params):
       returnValue = None
-      offset = 0
       axis: str = params[0]
       elementType: str = params[1]
       slider: Slider = params[2]
@@ -456,21 +455,23 @@ class Slider():
       dragElement = slider.dragElement
 
       if axis == 'x':
-        valueMappingCoords = (section.x, section.x + section.width)
-        returnValue = mapRange(sliderValue, sliderValueRange[0], sliderValueRange[1], valueMappingCoords[0], valueMappingCoords[1])
-
         if elementType == 'section':
-          offset = (dragElement.width / 2) * -1
+          valueMappingCoords = (section.x, section.x + section.width - dragElement.width)
+        else:
+          valueMappingCoords = (section.x + dragElement.radius, section.x + section.width - dragElement.radius)
+
+        returnValue = mapRange(sliderValue, sliderValueRange[0], sliderValueRange[1], valueMappingCoords[0], valueMappingCoords[1])
       else:
-        valueMappingCoords = (section.y, section.y + section.height)
+        if elementType == 'section':
+          valueMappingCoords = (section.y, section.y + section.height - dragElement.height)
+        else:
+          valueMappingCoords = (section.y + dragElement.radius, section.y + section.height - dragElement.radius)
+
         returnValue = mapRange(sliderValue, sliderValueRange[0], sliderValueRange[1], valueMappingCoords[0], valueMappingCoords[1])
 
-        if elementType == 'section':
-          offset = (dragElement.height / 2) * -1
-
-      if returnValue < valueMappingCoords[0]: return valueMappingCoords[0] + offset
-      elif returnValue > valueMappingCoords[1]: return valueMappingCoords[1] + offset
-      else: return returnValue + offset
+      if returnValue < valueMappingCoords[0]: return valueMappingCoords[0]
+      elif returnValue > valueMappingCoords[1]: return valueMappingCoords[1]
+      else: return returnValue
 
     if self.dragElementType == 'circle':
       if self.orientation == 'horizontal':
