@@ -706,7 +706,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'required': True,
+    'required': False,
     'animationName': 'hit0-*'
   },
   'hit50': {
@@ -715,7 +715,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'required': True,
+    'required': False,
     'animationName': 'hit50-*'
   },
   'hit100': {
@@ -724,7 +724,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'required': True,
+    'required': False,
     'animationName': 'hit100-*'
   },
   'hit100k': {
@@ -733,7 +733,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'required': True,
+    'required': False,
     'animationName': 'hit100k-*'
   },
   'hit300': {
@@ -742,7 +742,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'required': True,
+    'required': False,
     'animationName': 'hit300-*'
   },
   'hit300k': {
@@ -751,7 +751,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'required': True,
+    'required': False,
     'animationName': 'hit300k-*'
   },
   'hit300g': {
@@ -760,7 +760,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTing',
     'alter': None,
-    'required': True,
+    'required': False,
     'animationName': 'hit300g-*'
   },
   'inputoverlay-background': {

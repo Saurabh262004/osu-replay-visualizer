@@ -1,3 +1,5 @@
+from pygame import Surface as pgSurface
+
 class Hitcircle:
   def __init__(self, objectDict: dict, beatmap):
     self.rawDict = objectDict
@@ -7,7 +9,10 @@ class Hitcircle:
     self.time = self.rawDict['time']
     self.comboIndex = 0
     self.comboColorIndex = 0
-    self.hit = -1
+    self.hit = self.time
+
+  def getRenderable(self) -> pgSurface:
+    pass
 
 class Slider:
   def __init__(self, objectDict: dict, map):
@@ -19,7 +24,7 @@ class Slider:
     self.curveType = self.rawDict['curveType']
     self.comboIndex = 0
     self.comboColorIndex = 0
-    self.hit = -1
+    self.hit = self.time
 
     self.anchors = [
       {
@@ -31,6 +36,9 @@ class Slider:
 
     self.anchors.extend([anchor for anchor in self.rawDict['curvePoints']])
 
+  def getRenderable(self) -> pgSurface:
+    pass
+
 class Spinner:
   def __init__(self, objectDict: dict, map):
     self.rawDict = objectDict
@@ -39,4 +47,5 @@ class Spinner:
     self.comboIndex = 0
     self.comboColorIndex = 0
 
-# from modules.beatmapElements.beatmap import Beatmap
+  def getRenderable(self) -> pgSurface:
+    pass
