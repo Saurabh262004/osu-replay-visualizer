@@ -1,15 +1,18 @@
-from typing import List, Union
+from typing import List, Dict, Union
+from copy import deepcopy
 from pygame import Color as pgColor, transform as pgTransform
-from modules.misc.helpers import tintImage
+from modules.misc.helpers import mapRange, tintImage
 from modules.readers.beatmapReader import readMap
 from modules.readers.replayReader import getReplayData
 from modules.readers.importSkin import importSkin
 from modules.beatmapElements.hitobjects import *
 
+numType = Union[int, float]
+
 class Beatmap:
   def __init__(self, mapURL: str, skinURL: str, replayURL: str = None):
     self.map = readMap(mapURL)
-    self.skin = importSkin(skinURL, 'C:\\Users\\SPEED\\AppData\\Local\\osu!')
+    self.skin = importSkin(skinURL, 'testFiles')
     self.replay = getReplayData(replayURL) if replayURL else None
 
     self.hitobjects: List[Union[Hitcircle, Slider, Spinner]] = []
@@ -58,8 +61,6 @@ class Beatmap:
     self.hitWindow100 = 140 - 8 * self.OD
     self.hitWindow50 = 200 - 10 * self.OD
 
-    print(f'hitwindow50: {self.hitWindow50}')
-
     if self.OD < 5:
       self.requiredRPS = 5 - 2 * (5 - self.OD) / 5
     elif self.OD > 5:
@@ -87,6 +88,9 @@ class Beatmap:
 
       hitobject.comboIndex = comboIndex
       hitobject.comboColorIndex = totalCombo % len(self.comboColors)
+      if isinstance(hitobject, Slider):
+        hitobject.head.comboIndex = hitobject.comboIndex
+        hitobject.head.comboColorIndex = hitobject.comboColorIndex
 
     self.elementsScaleMultiplier = (self.circleRadius * 2) / self.skin['elements']['hitcircle'].get_width()
 
@@ -106,18 +110,42 @@ class Beatmap:
 
       tintImage(self.approachcircleCombos[-1], self.comboColors[i])
 
-    # print(f'hitobjects: {self.totalHitobjects}, hitcircles: {self.totalHitcircles}, sliders: {self.totalSliders}, spinners: {self.totalSpinners}')
+    for slider in self.sliders:
+      timingPoints = self.effectiveTimingPointAtTime(slider.time)
+
+      if timingPoints[1] is not None:
+        SV = (.01 * timingPoints[1]['inverseSliderVelocityMultiplier']) + 1
+        SV = 1 if SV <= 0 else SV
+      else:
+        SV = 1
+
+      slider.slideTime = slider.length / (self.map['difficulty']['SliderMultiplier'] * 100 * SV) * timingPoints[0]['beatLength']
+
+  def effectiveTimingPointAtTime(self, time: int) -> List[Dict[str, numType]]:
+    possibleUninheritedTimingPoint = None
+    possibleInheritedTimingPoint = None
+
+    for timingPoint in self.map['timingPoints']:
+      if timingPoint['time'] < time:
+        if timingPoint['uninherited'] == 1:
+          possibleUninheritedTimingPoint = deepcopy(timingPoint)
+        else:
+          possibleInheritedTimingPoint = deepcopy(timingPoint)
+      break
+
+    return [possibleUninheritedTimingPoint, possibleInheritedTimingPoint]
 
   def hitObjectsAtTime(self, time: int) -> List[Union[Hitcircle, Slider, Spinner]]:
     returnHitobjects = []
 
     timeClose = time + self.preempt
-    timeOpen = (time - self.hitWindow50) - self.objectFadeout
+    timeOpenHitcircle = (time - self.hitWindow50) - self.objectFadeout
 
     for hitobject in self.hitobjects:
       if hitobject.time > timeClose: break
-      if hitobject.time < timeOpen: continue
-      # if time < timeOpen: continue
+      if isinstance(hitobject, Hitcircle) and hitobject.time < timeOpenHitcircle: continue
+      if isinstance(hitobject, Slider) and (hitobject.time + (hitobject.slideTime * hitobject.slides)) < time: continue
+      if isinstance(hitobject, Spinner) and hitobject.endTime < time: continue
 
       returnHitobjects.append(hitobject)
 
