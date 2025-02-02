@@ -1,3 +1,4 @@
+from math import sqrt
 from typing import Union, Iterable, Optional
 from pygame import Surface as pgSurface, transform as pgTransform, Color as pgColor
 
@@ -28,6 +29,10 @@ def mapRange(num: numType, start1: numType, start2: numType, end1: numType, end2
     return (end1 + end2) / 2
 
   return end1 + (num - start1) * (end2 - end1) / (start2 - start1)
+
+# returns the distance from one point to another in a 2d plane
+def dist(x1, y1, x2, y2):
+  return sqrt(((x2 - x1) ** 2) + ((y2 - y1) ** 2))
 
 # check if all the values are in an iterable if yes return True else return False
 def allIn(values: Iterable, itr: Iterable) -> bool:

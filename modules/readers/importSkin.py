@@ -56,18 +56,18 @@ def importSkin(skinName: str, osuURL: str) -> dict:
       imageURL = f"{skin['url']}/{SKIN_ELEMENTS[element]['animationName'].replace('*', str(i))}.png"
 
       while os.path.isfile(imageURL):
-        skin['elements'][element].append(image.load(imageURL))
+        skin['elements'][element].append(image.load(imageURL).convert_alpha())
         i += 1
         imageURL = f"{skin['url']}/{SKIN_ELEMENTS[element]['animationName'].replace('*', str(i))}.png"
 
       if len(skin['elements'][element]) == 0:
         if os.path.isfile(stillImageURL):
-          skin['elements'][element] = image.load(stillImageURL)
+          skin['elements'][element] = image.load(stillImageURL).convert_alpha()
         elif SKIN_ELEMENTS[element]['required']:
           skin['elements'].pop(element)
           requiredElementNotFound = True
     elif os.path.isfile(stillImageURL):
-      skin['elements'][element] = image.load(stillImageURL)
+      skin['elements'][element] = image.load(stillImageURL).convert_alpha()
     elif SKIN_ELEMENTS[element]['required']:
       requiredElementNotFound = True
 
@@ -83,6 +83,6 @@ def importSkin(skinName: str, osuURL: str) -> dict:
       fontURL = f"{skin['url']}/{skin['config'][FONT_ELEMENTS[element]['prefixIdentifier']]}{fontURLPostfix}.png"
 
       if os.path.isfile(fontURL):
-        skin['elements'][f'{element}{fontURLPostfix}'] = image.load(fontURL)
+        skin['elements'][f'{element}{fontURLPostfix}'] = image.load(fontURL).convert_alpha()
 
   return skin

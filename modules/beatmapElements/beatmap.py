@@ -1,7 +1,7 @@
 from typing import List, Dict, Union
 from copy import deepcopy
 from pygame import Color as pgColor, transform as pgTransform
-from modules.misc.helpers import mapRange, tintImage
+from modules.misc.helpers import tintImage
 from modules.readers.beatmapReader import readMap
 from modules.readers.replayReader import getReplayData
 from modules.readers.importSkin import importSkin
@@ -99,23 +99,32 @@ class Beatmap:
 
     self.hitcircleCombos = []
     self.approachcircleCombos = []
+    self.sliderBallCombos = []
     for i in range(len(self.comboColors)):
       self.hitcircleCombos.append(self.skin['elements']['hitcircle'].copy())
-
       self.hitcircleCombos[-1] = pgTransform.smoothscale_by(self.hitcircleCombos[-1], self.elementsScaleMultiplier)
       tintImage(self.hitcircleCombos[-1], self.comboColors[i])
 
       self.approachcircleCombos.append(self.skin['elements']['approachcircle'].copy())
       self.approachcircleCombos[-1] = pgTransform.smoothscale_by(self.approachcircleCombos[-1], self.elementsScaleMultiplier)
-
       tintImage(self.approachcircleCombos[-1], self.comboColors[i])
+
+      if isinstance(self.skin['elements']['sliderb'], pg.Surface):
+        self.sliderBallCombos.append(self.skin['elements']['sliderb'].copy())
+        self.sliderBallCombos[-1] = pgTransform.smoothscale_by(self.sliderBallCombos[-1], self.elementsScaleMultiplier)
+        tintImage(self.sliderBallCombos[-1], self.comboColors[i])
+      elif isinstance(self.skin['elements']['sliderb'], list):
+        self.sliderBallCombos.append([])
+        for ball in self.skin['elements']['sliderb']:
+          self.sliderBallCombos[-1].append(ball.copy())
+          self.sliderBallCombos[-1][-1] = pgTransform.smoothscale_by(self.sliderBallCombos[-1][-1], self.elementsScaleMultiplier)
+          tintImage(self.sliderBallCombos[-1][-1], self.comboColors[i])
 
     for slider in self.sliders:
       timingPoints = self.effectiveTimingPointAtTime(slider.time)
 
-      if timingPoints[1] is not None:
-        SV = (.01 * timingPoints[1]['inverseSliderVelocityMultiplier']) + 1
-        SV = 1 if SV <= 0 else SV
+      if not (timingPoints[1] is None):
+        SV = -100 / timingPoints[1]['inverseSliderVelocityMultiplier']
       else:
         SV = 1
 
@@ -126,12 +135,13 @@ class Beatmap:
     possibleInheritedTimingPoint = None
 
     for timingPoint in self.map['timingPoints']:
-      if timingPoint['time'] < time:
+      if timingPoint['time'] <= time:
         if timingPoint['uninherited'] == 1:
           possibleUninheritedTimingPoint = deepcopy(timingPoint)
         else:
           possibleInheritedTimingPoint = deepcopy(timingPoint)
-      break
+      else:
+        break
 
     return [possibleUninheritedTimingPoint, possibleInheritedTimingPoint]
 

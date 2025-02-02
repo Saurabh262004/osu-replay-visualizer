@@ -1,62 +1,21 @@
-from copy import deepcopy
-from typing import Union, List, Dict
+from typing import Union
 import pygame as pg
 from modules.misc.helpers import mapRange
 from modules.beatmapElements.hitobjects import Hitcircle, Slider, Spinner
 from modules.beatmapElements.beatmap import Beatmap
 
-numType = Union[int, float]
-
-def lerp(anchor1: Dict[str, numType], anchor2: Dict[str, numType], t: numType) -> Dict[str, numType]:
-  return {
-    'x': anchor1['x'] + t * (anchor2['x'] - anchor1['x']),
-    'y': anchor1['y'] + t * (anchor2['y'] - anchor1['y'])
-  }
-
-def computeBezier(anchors: list, tInterval: numType) -> List[Dict[str, numType]]:
-  calculatedPoints = []
-
-  interpolatedAnchors = deepcopy(anchors)
-
-  t = 0
-  while (t <= 1):
-    interpolatedAnchors = deepcopy(anchors)
-    for _ in range(len(interpolatedAnchors) - 1):
-      tmpAnchors = []
-      for j in range(len(interpolatedAnchors) - 1):
-        tmpAnchors.append(lerp(interpolatedAnchors[j], interpolatedAnchors[j+1], t))
-
-      interpolatedAnchors = deepcopy(tmpAnchors)
-
-    calculatedPoints.append(deepcopy(interpolatedAnchors[0]))
-
-    t += tInterval
-
-  return calculatedPoints
-
 class MapRenderer:
-  def __init__(self, beatmapURL: dict, skinURL: str, surface: pg.Surface, playFielsResMultiplier: Union[int, float]):
+  def __init__(self, beatmapURL: dict, skinURL: str, surface: pg.Surface, playFieldResMultiplier: Union[int, float]):
     self.beatmap = Beatmap(beatmapURL, skinURL)
     self.surface = surface
-    self.playFielsResMultiplier = playFielsResMultiplier
-    self.playFieldRes = (self.playFielsResMultiplier * 512, self.playFielsResMultiplier * 384)
+    self.playFieldResMultiplier = playFieldResMultiplier
+    self.playFieldRes = (self.playFieldResMultiplier * 512, self.playFieldResMultiplier * 384)
     self.playFieldXpadding = (self.surface.get_width() - self.playFieldRes[0]) / 2
     self.playFieldYpadding = (self.surface.get_height() - self.playFieldRes[1]) / 2
 
-    self.precomputeBezier()
-
-  def precomputeBezier(self):
     for slider in self.beatmap.sliders:
-      if slider.curveType == 'B':
-        for curve in slider.curves:
-          newCurve = [
-            {
-              'x': (point['x'] * self.playFielsResMultiplier) + self.playFieldXpadding,
-              'y': (point['y'] * self.playFielsResMultiplier) + self.playFieldYpadding
-            } for point in curve
-          ]
-
-          slider.precomputedBezier.append(computeBezier(newCurve, 0.01))
+      slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
+      slider.renderBody()
 
   def render(self, time: int):
     renderObjects = self.beatmap.hitObjectsAtTime(time)
@@ -81,10 +40,8 @@ class MapRenderer:
     drawWindowStart = hitcircle.time - self.beatmap.preempt
     fadeWindowEnd = drawWindowStart + self.beatmap.fadeIn
 
-    # print(f'resMultiplier: {self.resMultiplier}')
-
     if hitcircle.time >= time:
-      approachCircleMultiplier = self.playFielsResMultiplier * mapRange(time, drawWindowStart, hitcircle.time, 3, 1)
+      approachCircleMultiplier = self.playFieldResMultiplier * mapRange(time, drawWindowStart, hitcircle.time, 3, 1)
       hitcircleMultiplier = 1
       hitobjectAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, 255)
     else:
@@ -100,21 +57,19 @@ class MapRenderer:
     if approachCircleMultiplier < 0:
       approachCircleMultiplier = 0
 
-    # print(f'drawWindowStart: {drawWindowStart}, fadeWindowEnd: {fadeWindowEnd}, approachCircleMultiplier: {approachCircleMultiplier}')
-
-    hitcircleScaled = pg.transform.smoothscale_by(hitcircleImage, self.playFielsResMultiplier * hitcircleMultiplier)
-    hitcircleOverlayScaled = pg.transform.smoothscale_by(hitcircleOverlayImage, self.playFielsResMultiplier * hitcircleMultiplier)
+    hitcircleScaled = pg.transform.smoothscale_by(hitcircleImage, self.playFieldResMultiplier * hitcircleMultiplier)
+    hitcircleOverlayScaled = pg.transform.smoothscale_by(hitcircleOverlayImage, self.playFieldResMultiplier * hitcircleMultiplier)
 
     hitcircleScaled.set_alpha(hitobjectAlpha)
     hitcircleOverlayScaled.set_alpha(hitobjectAlpha)
 
-    hitcirclePos = ((hitcircle.x * self.playFielsResMultiplier) - (hitcircleScaled.get_width() / 2) + self.playFieldXpadding, (hitcircle.y * self.playFielsResMultiplier) - (hitcircleScaled.get_height() / 2) + self.playFieldYpadding)
-    hitcircleOverlayPos = ((hitcircle.x * self.playFielsResMultiplier) - (hitcircleOverlayScaled.get_width() / 2) + self.playFieldXpadding, (hitcircle.y * self.playFielsResMultiplier) - (hitcircleOverlayScaled.get_height() / 2) + self.playFieldYpadding)
+    hitcirclePos = ((hitcircle.x * self.playFieldResMultiplier) - (hitcircleScaled.get_width() / 2) + self.playFieldXpadding, (hitcircle.y * self.playFieldResMultiplier) - (hitcircleScaled.get_height() / 2) + self.playFieldYpadding)
+    hitcircleOverlayPos = ((hitcircle.x * self.playFieldResMultiplier) - (hitcircleOverlayScaled.get_width() / 2) + self.playFieldXpadding, (hitcircle.y * self.playFieldResMultiplier) - (hitcircleOverlayScaled.get_height() / 2) + self.playFieldYpadding)
 
     self.surface.blit(hitcircleScaled, hitcirclePos)
 
     if hitcircle.hit >= time:
-      comboImagesScaled = [pg.transform.smoothscale_by(comboImage, self.beatmap.elementsScaleMultiplier * self.playFielsResMultiplier) for comboImage in comboImages]
+      comboImagesScaled = [pg.transform.smoothscale_by(comboImage, self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier) for comboImage in comboImages]
       for comboImage in comboImagesScaled:
         comboImage.set_alpha(hitobjectAlpha)
       comboWidth = comboImagesScaled[0].get_width()
@@ -128,29 +83,41 @@ class MapRenderer:
     if hitcircle.time >= time:
       approachcircleScaled = pg.transform.smoothscale_by(approachcircleImage, approachCircleMultiplier)
       approachcircleScaled.set_alpha(hitobjectAlpha)
-      approachCirclePos = ((hitcircle.x * self.playFielsResMultiplier) - (approachcircleScaled.get_width() / 2) + self.playFieldXpadding, (hitcircle.y * self.playFielsResMultiplier) - (approachcircleScaled.get_height() / 2) + self.playFieldYpadding)
+      approachCirclePos = ((hitcircle.x * self.playFieldResMultiplier) - (approachcircleScaled.get_width() / 2) + self.playFieldXpadding, (hitcircle.y * self.playFieldResMultiplier) - (approachcircleScaled.get_height() / 2) + self.playFieldYpadding)
       self.surface.blit(approachcircleScaled, approachCirclePos)
 
     self.surface.blit(hitcircleOverlayScaled, hitcircleOverlayPos)
 
   def drawSlider(self, slider: Slider, time: int):
-    if slider.curveType == 'L':
-      for curve in slider.curves:
-        pg.draw.line(self.surface, (255, 0, 0), ((curve[0]['x'] * self.playFielsResMultiplier) + self.playFieldXpadding, (curve[0]['y'] * self.playFielsResMultiplier) + self.playFieldYpadding), ((curve[1]['x'] * self.playFielsResMultiplier) + self.playFieldXpadding, (curve[1]['y'] * self.playFielsResMultiplier) + self.playFieldYpadding), 1)
-    elif slider.curveType == 'B':
-      # for curve in slider.precomputedBezier:
-      #   for i in range(len(curve) - 1):
-      #     pg.draw.line(self.surface, (0, 0, 255), (curve[i]['x'], curve[i]['y']), (curve[i+1]['x'], curve[i+1]['y']), 1)
-      for curve in slider.precomputedBezier:
-        for point in curve:
-          pg.draw.circle(self.surface, (255, 255, 255, 128), (point['x'], point['y']), (self.beatmap.circleRadius * self.playFielsResMultiplier) * .8)
+    if slider.curveType == 'L' or slider.curveType == 'B':
+      self.surface.blit(slider.bodySurface, slider.bodySurfacePos)
+
+      if time >= slider.time and time <= slider.time + (slider.slideTime * slider.slides):
+        # pointPos = (int(mapRange(time, slider.time, slider.time + (slider.slideTime * slider.slides), 0, len(slider.bodyPath) - 1)) * slider.slides) % len(slider.bodyPath)
+
+        slide = mapRange(time, slider.time, slider.time + slider.slideTime * slider.slides, 1, slider.slides + 1)
+        pointPos = int(abs((slide % 2) - 1) * (len(slider.bodyPath) - 1))
+
+        sliderBall = self.beatmap.sliderBallCombos[slider.comboColorIndex]
+        sliderBallScaled = pg.transform.smoothscale_by(sliderBall, self.playFieldResMultiplier)
+        sliderBallPos = (slider.bodyPath[pointPos]['x'] - (sliderBallScaled.get_width() / 2), slider.bodyPath[pointPos]['y'] - (sliderBallScaled.get_height() / 2))
+
+        sliderFollowCircle = self.beatmap.skin['elements']['sliderfollowcircle']
+        sliderFollowCircleScaled = pg.transform.smoothscale_by(sliderFollowCircle, self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier)
+        sliderFollowCirclePos = (slider.bodyPath[pointPos]['x'] - (sliderFollowCircleScaled.get_width() / 2), slider.bodyPath[pointPos]['y'] - (sliderFollowCircleScaled.get_height() / 2))
+
+        self.surface.blit(sliderBallScaled, sliderBallPos)
+        self.surface.blit(sliderFollowCircleScaled, sliderFollowCirclePos)
+
     else:
+      ## WIP ##
       for i in range(1, len(slider.anchors)):
-        pg.draw.line(self.surface, (0, 255, 0), ((slider.anchors[i-1]['x'] * self.playFielsResMultiplier) + self.playFieldXpadding, (slider.anchors[i-1]['y'] * self.playFielsResMultiplier) + self.playFieldYpadding), ((slider.anchors[i]['x'] * self.playFielsResMultiplier) + self.playFieldXpadding, (slider.anchors[i]['y'] * self.playFielsResMultiplier) + self.playFieldYpadding), 1)
+        pg.draw.line(self.surface, (0, 255, 0), ((slider.anchors[i-1]['x'] * self.playFieldResMultiplier) + self.playFieldXpadding, (slider.anchors[i-1]['y'] * self.playFieldResMultiplier) + self.playFieldYpadding), ((slider.anchors[i]['x'] * self.playFieldResMultiplier) + self.playFieldXpadding, (slider.anchors[i]['y'] * self.playFieldResMultiplier) + self.playFieldYpadding), 1)
 
     self.drawHitcircle(slider.head, time)
 
   def drawSpinner(self, spinner: Spinner, time: int):
+    ## WIP ##
     center = (self.playFieldXpadding + (self.playFieldRes[0] / 2), self.playFieldYpadding + (self.playFieldRes[1] / 2))
 
     pg.draw.circle(self.surface, (255, 255, 255), center, 5, 1)
