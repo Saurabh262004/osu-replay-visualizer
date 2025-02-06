@@ -1,4 +1,5 @@
 from typing import Union
+from math import atan2
 import pygame as pg
 from modules.misc.helpers import mapRange
 from modules.beatmapElements.hitobjects import Hitcircle, Slider, Spinner
@@ -22,6 +23,7 @@ class MapRenderer:
 
     self.surface.fill((0, 0, 0))
     pg.draw.rect(self.surface, (255, 255, 255), (self.playFieldXpadding, self.playFieldYpadding, self.playFieldRes[0], self.playFieldRes[1]), 1)
+    pg.draw.arc(self.surface, (0, 255, 0), (10, 10, 100, 100), 0, 3.14, 1)
 
     for i in range(len(renderObjects) - 1, -1, -1):
       if isinstance(renderObjects[i], Hitcircle): self.drawHitcircle(renderObjects[i], time)
@@ -89,7 +91,7 @@ class MapRenderer:
     self.surface.blit(hitcircleOverlayScaled, hitcircleOverlayPos)
 
   def drawSlider(self, slider: Slider, time: int):
-    if slider.curveType == 'L' or slider.curveType == 'B':
+    if slider.curveType == 'L' or slider.curveType == 'B' or slider.curveType == 'P':
       self.surface.blit(slider.bodySurface, slider.bodySurfacePos)
 
       if time >= slider.time and time <= slider.time + (slider.slideTime * slider.slides):
@@ -109,10 +111,47 @@ class MapRenderer:
         self.surface.blit(sliderBallScaled, sliderBallPos)
         self.surface.blit(sliderFollowCircleScaled, sliderFollowCirclePos)
 
-    else:
-      ## WIP ##
-      for i in range(1, len(slider.anchors)):
-        pg.draw.line(self.surface, (0, 255, 0), ((slider.anchors[i-1]['x'] * self.playFieldResMultiplier) + self.playFieldXpadding, (slider.anchors[i-1]['y'] * self.playFieldResMultiplier) + self.playFieldYpadding), ((slider.anchors[i]['x'] * self.playFieldResMultiplier) + self.playFieldXpadding, (slider.anchors[i]['y'] * self.playFieldResMultiplier) + self.playFieldYpadding), 1)
+    if slider.curveType == 'P':
+      pg.draw.circle(self.surface, (255, 0, 0), ((slider.centerX * self.playFieldResMultiplier) + self.playFieldXpadding, (slider.centerY * self.playFieldResMultiplier) + self.playFieldYpadding), 5)
+
+    # else:
+    #   circleCenterScaled = ((slider.centerX * self.playFieldResMultiplier) + self.playFieldXpadding, (slider.centerY * self.playFieldResMultiplier) + self.playFieldYpadding)
+    #   circleRadScaled = slider.radius * self.playFieldResMultiplier
+
+    #   anchorsScaled = [
+    #     {
+    #       'x': (anchor['x'] * self.playFieldResMultiplier) + self.playFieldXpadding,
+    #       'y': (anchor['y'] * self.playFieldResMultiplier) + self.playFieldYpadding
+    #     } for anchor in slider.anchors
+    #   ]
+
+    #   elipseRect = (
+    #     (circleCenterScaled[0] - circleRadScaled, circleCenterScaled[1] - circleRadScaled),
+    #     (circleRadScaled * 2, circleRadScaled * 2)
+    #   )
+
+    #   startAngle = atan2(anchorsScaled[2]['y'] - circleCenterScaled[1], anchorsScaled[2]['x'] - circleCenterScaled[0])
+    #   stopAngle = atan2(anchorsScaled[0]['y'] - circleCenterScaled[1], anchorsScaled[0]['x'] - circleCenterScaled[1])
+
+      # pg.draw.rect(self.surface, (255, 0, 0), elipseRect)
+
+      # pg.draw.arc(self.surface, (255, 255, 255), elipseRect, startAngle, stopAngle, 1)
+      # pg.draw.circle(self.surface, (0, 255, 0), circleCenterScaled, slider.radius, 1)
+
+    for i in range(slider.totalAnchors):
+      currentAnchor = slider.anchors[i]
+      currentAnchorPos = ((currentAnchor['x'] * self.playFieldResMultiplier) + self.playFieldXpadding, (currentAnchor['y'] * self.playFieldResMultiplier) + self.playFieldYpadding)
+
+      if currentAnchor['red']:
+        col = (255, 0, 0)
+      else:
+        col = (255, 255, 255)
+
+      pg.draw.circle(self.surface, col, currentAnchorPos, 2)
+
+      if i != 0:
+        lastAnchorPos = ((slider.anchors[i-1]['x'] * self.playFieldResMultiplier) + self.playFieldXpadding, (slider.anchors[i-1]['y'] * self.playFieldResMultiplier) + self.playFieldYpadding)
+        pg.draw.line(self.surface, (255, 255, 255), lastAnchorPos, currentAnchorPos, 1)
 
     self.drawHitcircle(slider.head, time)
 

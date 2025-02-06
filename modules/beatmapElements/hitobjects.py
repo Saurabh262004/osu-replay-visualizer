@@ -1,4 +1,5 @@
-from typing import Union, List, Dict
+from typing import Union, List, Dict, Optional
+import math
 from copy import deepcopy
 from modules.misc.helpers import dist
 import pygame as pg
@@ -6,7 +7,7 @@ import pygame as pg
 numType = Union[int, float]
 
 class Hitcircle:
-  def __init__(self, objectDict: dict, beatmap):
+  def __init__(self, objectDict: dict, beatmap, hitTime: Optional[numType] = None):
     self.rawDict = objectDict
     self.beatmap = beatmap
     self.x = self.rawDict['x']
@@ -14,10 +15,14 @@ class Hitcircle:
     self.time = self.rawDict['time']
     self.comboIndex = 0
     self.comboColorIndex = 0
-    self.hit = self.time
+
+    if not hitTime is None:
+      self.hit = hitTime
+    else:
+      self.hit = self.time
 
 class Slider:
-  def __init__(self, objectDict: dict, beatmap):
+  def __init__(self, objectDict: dict, beatmap, hitTime: Optional[numType] = None):
     self.rawDict = objectDict
     self.beatmap = beatmap
     self.x = self.rawDict['x']
@@ -28,19 +33,19 @@ class Slider:
     self.slides = self.rawDict['slides']
     self.comboIndex = 0
     self.comboColorIndex = 0
-    self.hit = self.time
-    self.head = Hitcircle(self.rawDict, self.beatmap)
     self.slideTime = 0
     self.bodySurface = None
     self.bodySurfacePos = (0, 0)
     self.bodyPath = []
+    self.baseBodyPath = []
+    self.transformedBodyPath = []
 
-    if self.curveType == 'B':
-      self.baseBezier = []
-      self.transformedBezier = []
-    elif self.curveType == 'L':
-      self.baseLinear = []
-      self.transformedLinear = []
+    if not hitTime is None:
+      self.hit = hitTime
+    else:
+      self.hit = self.time
+
+    self.head = Hitcircle(self.rawDict, self.beatmap, self.hit)
 
     self.anchors = [
       {
@@ -51,8 +56,6 @@ class Slider:
     ]
 
     self.anchors.extend([anchor for anchor in self.rawDict['curvePoints']])
-
-    self.anchorLength = 0
 
     self.totalAnchors = len(self.anchors)
 
@@ -72,11 +75,11 @@ class Slider:
   def computeBaseBodyPath(self):
     if self.curveType == 'B':
       for curve in self.curves:
-        self.baseBezier.append(self.computeBezier(curve, 0.005))
+        self.baseBodyPath.append(self.computeBezier(curve, 0.005))
     elif self.curveType == 'L':
-      self.baseLinear = self.computeLinearBody(self.anchors, 0.005)
+      self.baseBodyPath = self.computeLinearBody(self.anchors, 0.005)
     elif self.curveType == 'P':
-      pass
+      self.baseBodyPath = self.computeCircleBody(self.anchors, 0.005)
 
   @staticmethod
   def lerpAnchors(anchor1: Dict[str, numType], anchor2: Dict[str, numType], t: numType) -> Dict[str, numType]:
@@ -116,31 +119,76 @@ class Slider:
 
     return calculatedPoints
 
+  def computeCircleBody(self, anchors: list, radianInterval: numType):
+    calculatedPoints = []
+
+    centerXtop = ((anchors[0]['x']**2 + anchors[0]['y']**2) * (anchors[1]['y'] - anchors[2]['y'])) + ((anchors[1]['x']**2 + anchors[1]['y']**2) * (anchors[2]['y'] - anchors[0]['y'])) + ((anchors[2]['x']**2 + anchors[2]['y']**2) * (anchors[0]['y'] - anchors[1]['y']))
+    centerYtop = ((anchors[0]['x']**2 + anchors[0]['y']**2) * (anchors[2]['x'] - anchors[1]['x'])) + ((anchors[1]['x']**2 + anchors[1]['y']**2) * (anchors[0]['x'] - anchors[2]['x'])) + ((anchors[2]['x']**2 + anchors[2]['y']**2) * (anchors[1]['x'] - anchors[0]['x']))
+
+    coordBottom = 2*((anchors[0]['x'] * (anchors[1]['y'] - anchors[2]['y'])) + (anchors[1]['x'] * (anchors[2]['y'] - anchors[0]['y'])) + (anchors[2]['x'] * (anchors[0]['y'] - anchors[1]['y'])))
+
+    bodyCircleMidpoint = {
+      'x': centerXtop / coordBottom,
+      'y': centerYtop / coordBottom
+    }
+
+    self.centerX = bodyCircleMidpoint['x']
+    self.centerY = bodyCircleMidpoint['y']
+
+    bodyCircleRadius = dist(anchors[0]['x'], anchors[0]['y'], bodyCircleMidpoint['x'], bodyCircleMidpoint['y'])
+
+    startAngle = math.atan2(anchors[0]['y'] - bodyCircleMidpoint['y'],anchors[0]['x'] - bodyCircleMidpoint['x'])
+    middleAngle = math.atan2(anchors[1]['y'] - bodyCircleMidpoint['y'],anchors[1]['x'] - bodyCircleMidpoint['x'])
+    endAngle = math.atan2(anchors[2]['y'] - bodyCircleMidpoint['y'], anchors[2]['x'] - bodyCircleMidpoint['x'])
+
+    radiaIntervalDirection = radianInterval
+    if (startAngle < endAngle < middleAngle) or (middleAngle < startAngle < endAngle) or (endAngle < middleAngle < startAngle):
+      radiaIntervalDirection *= -1
+
+    middleInMiddle = False
+    if (startAngle < middleAngle < endAngle) or (endAngle < middleAngle < startAngle):
+      middleInMiddle = True
+
+    progressStart = min(startAngle, endAngle)
+    progressEnd = max(startAngle, endAngle) if middleInMiddle else ((math.pi * 2) - (max(startAngle, endAngle) - progressStart))
+    currentAngle = startAngle
+    while (progressStart <= progressEnd):
+      newX = bodyCircleMidpoint['x'] + math.cos(currentAngle) * bodyCircleRadius
+      newY = bodyCircleMidpoint['y'] + math.sin(currentAngle) * bodyCircleRadius
+
+      calculatedPoints.append({'x': newX, 'y': newY})
+
+      currentAngle += radiaIntervalDirection
+      progressStart += radianInterval
+
+    return calculatedPoints
+
   def transformBodyPath(self, resMultiplier, resPadding):
     if self.curveType == 'B':
-      self.transformedBezier = []
+      self.transformedBodyPath = []
       totalBezierLength = 0
 
-      for curve in self.baseBezier:
-        self.transformedBezier.extend([
+      for curve in self.baseBodyPath:
+        self.transformedBodyPath.extend([
           {
             'x': (point['x'] * resMultiplier[0]) + resPadding[0],
             'y': (point['y'] * resMultiplier[1]) + resPadding[1]
           } for point in curve
         ])
 
-      ## still doesn't work as well... ##
+      ## don't think this is still good enough... ##
       lastDistance = 0
-      self.bodyPath.append(self.transformedBezier[0])
+      self.bodyPath.append(self.transformedBodyPath[0])
       targetDistance = 5
-      for i in range(1, len(self.transformedBezier)):
-        totalBezierLength += dist(self.transformedBezier[i-1]['x'], self.transformedBezier[i-1]['y'], self.transformedBezier[i]['x'], self.transformedBezier[i]['y'])
+      for i in range(1, len(self.transformedBodyPath)):
+        totalBezierLength += dist(self.transformedBodyPath[i-1]['x'], self.transformedBodyPath[i-1]['y'], self.transformedBodyPath[i]['x'], self.transformedBodyPath[i]['y'])
+
         if lastDistance == 0:
           p1 = self.bodyPath[-1]
         else:
-          p1 = self.transformedBezier[i-1]
+          p1 = self.transformedBodyPath[i-1]
 
-        p2 = self.transformedBezier[i]
+        p2 = self.transformedBodyPath[i]
 
         segmentLength = dist(p1['x'], p1['y'], p2['x'], p2['y'])
 
@@ -150,16 +198,14 @@ class Slider:
           lastDistance = 0
         else:
           lastDistance += segmentLength
-    elif self.curveType == 'L':
-      self.transformedLinear = [
+    elif self.curveType == 'L' or self.curveType == 'P':
+      self.transformedBodyPath = [
         {
           'x': (point['x'] * resMultiplier[0]) + resPadding[0],
           'y': (point['y'] * resMultiplier[1]) + resPadding[1]
-        } for point in self.baseLinear
+        } for point in self.baseBodyPath
       ]
-      self.bodyPath = self.transformedLinear
-    elif self.curveType == 'P':
-      pass
+      self.bodyPath = self.transformedBodyPath
 
   def renderBody(self):
     CR = self.beatmap.circleRadius
