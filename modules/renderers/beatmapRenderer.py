@@ -23,7 +23,6 @@ class MapRenderer:
 
     self.surface.fill((0, 0, 0))
     pg.draw.rect(self.surface, (255, 255, 255), (self.playFieldXpadding, self.playFieldYpadding, self.playFieldRes[0], self.playFieldRes[1]), 1)
-    pg.draw.arc(self.surface, (0, 255, 0), (10, 10, 100, 100), 0, 3.14, 1)
 
     for i in range(len(renderObjects) - 1, -1, -1):
       if isinstance(renderObjects[i], Hitcircle): self.drawHitcircle(renderObjects[i], time)

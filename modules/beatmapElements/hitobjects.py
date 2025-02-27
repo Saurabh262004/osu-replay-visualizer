@@ -59,6 +59,10 @@ class Slider:
 
     self.totalAnchors = len(self.anchors)
 
+    if self.totalAnchors == 2:
+      del self.curveType
+      self.curveType = 'L'
+
     self.curves = []
 
     tmpCurve = []
@@ -122,6 +126,10 @@ class Slider:
   def computeCircleBody(self, anchors: list, radianInterval: numType):
     calculatedPoints = []
 
+    if not len(anchors) == 3:
+      print(self.totalAnchors)
+      print(anchors)
+
     centerXtop = ((anchors[0]['x']**2 + anchors[0]['y']**2) * (anchors[1]['y'] - anchors[2]['y'])) + ((anchors[1]['x']**2 + anchors[1]['y']**2) * (anchors[2]['y'] - anchors[0]['y'])) + ((anchors[2]['x']**2 + anchors[2]['y']**2) * (anchors[0]['y'] - anchors[1]['y']))
     centerYtop = ((anchors[0]['x']**2 + anchors[0]['y']**2) * (anchors[2]['x'] - anchors[1]['x'])) + ((anchors[1]['x']**2 + anchors[1]['y']**2) * (anchors[0]['x'] - anchors[2]['x'])) + ((anchors[2]['x']**2 + anchors[2]['y']**2) * (anchors[1]['x'] - anchors[0]['x']))
 
@@ -141,16 +149,17 @@ class Slider:
     middleAngle = math.atan2(anchors[1]['y'] - bodyCircleMidpoint['y'],anchors[1]['x'] - bodyCircleMidpoint['x'])
     endAngle = math.atan2(anchors[2]['y'] - bodyCircleMidpoint['y'], anchors[2]['x'] - bodyCircleMidpoint['x'])
 
-    radiaIntervalDirection = radianInterval
+    radianInterval = abs(radianInterval)
+    radianIntervalDirectional = radianInterval
     if (startAngle < endAngle < middleAngle) or (middleAngle < startAngle < endAngle) or (endAngle < middleAngle < startAngle):
-      radiaIntervalDirection *= -1
+      radianIntervalDirectional *= -1
 
-    middleInMiddle = False
+    straightPath = False
     if (startAngle < middleAngle < endAngle) or (endAngle < middleAngle < startAngle):
-      middleInMiddle = True
+      straightPath = True
 
-    progressStart = min(startAngle, endAngle)
-    progressEnd = max(startAngle, endAngle) if middleInMiddle else ((math.pi * 2) - (max(startAngle, endAngle) - progressStart))
+    progressStart = min(startAngle, endAngle) if straightPath else 0
+    progressEnd = max(startAngle, endAngle) if straightPath else ((math.pi * 2) - (max(startAngle, endAngle) - min(startAngle, endAngle)))
     currentAngle = startAngle
     while (progressStart <= progressEnd):
       newX = bodyCircleMidpoint['x'] + math.cos(currentAngle) * bodyCircleRadius
@@ -158,7 +167,7 @@ class Slider:
 
       calculatedPoints.append({'x': newX, 'y': newY})
 
-      currentAngle += radiaIntervalDirection
+      currentAngle += radianIntervalDirectional
       progressStart += radianInterval
 
     return calculatedPoints
