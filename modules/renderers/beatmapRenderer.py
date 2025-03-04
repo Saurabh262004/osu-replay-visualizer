@@ -1,18 +1,22 @@
-from typing import Union
-from math import atan2
+from typing import Union, Optional
 import pygame as pg
 from modules.misc.helpers import mapRange
 from modules.beatmapElements.hitobjects import Hitcircle, Slider, Spinner
 from modules.beatmapElements.beatmap import Beatmap
 
 class MapRenderer:
-  def __init__(self, beatmapURL: dict, skinURL: str, surface: pg.Surface, playFieldResMultiplier: Union[int, float]):
-    self.beatmap = Beatmap(beatmapURL, skinURL)
+  def __init__(self, beatmapURL: dict, skinURL: str, replayURL: Optional[str], surface: pg.Surface, playFieldResMultiplier: Union[int, float]):
+    if replayURL is not None:
+      self.beatmap = Beatmap(beatmapURL, skinURL, replayURL)
+    else:
+      self.beatmap = Beatmap(beatmapURL, skinURL)
+
     self.surface = surface
     self.playFieldResMultiplier = playFieldResMultiplier
     self.playFieldRes = (self.playFieldResMultiplier * 512, self.playFieldResMultiplier * 384)
     self.playFieldXpadding = (self.surface.get_width() - self.playFieldRes[0]) / 2
     self.playFieldYpadding = (self.surface.get_height() - self.playFieldRes[1]) / 2
+    self.drawSliderAnchors = True
 
     for slider in self.beatmap.sliders:
       slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
@@ -28,6 +32,9 @@ class MapRenderer:
       if isinstance(renderObjects[i], Hitcircle): self.drawHitcircle(renderObjects[i], time)
       elif isinstance(renderObjects[i], Slider): self.drawSlider(renderObjects[i], time)
       elif isinstance(renderObjects[i], Spinner): self.drawSpinner(renderObjects[i], time)
+
+    if self.beatmap.mode == 'replay':
+      self.drawCursor(time)
 
   def drawHitcircle(self, hitcircle: Hitcircle, time: int):
     comboStr = str(hitcircle.comboIndex)
@@ -90,67 +97,31 @@ class MapRenderer:
     self.surface.blit(hitcircleOverlayScaled, hitcircleOverlayPos)
 
   def drawSlider(self, slider: Slider, time: int):
-    if slider.curveType == 'L' or slider.curveType == 'B' or slider.curveType == 'P':
-      self.surface.blit(slider.bodySurface, slider.bodySurfacePos)
+    self.surface.blit(slider.bodySurface, slider.bodySurfacePos)
 
-      if time >= slider.time and time <= slider.time + (slider.slideTime * slider.slides):
-        # pointPos = (int(mapRange(time, slider.time, slider.time + (slider.slideTime * slider.slides), 0, len(slider.bodyPath) - 1)) * slider.slides) % len(slider.bodyPath)
+    if time >= slider.time and time <= slider.time + (slider.slideTime * slider.slides):
+      slide = mapRange(time, slider.time, slider.time + slider.slideTime * slider.slides, 1, slider.slides + 1)
+      pointPos = int(abs((slide % 2) - 1) * (len(slider.bodyPath) - 1))
 
-        slide = mapRange(time, slider.time, slider.time + slider.slideTime * slider.slides, 1, slider.slides + 1)
-        pointPos = int(abs((slide % 2) - 1) * (len(slider.bodyPath) - 1))
+      sliderBall = self.beatmap.sliderBallCombos[slider.comboColorIndex]
+      sliderBallScaled = pg.transform.smoothscale_by(sliderBall, self.playFieldResMultiplier)
+      sliderBallPos = (slider.bodyPath[pointPos]['x'] - (sliderBallScaled.get_width() / 2), slider.bodyPath[pointPos]['y'] - (sliderBallScaled.get_height() / 2))
 
-        sliderBall = self.beatmap.sliderBallCombos[slider.comboColorIndex]
-        sliderBallScaled = pg.transform.smoothscale_by(sliderBall, self.playFieldResMultiplier)
-        sliderBallPos = (slider.bodyPath[pointPos]['x'] - (sliderBallScaled.get_width() / 2), slider.bodyPath[pointPos]['y'] - (sliderBallScaled.get_height() / 2))
+      sliderFollowCircle = self.beatmap.skin['elements']['sliderfollowcircle']
+      sliderFollowCircleScaled = pg.transform.smoothscale_by(sliderFollowCircle, self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier)
+      sliderFollowCirclePos = (slider.bodyPath[pointPos]['x'] - (sliderFollowCircleScaled.get_width() / 2), slider.bodyPath[pointPos]['y'] - (sliderFollowCircleScaled.get_height() / 2))
 
-        sliderFollowCircle = self.beatmap.skin['elements']['sliderfollowcircle']
-        sliderFollowCircleScaled = pg.transform.smoothscale_by(sliderFollowCircle, self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier)
-        sliderFollowCirclePos = (slider.bodyPath[pointPos]['x'] - (sliderFollowCircleScaled.get_width() / 2), slider.bodyPath[pointPos]['y'] - (sliderFollowCircleScaled.get_height() / 2))
+      self.surface.blit(sliderBallScaled, sliderBallPos)
+      self.surface.blit(sliderFollowCircleScaled, sliderFollowCirclePos)
 
-        self.surface.blit(sliderBallScaled, sliderBallPos)
-        self.surface.blit(sliderFollowCircleScaled, sliderFollowCirclePos)
-
-    if slider.curveType == 'P':
-      pg.draw.circle(self.surface, (255, 0, 0), ((slider.centerX * self.playFieldResMultiplier) + self.playFieldXpadding, (slider.centerY * self.playFieldResMultiplier) + self.playFieldYpadding), 5)
-
-    # else:
-    #   circleCenterScaled = ((slider.centerX * self.playFieldResMultiplier) + self.playFieldXpadding, (slider.centerY * self.playFieldResMultiplier) + self.playFieldYpadding)
-    #   circleRadScaled = slider.radius * self.playFieldResMultiplier
-
-    #   anchorsScaled = [
-    #     {
-    #       'x': (anchor['x'] * self.playFieldResMultiplier) + self.playFieldXpadding,
-    #       'y': (anchor['y'] * self.playFieldResMultiplier) + self.playFieldYpadding
-    #     } for anchor in slider.anchors
-    #   ]
-
-    #   elipseRect = (
-    #     (circleCenterScaled[0] - circleRadScaled, circleCenterScaled[1] - circleRadScaled),
-    #     (circleRadScaled * 2, circleRadScaled * 2)
-    #   )
-
-    #   startAngle = atan2(anchorsScaled[2]['y'] - circleCenterScaled[1], anchorsScaled[2]['x'] - circleCenterScaled[0])
-    #   stopAngle = atan2(anchorsScaled[0]['y'] - circleCenterScaled[1], anchorsScaled[0]['x'] - circleCenterScaled[1])
-
-      # pg.draw.rect(self.surface, (255, 0, 0), elipseRect)
-
-      # pg.draw.arc(self.surface, (255, 255, 255), elipseRect, startAngle, stopAngle, 1)
-      # pg.draw.circle(self.surface, (0, 255, 0), circleCenterScaled, slider.radius, 1)
-
-    for i in range(slider.totalAnchors):
-      currentAnchor = slider.anchors[i]
-      currentAnchorPos = ((currentAnchor['x'] * self.playFieldResMultiplier) + self.playFieldXpadding, (currentAnchor['y'] * self.playFieldResMultiplier) + self.playFieldYpadding)
-
-      if currentAnchor['red']:
-        col = (255, 0, 0)
-      else:
-        col = (255, 255, 255)
-
-      pg.draw.circle(self.surface, col, currentAnchorPos, 2)
-
-      if i != 0:
-        lastAnchorPos = ((slider.anchors[i-1]['x'] * self.playFieldResMultiplier) + self.playFieldXpadding, (slider.anchors[i-1]['y'] * self.playFieldResMultiplier) + self.playFieldYpadding)
-        pg.draw.line(self.surface, (255, 255, 255), lastAnchorPos, currentAnchorPos, 1)
+    if self.drawSliderAnchors:
+      for i in range(len(slider.anchors)):
+        anchor = slider.anchors[i]
+        anchorColor = (255, 0, 0) if anchor['red'] else (255, 255, 255)
+        anchorPos = (anchor['x'] * self.playFieldResMultiplier + self.playFieldXpadding, anchor['y'] * self.playFieldResMultiplier + self.playFieldYpadding)
+        pg.draw.circle(self.surface, anchorColor, anchorPos, 3)
+        if i > 0:
+          pg.draw.line(self.surface, (255, 255, 255), (slider.anchors[i - 1]['x'] * self.playFieldResMultiplier + self.playFieldXpadding, slider.anchors[i - 1]['y'] * self.playFieldResMultiplier + self.playFieldYpadding), anchorPos, 1)
 
     self.drawHitcircle(slider.head, time)
 
@@ -160,3 +131,26 @@ class MapRenderer:
 
     pg.draw.circle(self.surface, (255, 255, 255), center, 5, 1)
     pg.draw.circle(self.surface, (255, 255, 255), center, self.playFieldRes[1] / 3, 1)
+
+  def drawCursor(self, time: int, trailType: str = 'default'):
+    if trailType not in ['default', 'connected']:
+      raise ValueError('Invalid trail type')
+
+    cursorImg = self.beatmap.cursor
+    cursorTrailImg = self.beatmap.cursorTrail
+
+    cursorScaled = pg.transform.smoothscale_by(cursorImg, self.playFieldResMultiplier)
+    cursorTrailScaled = pg.transform.smoothscale_by(cursorTrailImg, self.playFieldResMultiplier)
+
+    trailLength = 10
+    cursorTrail = self.beatmap.getCursorTrailAtTime(time, trailLength)
+
+    for i in range(len(cursorTrail) - 1):
+      if trailType == 'connected':
+        pg.draw.line(self.surface, (255, 255, 255), (cursorTrail[i]['x'] + self.playFieldXpadding, cursorTrail[i]['y'] + self.playFieldYpadding), (cursorTrail[i + 1]['x'] + self.playFieldXpadding, cursorTrail[i + 1]['y'] + self.playFieldYpadding), 1)
+      else:
+        trailAlpha = mapRange(i, 0, trailLength, 0, 255)
+        cursorTrailScaled.set_alpha(trailAlpha)
+        self.surface.blit(cursorTrailScaled, ((cursorTrail[i]['x'] - (cursorTrailScaled.get_width() / 2)) + self.playFieldXpadding, (cursorTrail[i]['y'] - (cursorTrailScaled.get_height() / 2)) + self.playFieldYpadding))
+
+    self.surface.blit(cursorScaled, ((cursorTrail[-1]['x'] - (cursorScaled.get_width() / 2)) + self.playFieldXpadding, (cursorTrail[-1]['y'] - (cursorScaled.get_height() / 2) + self.playFieldYpadding)))

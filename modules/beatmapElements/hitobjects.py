@@ -217,7 +217,7 @@ class Slider:
       self.bodyPath = self.transformedBodyPath
 
   def renderBody(self):
-    CR = self.beatmap.circleRadius
+    CR = self.beatmap.circleRadius * .9
     minX = minY = maxX = maxY = 0
     translatedBodyPath = []
 
@@ -250,7 +250,7 @@ class Slider:
 
     ## idk how I'm gonna do this the right way... gotta figure out something tho ##
     for point in translatedBodyPath:
-      pg.draw.circle(self.bodySurface, (255, 255, 255, 32), (point['x'], point['y']), CR)
+      pg.draw.circle(self.bodySurface, (255, 255, 255, 40), (point['x'], point['y']), CR)
 
 class Spinner:
   def __init__(self, objectDict: dict, map):

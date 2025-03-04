@@ -1,4 +1,4 @@
-from typing import List, Dict, Union
+from typing import List, Dict, Union, Optional
 from copy import deepcopy
 from pygame import Color as pgColor, transform as pgTransform
 from modules.misc.helpers import tintImage
@@ -7,14 +7,14 @@ from modules.readers.replayReader import getReplayData
 from modules.readers.importSkin import importSkin
 from modules.beatmapElements.hitobjects import *
 
-numType = Union[int, float]
-
+# stores all the data about beatmap and replay #
 class Beatmap:
   def __init__(self, mapURL: str, skinURL: str, replayURL: str = None):
     self.map = readMap(mapURL)
     self.skin = importSkin(skinURL, 'testFiles')
     self.replay = getReplayData(replayURL) if replayURL else None
 
+    # sort out hitobjects #
     self.hitobjects: List[Union[Hitcircle, Slider, Spinner]] = []
     self.hitcircles: List[Hitcircle] = []
     self.sliders: List[Slider] = []
@@ -36,6 +36,29 @@ class Beatmap:
     else:
       self.mode = 'replay'
 
+    # process replay array #
+    if self.mode == 'replay':
+      self.replayArray = self.replay['replayArray']
+      self.replayArrayByTime = []
+
+      for i in range(len(self.replayArray) - 1):
+        currentPos = self.replayArray[i]
+        lastStamp = 0 if self.replayArrayByTime == [] else self.replayArrayByTime[-1]['time']
+        # currentInterval = 0 if currentPos['interval'] <= 0 else currentPos['interval']
+        currentInterval = currentPos['interval']
+
+        self.replayArrayByTime.append(
+          {
+            'x': currentPos['x'],
+            'y': currentPos['y'],
+            'time': lastStamp + currentInterval,
+            'keys': currentPos['keys']
+          }
+        )
+
+      self.replayArrayByTime.sort(key = lambda x: x['time'])
+
+    # get some map data #
     self.HP = self.map['difficulty']['HPDrainRate']
     self.CS = self.map['difficulty']['CircleSize']
     self.AR = self.map['difficulty']['ApproachRate']
@@ -44,6 +67,7 @@ class Beatmap:
     self.sliderTickRate = self.map['difficulty']['SliderTickRate']
     self.objectFadeout = 200
 
+    # calculate some needed values #
     # self.requiredRPM = 60000 / (self.mapDict['timingPoints'][0]['bpm'] * self.sliderMultiplier)
     self.circleRadius = 54.4 - 4.48 * self.CS
 
@@ -68,6 +92,7 @@ class Beatmap:
     else:
       self.requiredRPS = 5
 
+    # get combo colors #
     if 'Colours' in self.map:
       self.comboColors = [pgColor(*self.map['Colours'][color]) for color in self.map['Colors']]
     else:
@@ -77,6 +102,7 @@ class Beatmap:
         self.comboColors.append(pgColor(*self.skin['config'][f'Combo{i}']))
         i += 1
 
+    # set combo indexes and color combo indexes for hitobjects #
     comboIndex = 1
     totalCombo = -1
     for hitobject in self.hitobjects:
@@ -92,11 +118,18 @@ class Beatmap:
         hitobject.head.comboIndex = hitobject.comboIndex
         hitobject.head.comboColorIndex = hitobject.comboColorIndex
 
+    # the multiplier for scaling all in-game elements (such as hitobjects) #
     self.elementsScaleMultiplier = (self.circleRadius * 2) / self.skin['elements']['hitcircle'].get_width()
 
+    # import and process needed skin elements #
     self.hitcircleOverlay = self.skin['elements']['hitcircleoverlay']
     self.hitcircleOverlay = pgTransform.smoothscale_by(self.hitcircleOverlay, self.elementsScaleMultiplier)
+    self.cursor = self.skin['elements']['cursor']
+    self.cursor = pgTransform.smoothscale_by(self.cursor, self.elementsScaleMultiplier)
+    self.cursorTrail = self.skin['elements']['cursortrail']
+    self.cursorTrail = pgTransform.smoothscale_by(self.cursorTrail, self.elementsScaleMultiplier)
 
+    # create combo colored hitcircles, approachcircles, and slider balls #
     self.hitcircleCombos = []
     self.approachcircleCombos = []
     self.sliderBallCombos = []
@@ -120,6 +153,7 @@ class Beatmap:
           self.sliderBallCombos[-1][-1] = pgTransform.smoothscale_by(self.sliderBallCombos[-1][-1], self.elementsScaleMultiplier)
           tintImage(self.sliderBallCombos[-1][-1], self.comboColors[i])
 
+    # calculate slider slide times (the time it takes for the slider to complete one slide) #
     for slider in self.sliders:
       timingPoints = self.effectiveTimingPointAtTime(slider.time)
 
@@ -130,7 +164,8 @@ class Beatmap:
 
       slider.slideTime = slider.length / (self.map['difficulty']['SliderMultiplier'] * 100 * SV) * timingPoints[0]['beatLength']
 
-  def effectiveTimingPointAtTime(self, time: int) -> List[Dict[str, numType]]:
+  # get the timing points that are in effect at a certain time #
+  def effectiveTimingPointAtTime(self, time: int) -> List[Dict[str, Union[int, float]]]:
     possibleUninheritedTimingPoint = None
     possibleInheritedTimingPoint = None
 
@@ -145,6 +180,7 @@ class Beatmap:
 
     return [possibleUninheritedTimingPoint, possibleInheritedTimingPoint]
 
+  # get the hitobjects that are active / on screen at a certain time #
   def hitObjectsAtTime(self, time: int) -> List[Union[Hitcircle, Slider, Spinner]]:
     returnHitobjects = []
 
@@ -160,3 +196,15 @@ class Beatmap:
       returnHitobjects.append(hitobject)
 
     return returnHitobjects
+
+  def getCursorTrailAtTime(self, time: int, trailLength: Optional[int] = 10) -> List[Dict[str, Union[int, float]]]:
+    returnTrail = []
+
+    for pos in self.replayArrayByTime:
+      if pos['time'] > time: break
+      returnTrail.append(pos)
+
+    if len(returnTrail) > trailLength:
+      returnTrail = returnTrail[-trailLength:]
+
+    return returnTrail
