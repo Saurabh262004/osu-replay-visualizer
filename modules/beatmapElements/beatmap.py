@@ -39,12 +39,11 @@ class Beatmap:
     # process replay array #
     if self.mode == 'replay':
       self.replayArray = self.replay['replayArray']
-      self.replayArrayByTime = []
+      self.replayArrayByTime = [{'x': self.replayArray[0]['x'], 'y': self.replayArray[0]['y'], 'time': self.replayArray[0]['interval']}]
 
-      for i in range(len(self.replayArray) - 1):
+      for i in range(1, len(self.replayArray) - 1):
         currentPos = self.replayArray[i]
-        lastStamp = 0 if self.replayArrayByTime == [] else self.replayArrayByTime[-1]['time']
-        # currentInterval = 0 if currentPos['interval'] <= 0 else currentPos['interval']
+        lastStamp = self.replayArrayByTime[-1]['time']
         currentInterval = currentPos['interval']
 
         self.replayArrayByTime.append(

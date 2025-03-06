@@ -709,25 +709,30 @@ class System:
       print('System is currently locked')
       return None
 
+    mousePos = pg.mouse.get_pos()
+
     changeCursor = False
     for buttonID in self.buttons:
       if self.buttons[buttonID].active:
-        if self.buttons[buttonID].section.rect.collidepoint(pg.mouse.get_pos()):
-          changeCursor = 'hand'
+        if not changeCursor:
+          if self.buttons[buttonID].section.rect.collidepoint(mousePos):
+            changeCursor = 'hand'
 
       self.buttons[buttonID].checkEvent(event)
 
     for toggleID in self.toggles:
       if self.toggles[toggleID].active:
-        if self.toggles[toggleID].section.rect.collidepoint(pg.mouse.get_pos()):
-          changeCursor = 'hand'
+        if not changeCursor:
+          if self.toggles[toggleID].section.rect.collidepoint(mousePos):
+            changeCursor = 'hand'
 
       self.toggles[toggleID].checkEvent(event)
 
     for sliderID in self.sliders:
       if self.sliders[sliderID].active:
-        if self.sliders[sliderID].section.rect.collidepoint(pg.mouse.get_pos()):
-          changeCursor = 'hand'
+        if not changeCursor:
+          if self.sliders[sliderID].section.rect.collidepoint(mousePos):
+            changeCursor = 'hand'
 
         self.sliders[sliderID].checkEvent(event)
 

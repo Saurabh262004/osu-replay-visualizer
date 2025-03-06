@@ -20,6 +20,7 @@ class Window:
     self.activeSystems: Dict[str, System] = {}
     self.systemZ: Dict[str, int] = {}
     self.loggedSystemSwitch = None
+    self.customData = {}
 
   def addSystem(self, system: System, systemID: str) -> bool:
     if systemID in self.systems:

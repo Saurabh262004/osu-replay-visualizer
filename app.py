@@ -7,6 +7,8 @@ from appUI.systems.replayList import addReplayList
 from appUI.systems.settings import addSettings
 
 def systemSwitch():
+  global window
+
   if not window.loggedSystemSwitch is None:
 
     if window.loggedSystemSwitch in window.activeSystems:
@@ -24,7 +26,20 @@ def systemSwitch():
     window.loggedSystemSwitch = None
 
 def windowCustomLoop():
+  global window
+
+  if 'loadReplay' in window.customData and window.customData['loadReplay'] is not None:
+    print(window.customData['loadReplay'])
+    window.loggedSystemSwitch = 'main'
+    window.customData['loadReplay'] = None
+
   systemSwitch()
+
+def windowCustomUpdate():
+  print('update')
+
+def windowCustomEvents(event):
+  print(event.type)
 
 userData = None
 with open('data/userData.json', 'r') as rawData:
@@ -35,7 +50,7 @@ for url in userData['URLs']:
     print(f'The {url} : {userData['URLs'][url]} is not a valid url.')
     # do something
 
-window = Window('Replay Veiwer', (800, 450), customLoopProcess=windowCustomLoop)
+window = Window('Replay Veiwer', (800, 450), customLoopProcess=windowCustomLoop, customUpdateProcess=windowCustomUpdate, customEventHandler=windowCustomEvents)
 
 ## add systems ##
 addNav(window)

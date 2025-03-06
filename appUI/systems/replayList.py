@@ -1,10 +1,9 @@
+from typing import Iterable
 import os
 import pygame as pg
 from appUI.colors import AppColors
-from modules.misc.helpers import tintImage
-from modules.UI.UIElements import DynamicValue as DV, Section, TextBox, Button, System, Slider
+from modules.UI.UIElements import DynamicValue as DV, Section, Button, TextBox, System, Slider
 from modules.UI.windowManager import Window
-from typing import Iterable
 
 def getReplayElementY(params):
   system: System = params[0]
@@ -13,30 +12,40 @@ def getReplayElementY(params):
   mainHeight = system.elements['mainSection'].height
   padding = 5
 
-  return ((mainHeight * (15 / 100)) * replayNum) + (replayNum * padding)
+  return (((mainHeight * (7 / 100)) * replayNum) + (replayNum * padding)) + 15
 
-def getReplayElements(replayNames: Iterable[str], system: System):
+def setLoadReplay(params):
+  window = params[0]
+  replayName = params[1]
+  window.customData['loadReplay'] = replayName
+
+def getReplayElements(replayNames: Iterable[str], window: Window, system: System):
   replayNum = 1
   for replayName in replayNames:
-    replaySection = Section(
+    replaySection = Button(
+      section = Section(
       {
         'x': DV('classPer', system.elements['mainSection'], classAttr='width', percent=2),
         'y': DV('customCallable', getReplayElementY, callableParameters=(system, replayNum)),
         'width': DV('classPer', system.elements['mainSection'], classAttr='width', percent=96),
-        'height': DV('classPer', system.elements['mainSection'], classAttr='height', percent=15)
+        'height': DV('classPer', system.elements['mainSection'], classAttr='height', percent=7)
       },
       AppColors.listElement1Heighlight2,
-      borderRadius=10
+      borderRadius=5
+      ),
+      pressedBackground = AppColors.listElement1Heighlight1,
+      onClick = setLoadReplay,
+      onClickParams = (window, replayName)
     )
     system.addElement(replaySection, f'replayList-{replayNum}')
 
     textBox = TextBox(
       Section(
       {
-        'x': DV('classNum', system.elements[f'replayList-{replayNum}'], classAttr='x'),
-        'y': DV('classNum', system.elements[f'replayList-{replayNum}'], classAttr='y'),
-        'width': DV('classNum', system.elements[f'replayList-{replayNum}'], classAttr='width'),
-        'height': DV('classPer', system.elements[f'replayList-{replayNum}'], classAttr='height', percent=50)
+        'x': DV('classNum', system.elements[f'replayList-{replayNum}'].section, classAttr='x'),
+        'y': DV('classNum', system.elements[f'replayList-{replayNum}'].section, classAttr='y'),
+        'width': DV('classNum', system.elements[f'replayList-{replayNum}'].section, classAttr='width'),
+        'height': DV('classNum', system.elements[f'replayList-{replayNum}'].section, classAttr='height')
       },
       pg.Color(0, 0, 0)
       ), replayName, 'Helvetica', pg.Color(200, 200, 200)
@@ -69,7 +78,7 @@ def addReplayList(window: Window, userData: dict):
 
   system.addElement(Section(mainDim, AppColors.background1), 'mainSection')
 
-  getReplayElements(replayNames, system)
+  getReplayElements(replayNames, window, system)
 
   scrollBarDim = {
     'x': DV('customCallable', lambda mainSection: mainSection.width - 8, system.elements['mainSection']),
