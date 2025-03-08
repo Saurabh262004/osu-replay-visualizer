@@ -23,10 +23,10 @@ def beatmap(file, clientVer):
     'hpDrain' : byte(file) if clientVer < 20140609 else single(file),
     'overallDifficulty' : byte(file) if clientVer < 20140609 else single(file),
     'sliderVelocity' : double(file),
-    'standartStarRatings' : getStarRatings(file) if clientVer >= 20140609 else None,
-    'taikoStarRatings' : getStarRatings(file) if clientVer >= 20140609 else None,
-    'CTBStarRatings' : getStarRatings(file) if clientVer >= 20140609 else None,
-    'maniaStarRatings' : getStarRatings(file) if clientVer >= 20140609 else None,
+    'standartStarRatings' : getStarRatings(file) if (clientVer >= 20140609 and clientVer <= 20250107) else None,
+    'taikoStarRatings' : getStarRatings(file) if (clientVer >= 20140609 and clientVer <= 20250107) else None,
+    'CTBStarRatings' : getStarRatings(file) if (clientVer >= 20140609 and clientVer <= 20250107) else None,
+    'maniaStarRatings' : getStarRatings(file) if (clientVer >= 20140609 and clientVer <= 20250107) else None,
     'drainTime' : integer(file) * 1000, # convert to milliseconds
     'totalTime' : integer(file),
     'previewPoint' : integer(file),
@@ -62,6 +62,27 @@ def beatmap(file, clientVer):
 
   return bm
 
+def getDataBase(dbURL, dumpJsonURL=None):
+  with open(dbURL, 'rb') as dbFile:
+    DB = {
+      'clientVersion' : integer(dbFile),
+      'SongsFolderCount' : integer(dbFile),
+      'accountUnlocked' : boolean(dbFile),
+      'accountUnlockDate' : dateTime(dbFile),
+      'playerName' : string(dbFile),
+      'totalBeatmaps' : integer(dbFile),
+      'beatmaps' : []
+    }
+
+    DB['beatmaps'].extend([beatmap(dbFile, DB['clientVersion']) for _ in range(DB['totalBeatmaps'])])
+    DB['userPermission'] = integer(dbFile)
+
+    if (dumpJsonURL):
+      with open(dumpJsonURL, 'w') as dumpFile:
+        dumpFile.write(dumps(DB, indent=2))
+
+    return DB
+
 def beatmapMD5(file, clientVer):
   backtrackLen = 0
 
@@ -91,16 +112,18 @@ def skipAfterMD5(file, clientVer):
     file.seek(39, 1)
 
   # skip star ratings
-  if clientVer >= 20140609:
+  if clientVer >= 20140609 and clientVer <= 20250107:
     for _ in range(4):
-      totalPairsLength = int(integer(file) * 14)
+      totalPairsLength = integer(file) * 14
       file.seek(totalPairsLength, 1)
 
   # skip to timing points
   file.seek(12, 1)
 
   # get timing points length
-  timingPointsLength = integer(file) * 17
+  totalTimingPoints = integer(file)
+  # print(totalTimingPoints)
+  timingPointsLength = totalTimingPoints * 17
 
   # skip more to get to strings
   file.seek(timingPointsLength + 23, 1)
@@ -127,27 +150,6 @@ def skipAfterMD5(file, clientVer):
   else:
     file.seek(5, 1)
 
-def getDataBase(dbURL, dumpJsonURL=None):
-  with open(dbURL, 'rb') as dbFile:
-    DB = {
-      'clientVersion' : integer(dbFile),
-      'SongsFolderCount' : integer(dbFile),
-      'accountUnlocked' : boolean(dbFile),
-      'accountUnlockDate' : dateTime(dbFile),
-      'playerName' : string(dbFile),
-      'totalBeatmaps' : integer(dbFile),
-      'beatmaps' : []
-    }
-
-    DB['beatmaps'].extend([beatmap(dbFile, DB['clientVersion']) for _ in range(DB['totalBeatmaps'])])
-    DB['userPermission'] = integer(dbFile)
-
-    if (dumpJsonURL):
-      with open(dumpJsonURL, 'w') as dumpFile:
-        dumpFile.write(dumps(DB, indent=2))
-
-    return DB
-
 def getMapByMD5(dbURL, MD5):
   with open(dbURL, 'rb') as dbFile:
     clientVer = integer(dbFile)
@@ -160,12 +162,15 @@ def getMapByMD5(dbURL, MD5):
 
     totalBeatmaps = integer(dbFile)
 
-    for _ in range(totalBeatmaps):
+    for i in range(totalBeatmaps):
       currentBeatmapMD5, backtrack = beatmapMD5(dbFile, clientVer)
 
       if currentBeatmapMD5 == MD5:
+        # print('going back')
         dbFile.seek(-backtrack, 1)
         return beatmap(dbFile, clientVer)
+
+      # print(f'skipping beatmap no. {i+1}')
 
       skipAfterMD5(dbFile, clientVer)
 

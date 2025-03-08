@@ -5,11 +5,11 @@ from modules.beatmapElements.hitobjects import Hitcircle, Slider, Spinner
 from modules.beatmapElements.beatmap import Beatmap
 
 class MapRenderer:
-  def __init__(self, beatmapURL: dict, skinURL: str, replayURL: Optional[str], surface: pg.Surface, playFieldResMultiplier: Union[int, float]):
+  def __init__(self, osuURL: str, beatmapURL: dict, skinName: str, replayURL: Optional[str], surface: pg.Surface, playFieldResMultiplier: Union[int, float]):
     if replayURL is not None:
-      self.beatmap = Beatmap(beatmapURL, skinURL, replayURL)
+      self.beatmap = Beatmap(osuURL, beatmapURL, skinName, replayURL)
     else:
-      self.beatmap = Beatmap(beatmapURL, skinURL)
+      self.beatmap = Beatmap(osuURL, beatmapURL, skinName)
 
     self.surface = surface
     self.playFieldResMultiplier = playFieldResMultiplier
@@ -136,14 +136,17 @@ class MapRenderer:
     if trailType not in ['default', 'connected']:
       raise ValueError('Invalid trail type')
 
+    trailLength = 10
+    cursorTrail = self.beatmap.getCursorTrailAtTime(time, trailLength)
+
+    if len(cursorTrail) == 0:
+      return None
+
     cursorImg = self.beatmap.cursor
     cursorTrailImg = self.beatmap.cursorTrail
 
     cursorScaled = pg.transform.smoothscale_by(cursorImg, self.playFieldResMultiplier)
     cursorTrailScaled = pg.transform.smoothscale_by(cursorTrailImg, self.playFieldResMultiplier)
-
-    trailLength = 10
-    cursorTrail = self.beatmap.getCursorTrailAtTime(time, trailLength)
 
     for i in range(len(cursorTrail) - 1):
       if trailType == 'connected':

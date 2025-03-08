@@ -1,10 +1,14 @@
 import os
 import json
+import pygame as pg
 from modules.UI.windowManager import Window
 from appUI.systems.nav import addNav
 from appUI.systems.main import addMain
 from appUI.systems.replayList import addReplayList
 from appUI.systems.settings import addSettings
+from modules.readers.replayReader import getReplayData
+from modules.readers.osudbReader import getMapByMD5
+from modules.renderer.beatmapRenderer import MapRenderer
 
 def systemSwitch():
   global window
@@ -25,21 +29,76 @@ def systemSwitch():
 
     window.loggedSystemSwitch = None
 
+def loadReplay():
+  global window, userData
+
+  # print(window.customData['loadReplay'])
+  window.loggedSystemSwitch = 'main'
+
+  # using an older version of the database file for now because of the recent update #
+  # !!! THIS IS A TEMPORARY FIX UPDATE THIS LATTER !!! #
+
+  # osuDbURL = os.path.join(userData['URLs']['osuFolder'], 'osu!.db')
+  osuDbURL = 'testFiles/osu!-1.db'
+  replayURL = os.path.join(userData['URLs']['osuFolder'], 'Replays', window.customData['loadReplay'] + '.osr')
+  window.customData['loadReplay'] = None
+
+  # get replay data #
+  try:
+    replayData = getReplayData(replayURL)
+  except Exception as e:
+    print(e)
+    return e
+
+  # get beatmap data from the database #
+  try:
+    beatmapData = getMapByMD5(osuDbURL, replayData['beatmapMD5Hash'])
+  except Exception as e:
+    print(e)
+    return e
+
+  # create the beatmap URL and the replay surface #
+  beatmapURL = os.path.join(userData['URLs']['osuFolder'], 'Songs', beatmapData['folderName'], beatmapData['osuFileName'])
+  window.customData['replaySurface'] = pg.surface.Surface((window.screenWidth, window.screenHeight - window.systems['nav'].elements['topNav'].height))
+
+  # initialize the beatmap renderer #
+  try:
+    window.customData['beatmapRenderer'] = MapRenderer(userData['URLs']['osuFolder'], beatmapURL, userData['skin'], replayURL, window.customData['replaySurface'], 1)
+  except Exception as e:
+    print(e)
+    return e
+
+  window.customData['replayLoaded'] = True
+
 def windowCustomLoop():
-  global window
+  global window, userData
 
   if 'loadReplay' in window.customData and window.customData['loadReplay'] is not None:
-    print(window.customData['loadReplay'])
-    window.loggedSystemSwitch = 'main'
-    window.customData['loadReplay'] = None
+    loadReplay()
+
+  if 'replayLoaded' in window.customData and window.customData['replayLoaded']:
+    if 'timeStarted' in window.customData and window.customData['timeStarted']:
+      window.customData['beatmapRenderer'].render(window.time.get_ticks() - window.customData['startTime'])
+      window.screen.blit(window.customData['replaySurface'], (0, window.systems['nav'].elements['topNav'].height))
+    else:
+      window.customData['timeStarted'] = True
+      window.customData['startTime'] = window.time.get_ticks()
+      print('time recorded')
 
   systemSwitch()
 
 def windowCustomUpdate():
+  global window
+
+  if window.customData['firstUpdate']:
+    print('first update')
+    window.customData['firstUpdate'] = False
+
   print('update')
 
 def windowCustomEvents(event):
-  print(event.type)
+  pass
+  # print(event.type)
 
 userData = None
 with open('data/userData.json', 'r') as rawData:
@@ -65,5 +124,7 @@ window.setSystemZ('replayList', 1)
 window.setSystemZ('settings', 2)
 
 window.activateSystems(['nav', 'main'])
+
+window.customData['firstUpdate'] = True
 
 window.openWindow()

@@ -122,8 +122,8 @@ class Window:
   def openWindow(self):
     pg.init()
 
-    time = pg.time
-    clock = time.Clock()
+    self.time = pg.time
+    self.clock = self.time.Clock()
     pg.display.set_caption(self.title)
     self.screen = pg.display.set_mode((self.screenWidth, self.screenHeight), pg.RESIZABLE)
 
@@ -144,22 +144,26 @@ class Window:
         secondResize = not secondResize
         self.__resetUI()
 
-      if self.customLoopProcess:
-        self.customLoopProcess()
-
       self.screen.fill((0, 0, 0))
 
       for systemID in self.systemZ:
         if systemID in self.activeSystems:
           self.activeSystems[systemID].draw()
 
+      if self.customLoopProcess is not None:
+        self.customLoopProcess()
+
       pg.display.flip()
-      clock.tick(self.fps)
+      self.clock.tick(self.fps)
 
   def closeWindow(self):
     self.running = False
     self.deactivateSystems('all')
+
     del self.screen
+    del self.time
+    del self.clock
+
     pg.quit()
 
   def __handleEvents(self):
@@ -167,7 +171,7 @@ class Window:
       return None
 
     for event in pg.event.get():
-      if self.customEventHandler:
+      if self.customEventHandler is not None:
         self.customEventHandler(event)
 
       if event.type == pg.QUIT:
@@ -198,7 +202,7 @@ class Window:
     if not self.running:
       return None
 
-    if self.customUpdateProcess:
+    if self.customUpdateProcess is not None:
       self.customUpdateProcess()
 
     for systemID in self.systemZ:

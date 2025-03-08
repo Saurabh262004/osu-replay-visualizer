@@ -115,6 +115,7 @@ def singleTimingPoint(file):
 
 def timingPoints(file):
   totalTimingPoints = integer(file)
+  # print(totalTimingPoints)
   points = []
 
   points.extend([singleTimingPoint(file) for _ in range(totalTimingPoints)])

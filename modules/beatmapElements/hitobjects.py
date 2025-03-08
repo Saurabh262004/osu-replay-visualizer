@@ -263,34 +263,35 @@ class Slider:
       for point in translatedBodyPath:
         pg.draw.circle(self.bodySurface, (255, 255, 255, alpha), (point['x'], point['y']), radius)
 
-    prevX1, prevY1, prevX2, prevY2 = None, None, None, None
-    outlineColor = (255, 255, 255, 100)
-    for i in range(1, len(translatedBodyPath) - 1):
-      point0 = translatedBodyPath[i-1]
-      point1 = translatedBodyPath[i]
-      point2 = translatedBodyPath[i+1]
+    # !! WILL BE CHANGED !! # 
+    # prevX1, prevY1, prevX2, prevY2 = None, None, None, None
+    # outlineColor = (255, 255, 255, 100)
+    # for i in range(1, len(translatedBodyPath) - 1):
+    #   point0 = translatedBodyPath[i-1]
+    #   point1 = translatedBodyPath[i]
+    #   point2 = translatedBodyPath[i+1]
       
-      TX = point2['x'] - point0['x']
-      TY = point2['y'] - point0['y']
+    #   TX = point2['x'] - point0['x']
+    #   TY = point2['y'] - point0['y']
 
-      TBar = math.sqrt(TX**2 + TY**2)
-      TXnorm = TX / TBar
-      TYnorm = TY / TBar
+    #   TBar = math.sqrt(TX**2 + TY**2)
+    #   TXnorm = TX / TBar
+    #   TYnorm = TY / TBar
       
-      PdashX1 = point1['x'] + (CR * -TYnorm)
-      PdashY1 = point1['y'] + (CR * TXnorm)
+    #   PdashX1 = point1['x'] + (CR * -TYnorm)
+    #   PdashY1 = point1['y'] + (CR * TXnorm)
 
-      PdashX2 = point1['x'] - (CR * -TYnorm)
-      PdashY2 = point1['y'] - (CR * TXnorm)
+    #   PdashX2 = point1['x'] - (CR * -TYnorm)
+    #   PdashY2 = point1['y'] - (CR * TXnorm)
 
-      if not prevX1 is None:
-        pg.draw.aaline(self.bodySurface, outlineColor, (int(prevX1), int(prevY1)), (int(PdashX1), int(PdashY1)), 1)
-        pg.draw.aaline(self.bodySurface, outlineColor, (int(prevX2), int(prevY2)), (int(PdashX2), int(PdashY2)), 1)
+    #   if not prevX1 is None:
+    #     pg.draw.aaline(self.bodySurface, outlineColor, (int(prevX1), int(prevY1)), (int(PdashX1), int(PdashY1)), 1)
+    #     pg.draw.aaline(self.bodySurface, outlineColor, (int(prevX2), int(prevY2)), (int(PdashX2), int(PdashY2)), 1)
 
-      prevX1, prevY1, prevX2, prevY2 = PdashX1, PdashY1, PdashX2, PdashY2
+    #   prevX1, prevY1, prevX2, prevY2 = PdashX1, PdashY1, PdashX2, PdashY2
 
-    pg.draw.circle(self.bodySurface, outlineColor, (translatedBodyPath[0]['x'], translatedBodyPath[0]['y']), CR, 1)
-    pg.draw.circle(self.bodySurface, outlineColor, (translatedBodyPath[-1]['x'], translatedBodyPath[-1]['y']), CR, 1)
+    # pg.draw.circle(self.bodySurface, outlineColor, (translatedBodyPath[0]['x'], translatedBodyPath[0]['y']), CR, 1)
+    # pg.draw.circle(self.bodySurface, outlineColor, (translatedBodyPath[-1]['x'], translatedBodyPath[-1]['y']), CR, 1)
 
 class Spinner:
   def __init__(self, objectDict: dict, map):

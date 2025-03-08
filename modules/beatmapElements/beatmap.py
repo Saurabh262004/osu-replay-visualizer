@@ -9,9 +9,9 @@ from modules.beatmapElements.hitobjects import *
 
 # stores all the data about beatmap and replay #
 class Beatmap:
-  def __init__(self, mapURL: str, skinURL: str, replayURL: str = None):
+  def __init__(self, osuURL: str, mapURL: str, skinName: str, replayURL: str = None):
     self.map = readMap(mapURL)
-    self.skin = importSkin(skinURL, 'testFiles')
+    self.skin = importSkin(skinName, osuURL)
     self.replay = getReplayData(replayURL) if replayURL else None
 
     # sort out hitobjects #

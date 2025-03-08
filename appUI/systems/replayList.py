@@ -10,9 +10,10 @@ def getReplayElementY(params):
   replayNum: int = params[1]
 
   mainHeight = system.elements['mainSection'].height
+  scrollOffset = system.elements['scrollBar'].value
   padding = 5
 
-  return (((mainHeight * (7 / 100)) * replayNum) + (replayNum * padding)) + 15
+  return ((mainHeight * .07 * (replayNum - scrollOffset)) + (replayNum * padding)) + 15
 
 def setLoadReplay(params):
   window = params[0]
@@ -55,19 +56,13 @@ def getReplayElements(replayNames: Iterable[str], window: Window, system: System
     replayNum += 1
 
 def addReplayList(window: Window, userData: dict):
-  replayFolderURL = os.path.join(userData['URLs']['osuURL'], 'Replays')
+  replayFolderURL = os.path.join(userData['URLs']['osuFolder'], 'Replays')
 
   dirList = os.listdir(replayFolderURL)
 
-  replayNames = []
-
-  for file in dirList:
-    if file.endswith('.osr'):
-      replayNames.append(file[0:len(file)-4])
-
-  print(replayNames)
-
   system = System(preLoadState=True)
+
+  replayNames = [file[0:len(file)-4] for file in dirList if file.endswith('.osr')]
 
   mainDim = {
     'x': DV('number', 1),
@@ -77,8 +72,6 @@ def addReplayList(window: Window, userData: dict):
   }
 
   system.addElement(Section(mainDim, AppColors.background1), 'mainSection')
-
-  getReplayElements(replayNames, window, system)
 
   scrollBarDim = {
     'x': DV('customCallable', lambda mainSection: mainSection.width - 8, system.elements['mainSection']),
@@ -98,17 +91,19 @@ def addReplayList(window: Window, userData: dict):
     'vertical',
     Section(scrollBarDim, AppColors.listElement1),
     Section(scrollBarDragDim, AppColors.primary1),
-    (0, 99),
-    -5,
+    (0, len(replayNames)-1),
+    -1,
     AppColors.listElement1,
     {
-      'callable': lambda param: print(f'slider value: {param}'),
+      'callable': system.update,
       'params': None,
-      'sendValue': True
+      'sendValue': False
     },
     False
   )
 
   system.addElement(scrollBar, 'scrollBar')
+
+  getReplayElements(replayNames, window, system)
 
   window.addSystem(system, 'replayList')
