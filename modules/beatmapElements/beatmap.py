@@ -10,9 +10,13 @@ from modules.beatmapElements.hitobjects import *
 # stores all the data about beatmap and replay #
 class Beatmap:
   def __init__(self, osuURL: str, mapURL: str, skinName: str, replayURL: str = None):
+    print('creating a new beatmap...\nreading map data...')
     self.map = readMap(mapURL)
+    print('done.\nimporting skin...')
     self.skin = importSkin(skinName, osuURL)
+    print('done.\nreading replay data again...')
     self.replay = getReplayData(replayURL) if replayURL else None
+    print('done.')
 
     # sort out hitobjects #
     self.hitobjects: List[Union[Hitcircle, Slider, Spinner]] = []
@@ -20,6 +24,7 @@ class Beatmap:
     self.sliders: List[Slider] = []
     self.spinners: List[Spinner] = []
 
+    print('initializing all the hitobjects...')
     for hitobject in self.map['hitobjects']:
       if hitobject['type'] == 'hitcircle':
         self.hitobjects.append(Hitcircle(hitobject, self))
@@ -30,6 +35,7 @@ class Beatmap:
       elif hitobject['type'] == 'spinner':
         self.hitobjects.append(Spinner(hitobject, self))
         self.spinners.append(self.hitobjects[-1])
+    print('done.')
 
     if self.replay is None:
       self.mode = 'preview'
@@ -117,6 +123,8 @@ class Beatmap:
         hitobject.head.comboIndex = hitobject.comboIndex
         hitobject.head.comboColorIndex = hitobject.comboColorIndex
 
+    print('processing skin elements...')
+
     # the multiplier for scaling all in-game elements (such as hitobjects) #
     self.elementsScaleMultiplier = (self.circleRadius * 2) / self.skin['elements']['hitcircle'].get_width()
 
@@ -151,6 +159,8 @@ class Beatmap:
           self.sliderBallCombos[-1].append(ball.copy())
           self.sliderBallCombos[-1][-1] = pgTransform.smoothscale_by(self.sliderBallCombos[-1][-1], self.elementsScaleMultiplier)
           tintImage(self.sliderBallCombos[-1][-1], self.comboColors[i])
+
+    print('done.')
 
     # calculate slider slide times (the time it takes for the slider to complete one slide) #
     for slider in self.sliders:

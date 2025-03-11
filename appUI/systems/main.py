@@ -20,62 +20,15 @@ def addMain(window: Window):
     Section(mainDim, AppColors.background1), 'mainSection'
   )
 
-  # slider1 = Slider(
-  #   'horizontal',
-  #   Section(
-  #     {
-  #       'x': DV('classPer', system.elements['mainSection'], classAttr='width', percent=25),
-  #       'y': DV('classPer', system.elements['mainSection'], classAttr='height', percent=70),
-  #       'width': DV('classPer', system.elements['mainSection'], classAttr='width', percent=50),
-  #       'height': DV('number', 8)
-  #     }, AppColors.listElement1Heighlight1, 5
-  #   ),
-  #   Circle(
-  #     {
-  #       'x': DV('number', 0),
-  #       'y': DV('number', 0),
-  #       'radius': DV('number', 8)
-  #     }, AppColors.primary1
-  #   ),
-  #   (0, 99),
-  #   5,
-  #   AppColors.primary1,
-  #   {
-  #     'callable': lambda param: print(f'slider value: {param}'),
-  #     'params': None,
-  #     'sendValue': True
-  #   }
-  # )
+  replaySectionDim = {
+    'x': DV('number', 0),
+    'y': DV('classNum', window.systems['nav'].elements['topNav'], classAttr='height'),
+    'width': DV('classNum', window, classAttr='screenWidth'),
+    'height': DV('customCallable', lambda window: window.screenHeight - window.systems['nav'].elements['topNav'].height, callableParameters=window)
+  }
 
-  # slider2 = Slider(
-  #   'vertical',
-  #   Section(
-  #     {
-  #       'x': DV('classPer', system.elements['mainSection'], classAttr='width', percent=90),
-  #       'y': DV('classPer', system.elements['mainSection'], classAttr='height', percent=20),
-  #       'width': DV('number', 8),
-  #       'height': DV('classPer', system.elements['mainSection'], classAttr='height', percent=60)
-  #     }, AppColors.listElement1Heighlight1
-  #   ),
-  #   Section(
-  #     {
-  #       'x': DV('number', 0),
-  #       'y': DV('number', 0),
-  #       'width': DV('number', 8),
-  #       'height': DV('number', 14)
-  #     }, AppColors.primary1
-  #   ),
-  #   (0, 99),
-  #   -5,
-  #   AppColors.listElement1Heighlight1,
-  #   {
-  #     'callable': lambda param: print(f'slider value: {param}'),
-  #     'params': None,
-  #     'sendValue': True
-  #   }
-  # )
+  replaySection = Section(replaySectionDim, AppColors.primary1, backgroundSizeType='none')
 
-  # system.addElement(slider1, 'newTestSlider1')
-  # system.addElement(slider2, 'newTestSlider2')
+  system.addElement(replaySection, 'replaySection')
 
   window.addSystem(system, 'main')

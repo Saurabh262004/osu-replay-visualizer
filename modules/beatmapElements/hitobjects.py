@@ -242,6 +242,9 @@ class Slider:
 
     bodySize = (maxX - minX, maxY - minY)
 
+    if self.bodySurface:
+      del self.bodySurface
+
     self.bodySurface = pg.surface.Surface(bodySize, flags=pg.SRCALPHA)
 
     translatedBodyPath = [

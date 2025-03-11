@@ -45,25 +45,39 @@ def loadReplay():
 
   # get replay data #
   try:
+    print('getting replay data...')
     replayData = getReplayData(replayURL)
+    print('done.')
   except Exception as e:
     print(e)
     return e
 
   # get beatmap data from the database #
   try:
+    print('getting beatmap data...')
     beatmapData = getMapByMD5(osuDbURL, replayData['beatmapMD5Hash'])
+    print('done.')
   except Exception as e:
     print(e)
     return e
 
   # create the beatmap URL and the replay surface #
   beatmapURL = os.path.join(userData['URLs']['osuFolder'], 'Songs', beatmapData['folderName'], beatmapData['osuFileName'])
-  window.customData['replaySurface'] = pg.surface.Surface((window.screenWidth, window.screenHeight - window.systems['nav'].elements['topNav'].height))
+  window.systems['main'].elements['replaySection'].background = pg.surface.Surface((window.screenWidth, window.screenHeight - window.systems['nav'].elements['topNav'].height))
+  window.systems['main'].elements['replaySection'].update()
 
   # initialize the beatmap renderer #
   try:
-    window.customData['beatmapRenderer'] = MapRenderer(userData['URLs']['osuFolder'], beatmapURL, userData['skin'], replayURL, window.customData['replaySurface'], 1)
+    print('initializing beatmap renderer...')
+    window.customData['beatmapRenderer'] = MapRenderer(
+      userData['URLs']['osuFolder'],
+      beatmapURL,
+      userData['skin'],
+      replayURL,
+      window.systems['main'].elements['replaySection'].background,
+      1
+    )
+    print('initializing beatmap renderer done.')
   except Exception as e:
     print(e)
     return e
@@ -76,10 +90,11 @@ def windowCustomLoop():
   if 'loadReplay' in window.customData and window.customData['loadReplay'] is not None:
     loadReplay()
 
-  if 'replayLoaded' in window.customData and window.customData['replayLoaded']:
+  if 'replayLoaded' in window.customData and window.customData['replayLoaded'] and 'main' in window.activeSystems:
     if 'timeStarted' in window.customData and window.customData['timeStarted']:
-      window.customData['beatmapRenderer'].render(window.time.get_ticks() - window.customData['startTime'])
-      window.screen.blit(window.customData['replaySurface'], (0, window.systems['nav'].elements['topNav'].height))
+      currentTime = window.time.get_ticks() - window.customData['startTime']
+      # print(currentTime)
+      window.customData['beatmapRenderer'].render(currentTime)
     else:
       window.customData['timeStarted'] = True
       window.customData['startTime'] = window.time.get_ticks()
@@ -93,6 +108,10 @@ def windowCustomUpdate():
   if window.customData['firstUpdate']:
     print('first update')
     window.customData['firstUpdate'] = False
+
+  if 'replayLoaded' in window.customData and window.customData['replayLoaded']:
+    window.systems['main'].elements['replaySection'].background = pg.surface.Surface((window.screenWidth, window.screenHeight - window.systems['nav'].elements['topNav'].height))
+    window.customData['beatmapRenderer'].updateSurface(window.systems['main'].elements['replaySection'].background, 1)
 
   print('update')
 

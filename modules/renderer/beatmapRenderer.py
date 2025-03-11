@@ -6,8 +6,11 @@ from modules.beatmapElements.beatmap import Beatmap
 
 class MapRenderer:
   def __init__(self, osuURL: str, beatmapURL: dict, skinName: str, replayURL: Optional[str], surface: pg.Surface, playFieldResMultiplier: Union[int, float]):
+    print('creating a new renderer...')
     if replayURL is not None:
+      print('initializing beatmap with replay...')
       self.beatmap = Beatmap(osuURL, beatmapURL, skinName, replayURL)
+      print('initializing beatmap done.')
     else:
       self.beatmap = Beatmap(osuURL, beatmapURL, skinName)
 
@@ -17,6 +20,19 @@ class MapRenderer:
     self.playFieldXpadding = (self.surface.get_width() - self.playFieldRes[0]) / 2
     self.playFieldYpadding = (self.surface.get_height() - self.playFieldRes[1]) / 2
     self.drawSliderAnchors = False
+
+    print('transforming and rendering slider bodies...')
+    for slider in self.beatmap.sliders:
+      slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
+      slider.renderBody()
+    print('done.')
+
+  def updateSurface(self, newSurface: pg.Surface, newResMultiplier: Union[int, float]):
+    self.surface = newSurface
+    self.playFieldResMultiplier = newResMultiplier
+    self.playFieldRes = (self.playFieldResMultiplier * 512, self.playFieldResMultiplier * 384)
+    self.playFieldXpadding = (self.surface.get_width() - self.playFieldRes[0]) / 2
+    self.playFieldYpadding = (self.surface.get_height() - self.playFieldRes[1]) / 2
 
     for slider in self.beatmap.sliders:
       slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))

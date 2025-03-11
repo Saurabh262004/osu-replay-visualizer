@@ -7,10 +7,10 @@ from typing import Union, Optional, Callable, Dict, Iterable, Any
 
 numType = Union[int, float]
 containerType = Union['Section', pg.Rect]
-backgroundType = Union[pg.Color, pg.Surface]
+backgroundType = Union[pg.Color, pg.surface.Surface]
 elementType = Union['Section', 'Circle', 'Button', 'Toggle', 'Slider']
 
-VALID_SIZE_TYPES = ('fit', 'fill', 'squish')
+VALID_SIZE_TYPES = ('fit', 'fill', 'squish', 'none')
 DIMENSION_REFERENCE_TYPES = ('number', 'percent', 'dictNum', 'classNum', 'dictPer', 'classPer', 'customCallable')
 
 class DynamicValue:
@@ -125,22 +125,33 @@ class Section:
 
     self.rect.update(self.x, self.y, self.width, self.height)
 
-    if isinstance(self.background, pg.Surface):
+    if isinstance(self.background, pg.surface.Surface):
       if self.backgroundSizeType == 'fit':
         self.drawImage = fit(self.background, (self.width, self.height), self.backgroundSizePercent)
       elif self.backgroundSizeType == 'fill':
         self.drawImage = fill(self.background, (self.width, self.height), self.backgroundSizePercent)
-      else:
+      elif self.backgroundSizeType == 'squish':
         self.drawImage = squish(self.background, (self.width, self.height), self.backgroundSizePercent)
+      elif not self.backgroundSizePercent == 100:
+        self.drawImage = fit(self.background, (self.background.get_width(), self.background.get_height()), self.backgroundSizePercent)
+      else:
+        self.drawImage = self.background
 
       self.imageX = self.x + ((self.width - self.drawImage.get_width()) / 2)
       self.imageY = self.y + ((self.height - self.drawImage.get_height()) / 2)
 
-  def draw(self, surface: pg.Surface):
+  def draw(self, surface: pg.surface.Surface):
     if not (self.active and self.activeDraw):
       return None
 
-    if isinstance(self.background, pg.Surface):
+    if isinstance(self.background, pg.surface.Surface):
+      # if self.backgroundSizeType is None or self.backgroundSizeType == 'none':
+      #   surface.blit(self.background, (self.imageX, self.imageY))
+      #   print(f'bliting raw: {id} to: {self.imageX, self.imageY}')
+      # else:
+      #   surface.blit(self.drawImage, (self.imageX, self.imageY))
+      #   print(f'bliting processed: {id} to: {self.imageX, self.imageY}')
+
       surface.blit(self.drawImage, (self.imageX, self.imageY))
     elif isinstance(self.background, pg.Color):
       pg.draw.rect(surface, self.background, self.rect, border_radius = self.borderRadius)
@@ -198,7 +209,7 @@ class Circle:
       self.y = self.dimensions['y'].value
       self.radius = self.dimensions['radius'].value
 
-    if isinstance(self.background, pg.Surface):
+    if isinstance(self.background, pg.surface.Surface):
       if self.backgroundSizeType == 'fit':
         self.drawImage = fit(self.background, (self.radius * self.sqrt2, self.radius * self.sqrt2))
       elif self.backgroundSizeType == 'fill':
@@ -206,11 +217,11 @@ class Circle:
       else:
         self.drawImage = squish(self.background, (self.radius * 2, self.radius * 2))
 
-  def draw(self, surface: pg.Surface):
+  def draw(self, surface: pg.surface.Surface):
     if not (self.active and self.activeDraw):
       return None
 
-    if isinstance(self.background, pg.Surface):
+    if isinstance(self.background, pg.surface.Surface):
       surface.blit(self.drawImage, (self.x - (self.drawImage.get_width() / 2), self.y - (self.drawImage.get_height() / 2)))
     elif isinstance(self.background, pg.Color):
       pg.draw.circle(surface, self.background, (self.x, self.y), self.radius)
@@ -238,7 +249,7 @@ class TextBox:
     self.textSurface = self.font.render(self.text, True, self.textColor)
     self.textRect = self.textSurface.get_rect(center = self.section.rect.center)
 
-  def draw(self, surface: pg.Surface, drawSection: Optional[bool] = None):
+  def draw(self, surface: pg.surface.Surface, drawSection: Optional[bool] = None):
     if not (self.active and self.activeDraw):
       return None
 
@@ -321,7 +332,7 @@ class Button:
     if self.border > 0:
       self.borderRect.update(newX, newY, newWidth, newHeight)
 
-  def draw(self, surface: pg.Surface):
+  def draw(self, surface: pg.surface.Surface):
     if not (self.active and self.activeDraw):
       return None
 
@@ -396,7 +407,7 @@ class Toggle:
     self.borderRect.update(newBorderX, newBorderY, newBorderWidth, newBorderHeight)
     self.innerBox.update(newInnerX, newInnerY, newInnerWidth, newInnerHeight)
 
-  def draw(self, surface: pg.Surface):
+  def draw(self, surface: pg.surface.Surface):
     if not (self.active and self.activeDraw):
       return None
 
@@ -551,7 +562,7 @@ class Slider():
     self.dragElement.update()
     self.filledSlider.update()
 
-  def draw(self, surface: pg.Surface):
+  def draw(self, surface: pg.surface.Surface):
     if not (self.active and self.activeDraw):
       return None
 
@@ -631,7 +642,7 @@ class Slider():
     return False
 
 class System:
-  def __init__(self, surface: Optional[pg.Surface] = None, preLoadState: Optional[bool] = False):
+  def __init__(self, surface: Optional[pg.surface.Surface] = None, preLoadState: Optional[bool] = False):
     self.locked = preLoadState
 
     if not self.locked:
@@ -648,6 +659,8 @@ class System:
     self.buttons: Dict[str, Button] = {}
     self.toggles: Dict[str, Toggle] = {}
     self.sliders: Dict[str, Slider] = {}
+    
+    self.firstDraw = True
 
   def addElement(self, element: elementType, elementID: str) -> bool:
     if elementID in self.elements:
@@ -689,8 +702,17 @@ class System:
 
     if not idList == None:
       for elementID in idList:
-        if self.elements[elementID].active:
+        if self.elements[elementID].active and self.elements[elementID].activeDraw:
+          if self.firstDraw:
+            print(f'drawing: {elementID}')
+          # if isinstance(self.elements[elementID], Section):
+          #   self.elements[elementID].draw(self.surface, elementID)
+          # else:
           self.elements[elementID].draw(self.surface)
+          # if elementID == 'replaySection' and isinstance(self.elements[elementID].background, pg.surface.Surface):
+          #   self.surface.blit(self.elements[elementID].background, (0, 0))
+
+    self.firstDraw = False
 
   def update(self, elementIDs: Optional[Iterable] = None):
     if self.locked:
@@ -741,7 +763,7 @@ class System:
     else:
       pg.mouse.set_cursor(pg.SYSTEM_CURSOR_ARROW)
 
-  def initiate(self, surface: pg.Surface):
+  def initiate(self, surface: pg.surface.Surface):
     self.surface = surface
 
     self.locked = False

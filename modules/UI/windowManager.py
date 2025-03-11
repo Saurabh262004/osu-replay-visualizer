@@ -15,6 +15,7 @@ class Window:
     self.screenWidth = max(self.screenRes[0], self.minRes[0])
     self.screenHeight = max(self.screenRes[1], self.minRes[1])
     self.fps = fps
+    # self.fps = 2
     self.running = False
     self.systems: Dict[str, System] = {}
     self.activeSystems: Dict[str, System] = {}
@@ -146,12 +147,15 @@ class Window:
 
       self.screen.fill((0, 0, 0))
 
+      if self.customLoopProcess is not None:
+        self.customLoopProcess()
+
       for systemID in self.systemZ:
         if systemID in self.activeSystems:
           self.activeSystems[systemID].draw()
 
-      if self.customLoopProcess is not None:
-        self.customLoopProcess()
+      # if 'replayLoaded' in self.customData and self.customData['replayLoaded'] and 'main' in self.activeSystems:
+      #   self.screen.blit(self.systems['main'].elements['replaySection'].background, (0, 0))
 
       pg.display.flip()
       self.clock.tick(self.fps)
