@@ -104,6 +104,8 @@ def singleIntFloatPair(file):
   byte(file)
   pair.append(single(file))
 
+  return pair
+
 def IntFloatPairs(file):
   totalPairs = integer(file)
   pairs = []

@@ -51,7 +51,7 @@ def addNav(window: Window):
       'x': DV('number', 0),
       'y': DV('number', 0),
       'width': DV('classNum', system.elements['mainSection'], classAttr='width'),
-      'height': DV('classPer', system.elements['mainSection'], classAttr='height', percent=10)
+      'height': DV('classPer', system.elements['mainSection'], classAttr='height', percent=7)
     }, AppColors.listElement1), 'topNav'
   )
 

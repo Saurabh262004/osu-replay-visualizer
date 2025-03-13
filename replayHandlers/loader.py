@@ -8,13 +8,9 @@ from modules.renderer.beatmapRenderer import MapRenderer
 import pygame as pg
 
 def loadRendererWithReplay(window: Window, userData: dict):
-  # print(window.customData['loadReplay'])
   window.loggedSystemSwitch = 'main'
 
-  # using an older version of the database file for now because of the recent update #
-  # !!! THIS IS A TEMPORARY FIX UPDATE THIS LATTER !!! #
-  # osuDbURL = os.path.join(userData['URLs']['osuFolder'], 'osu!.db')
-  osuDbURL = 'testFiles/osu!-1.db'
+  osuDbURL = os.path.join(userData['URLs']['osuFolder'], 'osu!.db')
   replayURL = os.path.join(userData['URLs']['osuFolder'], 'Replays', window.customData['loadReplay'] + '.osr')
   window.customData['loadReplay'] = None
 

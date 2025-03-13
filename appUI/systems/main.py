@@ -48,11 +48,11 @@ def addMain(window: Window):
 
   replayTimeline = Slider(
     'horizontal',
-    Section(replayTimelineDim, AppColors.listElement1Heighlight2, borderRadius=2),
+    Section(replayTimelineDim, AppColors.listElement1, borderRadius=2),
     Section(replayTimelineDragDim, AppColors.cream, 2),
     (0, 100),
     1,
-    AppColors.primary1,
+    AppColors.darkGray,
     {
       'callable': timelineCallback,
       'params': window,

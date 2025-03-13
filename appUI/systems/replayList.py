@@ -8,12 +8,14 @@ from modules.UI.windowManager import Window
 def getReplayElementY(params):
   system: System = params[0]
   replayNum: int = params[1]
+  window: Window = params[2]
 
   mainHeight = system.elements['mainSection'].height
   scrollOffset = system.elements['scrollBar'].value
-  padding = 5
+  relativePadding = 5
+  absolutePadding = window.systems['nav'].elements['topNav'].height * .5
 
-  return ((mainHeight * .07 * (replayNum - scrollOffset)) + (replayNum * padding)) + 15
+  return ((mainHeight * .05 * (replayNum - scrollOffset)) + (replayNum * relativePadding)) + absolutePadding
 
 def setLoadReplay(params):
   window = params[0]
@@ -27,9 +29,9 @@ def getReplayElements(replayNames: Iterable[str], window: Window, system: System
       section = Section(
       {
         'x': DV('classPer', system.elements['mainSection'], classAttr='width', percent=2),
-        'y': DV('customCallable', getReplayElementY, callableParameters=(system, replayNum)),
+        'y': DV('customCallable', getReplayElementY, callableParameters=(system, replayNum, window)),
         'width': DV('classPer', system.elements['mainSection'], classAttr='width', percent=96),
-        'height': DV('classPer', system.elements['mainSection'], classAttr='height', percent=7)
+        'height': DV('classPer', system.elements['mainSection'], classAttr='height', percent=5)
       },
       AppColors.listElement1Heighlight2,
       borderRadius=5

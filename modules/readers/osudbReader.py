@@ -74,8 +74,12 @@ def getDataBase(dbURL, dumpJsonURL=None):
       'beatmaps' : []
     }
 
+    # print('got here')
+
     DB['beatmaps'].extend([beatmap(dbFile, DB['clientVersion']) for _ in range(DB['totalBeatmaps'])])
     DB['userPermission'] = integer(dbFile)
+
+    # print('probably did not get here')
 
     if (dumpJsonURL):
       with open(dumpJsonURL, 'w') as dumpFile:
