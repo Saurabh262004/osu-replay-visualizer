@@ -6,9 +6,8 @@ from appUI.systems.nav import addNav
 from appUI.systems.main import addMain
 from appUI.systems.replayList import addReplayList
 from appUI.systems.settings import addSettings
-from modules.readers.replayReader import getReplayData
-from modules.readers.osudbReader import getMapByMD5
-from modules.renderer.beatmapRenderer import MapRenderer
+from replayHandlers.loader import loadRendererWithReplay
+from replayHandlers.playbackHandler import handleReplayPlayback, pauseToggle
 
 def systemSwitch():
   global window
@@ -29,76 +28,14 @@ def systemSwitch():
 
     window.loggedSystemSwitch = None
 
-def loadReplay():
-  global window, userData
-
-  # print(window.customData['loadReplay'])
-  window.loggedSystemSwitch = 'main'
-
-  # using an older version of the database file for now because of the recent update #
-  # !!! THIS IS A TEMPORARY FIX UPDATE THIS LATTER !!! #
-
-  # osuDbURL = os.path.join(userData['URLs']['osuFolder'], 'osu!.db')
-  osuDbURL = 'testFiles/osu!-1.db'
-  replayURL = os.path.join(userData['URLs']['osuFolder'], 'Replays', window.customData['loadReplay'] + '.osr')
-  window.customData['loadReplay'] = None
-
-  # get replay data #
-  try:
-    print('getting replay data...')
-    replayData = getReplayData(replayURL)
-    print('done.')
-  except Exception as e:
-    print(e)
-    return e
-
-  # get beatmap data from the database #
-  try:
-    print('getting beatmap data...')
-    beatmapData = getMapByMD5(osuDbURL, replayData['beatmapMD5Hash'])
-    print('done.')
-  except Exception as e:
-    print(e)
-    return e
-
-  # create the beatmap URL and the replay surface #
-  beatmapURL = os.path.join(userData['URLs']['osuFolder'], 'Songs', beatmapData['folderName'], beatmapData['osuFileName'])
-  window.systems['main'].elements['replaySection'].background = pg.surface.Surface((window.screenWidth, window.screenHeight - window.systems['nav'].elements['topNav'].height))
-  window.systems['main'].elements['replaySection'].update()
-
-  # initialize the beatmap renderer #
-  try:
-    print('initializing beatmap renderer...')
-    window.customData['beatmapRenderer'] = MapRenderer(
-      userData['URLs']['osuFolder'],
-      beatmapURL,
-      userData['skin'],
-      replayURL,
-      window.systems['main'].elements['replaySection'].background,
-      1
-    )
-    print('initializing beatmap renderer done.')
-  except Exception as e:
-    print(e)
-    return e
-
-  window.customData['replayLoaded'] = True
-
 def windowCustomLoop():
   global window, userData
 
   if 'loadReplay' in window.customData and window.customData['loadReplay'] is not None:
-    loadReplay()
+    loadRendererWithReplay(window, userData)
 
   if 'replayLoaded' in window.customData and window.customData['replayLoaded'] and 'main' in window.activeSystems:
-    if 'timeStarted' in window.customData and window.customData['timeStarted']:
-      currentTime = window.time.get_ticks() - window.customData['startTime']
-      # print(currentTime)
-      window.customData['beatmapRenderer'].render(currentTime)
-    else:
-      window.customData['timeStarted'] = True
-      window.customData['startTime'] = window.time.get_ticks()
-      print('time recorded')
+    handleReplayPlayback(window)
 
   systemSwitch()
 
@@ -109,15 +46,24 @@ def windowCustomUpdate():
     print('first update')
     window.customData['firstUpdate'] = False
 
-  if 'replayLoaded' in window.customData and window.customData['replayLoaded']:
+  resChange = False
+  if 'lastScreenRes' in window.customData and window.customData['lastScreenRes'] != (window.screenWidth, window.screenHeight):
+    resChange = True
+
+  if resChange and 'replayLoaded' in window.customData and window.customData['replayLoaded'] and not window.customData['firstUpdate']:
     window.systems['main'].elements['replaySection'].background = pg.surface.Surface((window.screenWidth, window.screenHeight - window.systems['nav'].elements['topNav'].height))
     window.customData['beatmapRenderer'].updateSurface(window.systems['main'].elements['replaySection'].background, 1)
+
+  window.customData['lastScreenRes'] = (window.screenWidth, window.screenHeight)
 
   print('update')
 
 def windowCustomEvents(event):
-  pass
-  # print(event.type)
+  if event.type == pg.KEYDOWN:
+    if event.key == pg.K_SPACE:
+      pauseToggle(window)
+  # else:
+  #   print(event.type)
 
 userData = None
 with open('data/userData.json', 'r') as rawData:

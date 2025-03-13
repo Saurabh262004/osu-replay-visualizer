@@ -12,6 +12,7 @@ elementType = Union['Section', 'Circle', 'Button', 'Toggle', 'Slider']
 
 VALID_SIZE_TYPES = ('fit', 'fill', 'squish', 'none')
 DIMENSION_REFERENCE_TYPES = ('number', 'percent', 'dictNum', 'classNum', 'dictPer', 'classPer', 'customCallable')
+SLIDER_ONCHANGE_KEYS = ('callable', 'params', 'sendValue')
 
 class DynamicValue:
   def __init__(self, referenceType: str, reference: Union[Callable, numType, Dict[str, numType], object], callableParameters: Optional[Any] = None, dictKey: Optional[str] = None, classAttr: Optional[str] = None, percent: Optional[numType] = None):
@@ -424,7 +425,6 @@ class Toggle:
     else:
       pg.draw.rect(surface, self.toggledBackground, self.innerBox, border_radius = self.section.borderRadius)
 
-SLIDER_ONCHANGE_KEYS = ('callable', 'params', 'sendValue')
 class Slider():
   def __init__(self, orientation: str, section: Section, dragElement: Union[Section, Circle], valueRange: Iterable[numType], scrollSpeed: numType, filledSliderBackground: backgroundType, onChangeInfo: Optional[Dict] = None, hoverToScroll: Optional[bool] = True):
     self.orientation = orientation
@@ -594,9 +594,8 @@ class Slider():
       self.pressed = True
     elif event.type == pg.MOUSEBUTTONUP and event.button == 1:
       if self.pressed:
-        self.callback()
-
         self.pressed = False
+        self.callback()
       else:
         return False
     elif event.type == pg.MOUSEWHEEL:
@@ -627,9 +626,7 @@ class Slider():
         if self.value != updatedValue:
           self.value = updatedValue
 
-          self.dragElement.update()
-          self.filledSlider.update()
-
+          self.update()
           self.callback()
           return True
         return False
@@ -637,6 +634,7 @@ class Slider():
 
     if self.pressed:
       self.updateValue()
+      self.update()
       return True
 
     return False
@@ -703,14 +701,7 @@ class System:
     if not idList == None:
       for elementID in idList:
         if self.elements[elementID].active and self.elements[elementID].activeDraw:
-          if self.firstDraw:
-            print(f'drawing: {elementID}')
-          # if isinstance(self.elements[elementID], Section):
-          #   self.elements[elementID].draw(self.surface, elementID)
-          # else:
           self.elements[elementID].draw(self.surface)
-          # if elementID == 'replaySection' and isinstance(self.elements[elementID].background, pg.surface.Surface):
-          #   self.surface.blit(self.elements[elementID].background, (0, 0))
 
     self.firstDraw = False
 
@@ -756,7 +747,7 @@ class System:
           if self.sliders[sliderID].section.rect.collidepoint(mousePos):
             changeCursor = 'hand'
 
-        self.sliders[sliderID].checkEvent(event)
+      self.sliders[sliderID].checkEvent(event)
 
     if changeCursor == 'hand':
       pg.mouse.set_cursor(pg.SYSTEM_CURSOR_HAND)

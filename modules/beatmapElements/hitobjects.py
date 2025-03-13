@@ -193,6 +193,7 @@ class Slider:
 
       ## don't think this is still good enough... ##
       lastDistance = 0
+      self.bodyPath = []
       self.bodyPath.append(self.transformedBodyPath[0])
       targetDistance = 5
       for i in range(1, len(self.transformedBodyPath)):
@@ -242,9 +243,6 @@ class Slider:
 
     bodySize = (maxX - minX, maxY - minY)
 
-    if self.bodySurface:
-      del self.bodySurface
-
     self.bodySurface = pg.surface.Surface(bodySize, flags=pg.SRCALPHA)
 
     translatedBodyPath = [
@@ -259,10 +257,16 @@ class Slider:
 
     ## idk how I'm gonna do this the right way... gotta figure out something tho ##
     totalAlphaIterations = 20
-    maxAlpha = 80
+    sliderOutlineAlpha = 150
+    sliderOutlineSize = .1
+    maxAlpha = 90
     for i in range(totalAlphaIterations):
       alpha = i * (maxAlpha / totalAlphaIterations)
       radius = CR - (i * (CR / totalAlphaIterations))
+
+      if radius >= (CR * (1 - sliderOutlineSize)):
+        alpha = sliderOutlineAlpha
+
       for point in translatedBodyPath:
         pg.draw.circle(self.bodySurface, (255, 255, 255, alpha), (point['x'], point['y']), radius)
 

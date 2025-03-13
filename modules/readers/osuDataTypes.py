@@ -93,9 +93,39 @@ def IntDoublePairs(file):
 
   return pairs
 
-def getStarRatings(file):
-  pairs = IntDoublePairs(file)
+def singleIntFloatPair(file):
+  pair = []
 
+  # intFlag
+  byte(file)
+  pair.append(integer(file))
+
+  # floatFlag
+  byte(file)
+  pair.append(single(file))
+
+def IntFloatPairs(file):
+  totalPairs = integer(file)
+  pairs = []
+
+  pairs.extend([singleIntFloatPair(file) for _ in range(totalPairs)])
+
+  return pairs
+
+def getStarRatings(file, clientVer):
+  pairs = []
+
+  if clientVer >= 20140609:
+    if clientVer > 20250107:
+      # print('getting int-float')
+      pairs = IntFloatPairs(file)
+    else:
+      # print('getting int-double')
+      pairs = IntDoublePairs(file)
+  else:
+    return None
+
+  # print(pairs)
   for pair in pairs:
     pair[0] = decodeBinValue(pair[0], MODS_ABRV)
 
