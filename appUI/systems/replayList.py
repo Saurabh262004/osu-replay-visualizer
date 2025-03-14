@@ -57,8 +57,8 @@ def getReplayElements(replayNames: Iterable[str], window: Window, system: System
     system.addElement(textBox, f'replayListText-{replayNum}')
     replayNum += 1
 
-def addReplayList(window: Window, userData: dict):
-  replayFolderURL = os.path.join(userData['URLs']['osuFolder'], 'Replays')
+def addReplayList(window: Window):
+  replayFolderURL = os.path.join(window.customData['userData']['URLs']['osuFolder'], 'Replays')
 
   dirList = os.listdir(replayFolderURL)
 

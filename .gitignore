@@ -4,3 +4,4 @@ testFiles/
 assets/
 *.pyc
 __init__.py
+setup.py

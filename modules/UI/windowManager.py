@@ -154,9 +154,6 @@ class Window:
         if systemID in self.activeSystems:
           self.activeSystems[systemID].draw()
 
-      # if 'replayLoaded' in self.customData and self.customData['replayLoaded'] and 'main' in self.activeSystems:
-      #   self.screen.blit(self.systems['main'].elements['replaySection'].background, (0, 0))
-
       pg.display.flip()
       self.clock.tick(self.fps)
 

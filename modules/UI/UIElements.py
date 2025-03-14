@@ -146,13 +146,6 @@ class Section:
       return None
 
     if isinstance(self.background, pg.surface.Surface):
-      # if self.backgroundSizeType is None or self.backgroundSizeType == 'none':
-      #   surface.blit(self.background, (self.imageX, self.imageY))
-      #   print(f'bliting raw: {id} to: {self.imageX, self.imageY}')
-      # else:
-      #   surface.blit(self.drawImage, (self.imageX, self.imageY))
-      #   print(f'bliting processed: {id} to: {self.imageX, self.imageY}')
-
       surface.blit(self.drawImage, (self.imageX, self.imageY))
     elif isinstance(self.background, pg.Color):
       pg.draw.rect(surface, self.background, self.rect, border_radius = self.borderRadius)
@@ -560,6 +553,7 @@ class Slider():
     self.value = mapRange(relativePos, start, end, self.valueRange[0], self.valueRange[1])
 
     self.dragElement.update()
+    self.mapPosition.resolveValue()
     self.filledSlider.update()
 
   def draw(self, surface: pg.surface.Surface):
@@ -634,7 +628,6 @@ class Slider():
 
     if self.pressed:
       self.updateValue()
-      self.update()
       return True
 
     return False

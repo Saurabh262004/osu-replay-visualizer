@@ -199,7 +199,7 @@ class Beatmap:
     for hitobject in self.hitobjects:
       if hitobject.time > timeClose: break
       if isinstance(hitobject, Hitcircle) and hitobject.time < timeOpenHitcircle: continue
-      if isinstance(hitobject, Slider) and (hitobject.time + (hitobject.slideTime * hitobject.slides)) < time: continue
+      if isinstance(hitobject, Slider) and (hitobject.time + (hitobject.slideTime * hitobject.slides) + self.objectFadeout) < time: continue
       if isinstance(hitobject, Spinner) and hitobject.endTime < time: continue
 
       returnHitobjects.append(hitobject)

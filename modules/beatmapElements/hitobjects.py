@@ -191,7 +191,7 @@ class Slider:
           } for point in curve
         ])
 
-      ## don't think this is still good enough... ##
+      ## don't think this is still good enough... but it's fine for now ##
       lastDistance = 0
       self.bodyPath = []
       self.bodyPath.append(self.transformedBodyPath[0])
@@ -223,43 +223,37 @@ class Slider:
       ]
       self.bodyPath = self.transformedBodyPath
 
-  def renderBody(self):
-    CR = self.beatmap.circleRadius * .9
+  def renderBody(self, renderResMultiplier):
+    CR = (self.beatmap.circleRadius * .9) * renderResMultiplier * 2
     minX = minY = maxX = maxY = 0
     translatedBodyPath = []
 
     for point in self.bodyPath:
-      if minX > (point['x'] - CR):
-        minX = (point['x'] - CR)
-
-      if maxX < (point['x'] + CR):
-        maxX = (point['x'] + CR)
-
-      if minY > (point['y'] - CR):
-        minY = (point['y'] - CR)
-
-      if maxY < (point['y'] + CR):
-        maxY = (point['y'] + CR)
+      minX = min(minX, point['x'] - CR)
+      maxX = max(maxX, point['x'] + CR)
+      minY = min(minY, point['y'] - CR)
+      maxY = max(maxY, point['y'] + CR)
 
     bodySize = (maxX - minX, maxY - minY)
+    highResSize = (bodySize[0] * 2, bodySize[1] * 2)
 
-    self.bodySurface = pg.surface.Surface(bodySize, flags=pg.SRCALPHA)
+    highResBodySurface = pg.surface.Surface(highResSize, flags=pg.SRCALPHA)
 
     translatedBodyPath = [
       {
-        'x': point['x'] - minX,
-        'y': point['y'] - minY
+        'x': (point['x'] - minX) * 2,
+        'y': (point['y'] - minY) * 2
       } for point in self.bodyPath
     ]
 
-    self.bodySurfacePos = (minX, minY)
-    self.bodySurface.fill((0, 0, 0, 0))
+    self.bodySurfacePos = (minX / renderResMultiplier, minY / renderResMultiplier)
+    highResBodySurface.fill((0, 0, 0, 0))
 
-    ## idk how I'm gonna do this the right way... gotta figure out something tho ##
     totalAlphaIterations = 20
     sliderOutlineAlpha = 150
     sliderOutlineSize = .1
     maxAlpha = 90
+
     for i in range(totalAlphaIterations):
       alpha = i * (maxAlpha / totalAlphaIterations)
       radius = CR - (i * (CR / totalAlphaIterations))
@@ -268,37 +262,9 @@ class Slider:
         alpha = sliderOutlineAlpha
 
       for point in translatedBodyPath:
-        pg.draw.circle(self.bodySurface, (255, 255, 255, alpha), (point['x'], point['y']), radius)
+        pg.draw.circle(highResBodySurface, (255, 255, 255, alpha), (point['x'], point['y']), radius)
 
-    # !! WILL BE CHANGED !! # 
-    # prevX1, prevY1, prevX2, prevY2 = None, None, None, None
-    # outlineColor = (255, 255, 255, 100)
-    # for i in range(1, len(translatedBodyPath) - 1):
-    #   point0 = translatedBodyPath[i-1]
-    #   point1 = translatedBodyPath[i]
-    #   point2 = translatedBodyPath[i+1]
-      
-    #   TX = point2['x'] - point0['x']
-    #   TY = point2['y'] - point0['y']
-
-    #   TBar = math.sqrt(TX**2 + TY**2)
-    #   TXnorm = TX / TBar
-    #   TYnorm = TY / TBar
-      
-    #   PdashX1 = point1['x'] + (CR * -TYnorm)
-    #   PdashY1 = point1['y'] + (CR * TXnorm)
-
-    #   PdashX2 = point1['x'] - (CR * -TYnorm)
-    #   PdashY2 = point1['y'] - (CR * TXnorm)
-
-    #   if not prevX1 is None:
-    #     pg.draw.aaline(self.bodySurface, outlineColor, (int(prevX1), int(prevY1)), (int(PdashX1), int(PdashY1)), 1)
-    #     pg.draw.aaline(self.bodySurface, outlineColor, (int(prevX2), int(prevY2)), (int(PdashX2), int(PdashY2)), 1)
-
-    #   prevX1, prevY1, prevX2, prevY2 = PdashX1, PdashY1, PdashX2, PdashY2
-
-    # pg.draw.circle(self.bodySurface, outlineColor, (translatedBodyPath[0]['x'], translatedBodyPath[0]['y']), CR, 1)
-    # pg.draw.circle(self.bodySurface, outlineColor, (translatedBodyPath[-1]['x'], translatedBodyPath[-1]['y']), CR, 1)
+    self.bodySurface = pg.transform.smoothscale(highResBodySurface, bodySize)
 
 class Spinner:
   def __init__(self, objectDict: dict, map):

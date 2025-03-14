@@ -24,7 +24,7 @@ class MapRenderer:
     # print('transforming and rendering slider bodies...')
     for slider in self.beatmap.sliders:
       slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
-      slider.renderBody()
+      slider.renderBody(self.playFieldResMultiplier)
     # print('done.')
 
   def updateSurface(self, newSurface: pg.Surface, newResMultiplier: Union[int, float]):
@@ -36,7 +36,7 @@ class MapRenderer:
 
     for slider in self.beatmap.sliders:
       slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
-      slider.renderBody()
+      slider.renderBody(self.playFieldResMultiplier)
 
   def render(self, time: int):
     renderObjects = self.beatmap.hitObjectsAtTime(time)
@@ -113,6 +113,20 @@ class MapRenderer:
     self.surface.blit(hitcircleOverlayScaled, hitcircleOverlayPos)
 
   def drawSlider(self, slider: Slider, time: int):
+
+    if slider.time >= time:
+      drawWindowStart = slider.time - self.beatmap.preempt
+      fadeWindowEnd = drawWindowStart + self.beatmap.fadeIn
+      sliderAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, 255)
+    else:
+      sliderDurationEnd = slider.time + (slider.slideTime * slider.slides)
+      if sliderDurationEnd <= time:
+        sliderAlpha = mapRange(time, sliderDurationEnd, sliderDurationEnd + self.beatmap.objectFadeout, 255, 0)
+      else:
+        sliderAlpha = 255
+
+    slider.bodySurface.set_alpha(sliderAlpha)
+
     self.surface.blit(slider.bodySurface, slider.bodySurfacePos)
 
     if time >= slider.time and time <= slider.time + (slider.slideTime * slider.slides):
@@ -166,10 +180,10 @@ class MapRenderer:
 
     for i in range(len(cursorTrail) - 1):
       if trailType == 'connected':
-        pg.draw.line(self.surface, (255, 255, 255), (cursorTrail[i]['x'] + self.playFieldXpadding, cursorTrail[i]['y'] + self.playFieldYpadding), (cursorTrail[i + 1]['x'] + self.playFieldXpadding, cursorTrail[i + 1]['y'] + self.playFieldYpadding), 1)
+        pg.draw.line(self.surface, (255, 255, 255), ((cursorTrail[i]['x'] * self.playFieldResMultiplier) + self.playFieldXpadding, cursorTrail[i]['y'] + self.playFieldYpadding), (cursorTrail[i + 1]['x'] + self.playFieldXpadding, (cursorTrail[i + 1]['y'] * self.playFieldResMultiplier) + self.playFieldYpadding), 1)
       else:
         trailAlpha = mapRange(i, 0, trailLength, 0, 255)
         cursorTrailScaled.set_alpha(trailAlpha)
-        self.surface.blit(cursorTrailScaled, ((cursorTrail[i]['x'] - (cursorTrailScaled.get_width() / 2)) + self.playFieldXpadding, (cursorTrail[i]['y'] - (cursorTrailScaled.get_height() / 2)) + self.playFieldYpadding))
+        self.surface.blit(cursorTrailScaled, (((cursorTrail[i]['x'] * self.playFieldResMultiplier) - (cursorTrailScaled.get_width() / 2)) + self.playFieldXpadding, ((cursorTrail[i]['y'] * self.playFieldResMultiplier) - (cursorTrailScaled.get_height() / 2)) + self.playFieldYpadding))
 
-    self.surface.blit(cursorScaled, ((cursorTrail[-1]['x'] - (cursorScaled.get_width() / 2)) + self.playFieldXpadding, (cursorTrail[-1]['y'] - (cursorScaled.get_height() / 2) + self.playFieldYpadding)))
+    self.surface.blit(cursorScaled, (((cursorTrail[-1]['x'] * self.playFieldResMultiplier) - (cursorScaled.get_width() / 2)) + self.playFieldXpadding, ((cursorTrail[-1]['y'] * self.playFieldResMultiplier) - (cursorScaled.get_height() / 2) + self.playFieldYpadding)))

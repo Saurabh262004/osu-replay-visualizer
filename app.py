@@ -1,5 +1,7 @@
 import os
 import json
+from copy import copy
+import easygui
 import pygame as pg
 from modules.UI.windowManager import Window
 from appUI.systems.nav import addNav
@@ -29,10 +31,10 @@ def systemSwitch():
     window.loggedSystemSwitch = None
 
 def windowCustomLoop():
-  global window, userData
+  global window
 
   if 'loadReplay' in window.customData and window.customData['loadReplay'] is not None:
-    loadRendererWithReplay(window, userData)
+    loadRendererWithReplay(window)
 
   if 'replayLoaded' in window.customData and window.customData['replayLoaded'] and 'main' in window.activeSystems:
     handleReplayPlayback(window)
@@ -51,45 +53,102 @@ def windowCustomUpdate():
     resChange = True
 
   if resChange and 'replayLoaded' in window.customData and window.customData['replayLoaded'] and not window.customData['firstUpdate']:
-    window.systems['main'].elements['replaySection'].background = pg.surface.Surface((window.screenWidth, window.screenHeight - window.systems['nav'].elements['topNav'].height))
-    window.customData['beatmapRenderer'].updateSurface(window.systems['main'].elements['replaySection'].background, 1)
+    defaultHeight = 384
+
+    replaySectionHeight = window.screenHeight - window.systems['nav'].elements['topNav'].height
+
+    resolutionMultiplier = (replaySectionHeight * .8) / defaultHeight
+
+    window.systems['main'].elements['replaySection'].background = pg.surface.Surface((window.screenWidth, replaySectionHeight))
+
+    window.customData['beatmapRenderer'].updateSurface(window.systems['main'].elements['replaySection'].background, resolutionMultiplier)
 
   window.customData['lastScreenRes'] = (window.screenWidth, window.screenHeight)
 
   print('update')
 
-def windowCustomEvents(event):
+def windowCustomEvents(event: pg.event.Event):
   if event.type == pg.KEYDOWN:
     if event.key == pg.K_SPACE:
       pauseToggle(window)
-  # else:
-  #   print(event.type)
+    elif event.key == pg.K_LEFT or event.key == pg.K_RIGHT:
+      timeline = window.systems['main'].elements['replayTimeline']
+
+      if event.key == pg.K_LEFT:
+        newValue = timeline.value - 15
+      else:
+        newValue = timeline.value + 15
+
+      if newValue < timeline.valueRange[0]:
+        newValue = timeline.valueRange[0]
+      elif newValue > timeline.valueRange[1]:
+        newValue = timeline.valueRange[1]
+
+      window.customData['timelineTimeLog'] = copy(timeline.value)
+      timeline.value = newValue
+      timeline.update()
+      timeline.callback()
+
+def firstBootSetup():
+  folder_path = easygui.diropenbox(title="Please select your osu! folder")
+  userData['URLs']['osuFolder'] = folder_path
+  print("Selected osu! Folder:", folder_path)
+
+  userData['firstBoot'] = False
+
+def closingSetup():
+  print('closing the application...')
+
+  try:
+    with open('data/userData.json', 'w') as userDataFile:
+      userDataFile.write(json.dumps(userData, indent=2))
+  except Exception as e:
+    print('Failed to save user data.')
+    print(e)
 
 userData = None
-with open('data/userData.json', 'r') as rawData:
-  userData = json.load(rawData)
+try:
+  with open('data/userData.json', 'r') as rawData:
+    userData = json.load(rawData)
+except:
+  # create default user data
+
+  userData = {
+    'firstBoot': True,
+    'skin': '',
+    'volume': 0.5,
+    'URLs': {
+      'osuFolder': ''
+    }
+  }
+
+if userData['firstBoot']:
+  firstBootSetup()
 
 for url in userData['URLs']:
   if not os.path.isdir(userData['URLs'][url]):
     print(f'The {url} : {userData['URLs'][url]} is not a valid url.')
-    # do something
 
 window = Window('Replay Veiwer', (800, 450), customLoopProcess=windowCustomLoop, customUpdateProcess=windowCustomUpdate, customEventHandler=windowCustomEvents)
 
-## add systems ##
+window.customData['firstUpdate'] = True
+window.customData['userData'] = userData
+
+# add systems #
 addNav(window)
 addMain(window)
-addReplayList(window, userData)
+addReplayList(window)
 addSettings(window)
 
-## define system z indexes ##
+# define system z indexes #
 window.setSystemZ('nav', 9)
 window.setSystemZ('main', 0)
 window.setSystemZ('replayList', 1)
 window.setSystemZ('settings', 2)
 
+# define initial active systems #
 window.activateSystems(['nav', 'main'])
 
-window.customData['firstUpdate'] = True
-
 window.openWindow()
+
+closingSetup()

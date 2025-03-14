@@ -66,15 +66,16 @@ def getReplayData(replayURL, dumpJsonURL=None):
     }
 
     # process life bar data
-    if replayData['lifeBar'][-1] == '':
-      replayData['lifeBar'].pop()
-
-    for i in range(len(replayData['lifeBar'])):
-      values = replayData['lifeBar'][i].split('|')
-      replayData['lifeBar'][i] = {
-        'time': tryToNum(values[0]),
-        'life': tryToNum(values[1])
-      }
+    if len(replayData['lifeBar']) > 0:
+      if replayData['lifeBar'][-1] == '':
+        replayData['lifeBar'].pop()
+  
+      for i in range(len(replayData['lifeBar'])):
+        values = replayData['lifeBar'][i].split('|')
+        replayData['lifeBar'][i] = {
+          'time': tryToNum(values[0]),
+          'life': tryToNum(values[1])
+        }
 
     # convert the data in json format and bump it in a file if a URL to the file is given
     if dumpJsonURL:
