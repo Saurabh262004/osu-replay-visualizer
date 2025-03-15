@@ -1,6 +1,17 @@
-from typing import Union
+from typing import Union, Optional
 import pygame as pg
 from modules.UI.windowManager import Window
+
+def updateTimeStamp(window: Window, time: int):
+  totalSecs = int(time / 1000)
+  currentTimeMS = int(time - (totalSecs * 1000))
+  currentTimeSecs = int(totalSecs % 60)
+  currentTimeMinutes = int(totalSecs / 60)
+
+  timeStamp = window.systems['main'].elements['timeStamp']
+
+  timeStamp.text = f'{currentTimeMinutes:02d}:{currentTimeSecs:02d}.{currentTimeMS:03d} / {window.customData['timeStampMax']}'
+  timeStamp.update()
 
 def handleReplayPlayback(window: Window):
   if window.customData['replayTimeStarted']:
@@ -17,6 +28,7 @@ def handleReplayPlayback(window: Window):
         newTime = timeline.valueRange[0]
 
       window.customData['timelineTimeLog'] = newTime
+      updateTimeStamp(window, newTime)
 
       timeline.value = newTime
       timeline.update()
@@ -27,7 +39,7 @@ def handleReplayPlayback(window: Window):
     window.customData['startTime'] = window.time.get_ticks()
 
 def timelineCallback(value: Union[int, float], window: Window):
-  if not 'replayLoaded' in window.customData or not window.customData['replayLoaded'] or not window.customData['replayPaused']:
+  if not 'replayLoaded' in window.customData or not window.customData['replayLoaded']:
     return None
 
   timelineDifference = value - window.customData['timelineTimeLog']
@@ -36,7 +48,11 @@ def timelineCallback(value: Union[int, float], window: Window):
 
   window.customData['userDragOffset'] += timelineDifference
 
-def pauseReplay(window: Window):
+  updateTimeStamp(window, int(value))
+
+  pauseReplay(window, True)
+
+def pauseReplay(window: Window, unpauseAfter: Optional[bool] = False):
   if (not 'replayLoaded' in window.customData or not window.customData['replayLoaded']) or window.customData['replayPaused']:
     return None
 
@@ -45,6 +61,9 @@ def pauseReplay(window: Window):
   window.customData['pauseUnpauseTimeList'].append([window.time.get_ticks()])
 
   pg.mixer.music.pause()
+
+  if unpauseAfter:
+    unpauseReplay(window)
 
 def unpauseReplay(window: Window):
   if (not 'replayLoaded' in window.customData or not window.customData['replayLoaded']) or not window.customData['replayPaused']:

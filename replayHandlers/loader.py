@@ -44,7 +44,9 @@ def loadRendererWithReplay(window: Window):
   try:
     audio = MP3(audioFileURL)
     audioDurationMS = int(audio.info.length * 1000)
+
     print(f"Audio duration: {audioDurationMS} ms")
+
     pg.mixer.music.load(audioFileURL)
     pg.mixer.music.set_volume(userData['volume'])
   except Exception as e:
@@ -70,7 +72,8 @@ def loadRendererWithReplay(window: Window):
       userData['skin'],
       replayURL,
       window.systems['main'].elements['replaySection'].background,
-      resolutionMultiplier
+      resolutionMultiplier,
+      userData['highQualitySliders']
     )
     # print('initializing beatmap renderer done.')
   except Exception as e:
@@ -84,6 +87,17 @@ def loadRendererWithReplay(window: Window):
   timeline.valueRange = timelineRange
   timeline.value = timelineRange[0]
 
+  timeStamp = window.systems['main'].elements['timeStamp']
+
+  totalSecs = int(audioDurationMS / 1000)
+  timeMS = int(audioDurationMS - (totalSecs * 1000))
+  timeSecs = int(totalSecs % 60)
+  timeMinutes = int(totalSecs / 60)
+
+  timeStampMax = f'{timeMinutes:02d}:{timeSecs:02d}.{timeMS:03d}'
+
+  timeStamp.text = f'00:00.000 / {timeStampMax}'
+
   window.customData['replayTimeStarted'] = False
   window.customData['replayPaused'] = True
   window.customData['pauseUnpauseTimeList'] = [[window.time.get_ticks()]]
@@ -91,6 +105,7 @@ def loadRendererWithReplay(window: Window):
   window.customData['userDragOffset'] = 0
   window.customData['timelineTimeLog'] = 0
   window.customData['replayLoaded'] = True
+  window.customData['timeStampMax'] = timeStampMax
 
 def loadRendererWithoutReplay(window: Window):
   pass

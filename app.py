@@ -5,7 +5,7 @@ import easygui
 import pygame as pg
 from modules.UI.windowManager import Window
 from appUI.systems.nav import addNav
-from appUI.systems.main import addMain
+from appUI.systems.main import addMain, setUserVolume
 from appUI.systems.replayList import addReplayList
 from appUI.systems.settings import addSettings
 from replayHandlers.loader import loadRendererWithReplay
@@ -71,12 +71,16 @@ def windowCustomEvents(event: pg.event.Event):
   if event.type == pg.KEYDOWN:
     if event.key == pg.K_SPACE:
       pauseToggle(window)
-    elif event.key == pg.K_LEFT or event.key == pg.K_RIGHT:
+    elif event.key == pg.K_LEFT or event.key == pg.K_RIGHT or event.key == pg.K_COMMA or event.key == pg.K_PERIOD:
       timeline = window.systems['main'].elements['replayTimeline']
 
       if event.key == pg.K_LEFT:
+        newValue = timeline.value - 5000
+      elif event.key == pg.K_RIGHT:
+        newValue = timeline.value + 5000
+      elif event.key == pg.K_COMMA:
         newValue = timeline.value - 15
-      else:
+      elif event.key == pg.K_PERIOD:
         newValue = timeline.value + 15
 
       if newValue < timeline.valueRange[0]:
@@ -88,6 +92,14 @@ def windowCustomEvents(event: pg.event.Event):
       timeline.value = newValue
       timeline.update()
       timeline.callback()
+    elif event.key == pg.K_DOWN:
+      setUserVolume(userData['volume'] - .1, window)
+      window.systems['main'].elements['audioControl'].value = userData['volume']
+      window.systems['main'].elements['audioControl'].update()
+    elif event.key == pg.K_UP:
+      setUserVolume(userData['volume'] + .1, window)
+      window.systems['main'].elements['audioControl'].value = userData['volume']
+      window.systems['main'].elements['audioControl'].update()
 
 def firstBootSetup():
   folder_path = easygui.diropenbox(title="Please select your osu! folder")

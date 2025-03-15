@@ -135,6 +135,8 @@ class Beatmap:
     self.cursor = pgTransform.smoothscale_by(self.cursor, self.elementsScaleMultiplier)
     self.cursorTrail = self.skin['elements']['cursortrail']
     self.cursorTrail = pgTransform.smoothscale_by(self.cursorTrail, self.elementsScaleMultiplier)
+    self.reverseArrow = self.skin['elements']['reversearrow']
+    self.reverseArrow = pgTransform.smoothscale_by(self.reverseArrow, self.elementsScaleMultiplier)
 
     # create combo colored hitcircles, approachcircles, and slider balls #
     self.hitcircleCombos = []
@@ -205,6 +207,28 @@ class Beatmap:
       returnHitobjects.append(hitobject)
 
     return returnHitobjects
+
+  def transformCursorData(self, resMultiplier: Union[int, float], xPadding: Union[int, float], yPadding: Union[int, float]):
+    self.transformedCusrorData = [{
+      'x': (pos['x'] * resMultiplier) + xPadding,
+      'y': (pos['y'] * resMultiplier) + yPadding,
+      'time': pos['time']
+    } for pos in self.replayArrayByTime]
+
+  def getCursorTrailAtTimeTransformed(self, time: int, trailLength: Optional[int] = 10) -> List[Dict[str, Union[int, float]]]:
+    if not self.transformedCusrorData:
+      return None
+
+    returnTrail = []
+
+    for pos in self.transformedCusrorData:
+      if pos['time'] > time: break
+      returnTrail.append(pos)
+
+    if len(returnTrail) > trailLength:
+      returnTrail = returnTrail[-trailLength:]
+
+    return returnTrail
 
   def getCursorTrailAtTime(self, time: int, trailLength: Optional[int] = 10) -> List[Dict[str, Union[int, float]]]:
     returnTrail = []

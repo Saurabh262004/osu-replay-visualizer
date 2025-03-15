@@ -178,7 +178,7 @@ class Slider:
 
     return calculatedPoints
 
-  def transformBodyPath(self, resMultiplier, resPadding):
+  def transformBodyPath(self, resMultiplier: numType, resPadding: numType):
     if self.curveType == 'B':
       self.transformedBodyPath = []
       totalBezierLength = 0
@@ -223,11 +223,14 @@ class Slider:
       ]
       self.bodyPath = self.transformedBodyPath
 
-  def renderBody(self, renderResMultiplier):
-    CR = (self.beatmap.circleRadius * .9) * renderResMultiplier * 2
-    minX = minY = maxX = maxY = 0
+  def renderBody(self, renderResMultiplier: numType, highResRender: bool):
+    highResMultiplier = 2 if highResRender else 1
+
+    CR = (self.beatmap.circleRadius * .9) * renderResMultiplier * highResMultiplier
+
     translatedBodyPath = []
 
+    minX = minY = maxX = maxY = 0
     for point in self.bodyPath:
       minX = min(minX, point['x'] - CR)
       maxX = max(maxX, point['x'] + CR)
@@ -235,14 +238,15 @@ class Slider:
       maxY = max(maxY, point['y'] + CR)
 
     bodySize = (maxX - minX, maxY - minY)
-    highResSize = (bodySize[0] * 2, bodySize[1] * 2)
+
+    highResSize = (bodySize[0] * highResMultiplier, bodySize[1] * highResMultiplier)
 
     highResBodySurface = pg.surface.Surface(highResSize, flags=pg.SRCALPHA)
 
     translatedBodyPath = [
       {
-        'x': (point['x'] - minX) * 2,
-        'y': (point['y'] - minY) * 2
+        'x': (point['x'] - minX) * highResMultiplier,
+        'y': (point['y'] - minY) * highResMultiplier
       } for point in self.bodyPath
     ]
 
@@ -264,7 +268,10 @@ class Slider:
       for point in translatedBodyPath:
         pg.draw.circle(highResBodySurface, (255, 255, 255, alpha), (point['x'], point['y']), radius)
 
-    self.bodySurface = pg.transform.smoothscale(highResBodySurface, bodySize)
+    if highResRender:
+      self.bodySurface = pg.transform.smoothscale(highResBodySurface, bodySize)
+    else:
+      self.bodySurface = highResBodySurface
 
 class Spinner:
   def __init__(self, objectDict: dict, map):
