@@ -5,8 +5,9 @@
   "highQualitySliders": false,
   "playfieldBorder": true,
   "renderSkinCursor": true,
-  "renerCursorTracker": true,
+  "renerCursorTracker": false,
   "renderHitJudgments": false,
+  "renderKeyOverlay": false,
   "URLs": {
     "osuFolder": ""
   }
