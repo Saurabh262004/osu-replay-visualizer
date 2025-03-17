@@ -221,7 +221,7 @@ class Circle:
       pg.draw.circle(surface, self.background, (self.x, self.y), self.radius)
 
 class TextBox:
-  def __init__(self, section: Section, text: str, fontPath: str, textColor: pg.Color, drawSectionDefault: Optional[bool] = False):
+  def __init__(self, section: Section, text: str, fontPath: str, textColor: pg.Color, drawSectionDefault: Optional[bool] = False, centerText: Optional[bool] = True):
     self.section = section
     self.text = text
     self.fontPath = fontPath
@@ -230,6 +230,7 @@ class TextBox:
     self.active = True
     self.activeDraw = True
     self.activeUpdate = True
+    self.centerText = centerText
 
   def update(self):
     if not (self.active and self.activeUpdate):
@@ -241,7 +242,10 @@ class TextBox:
     self.font = pg.font.SysFont(self.fontPath, self.fontSize)
 
     self.textSurface = self.font.render(self.text, True, self.textColor)
-    self.textRect = self.textSurface.get_rect(center = self.section.rect.center)
+    if self.centerText:
+      self.textRect = self.textSurface.get_rect(center=self.section.rect.center)
+    else:
+      self.textRect = self.textSurface.get_rect(midleft=self.section.rect.midleft)
 
   def draw(self, surface: pg.surface.Surface, drawSection: Optional[bool] = None):
     if not (self.active and self.activeDraw):
@@ -353,12 +357,26 @@ class Toggle:
     self.toggledBackground = indicatorColor
     self.borderColor = borderColor
     self.borderColorToggled = borderColorToggled
-    self.innerBox = pg.Rect(self.section.x + 4, self.section.y + 4, (self.section.width / 2) - 4, self.section.height - 8)
     self.borderRect = pg.Rect(self.section.x - border, self.section.y - border, self.section.width + (border * 2), self.section.height + (border * 2))
     self.active = True
     self.activeDraw = True
     self.activeUpdate = True
     self.activeEvents = True
+
+    self.innerBoxPadding = .1
+    self.innerBox = pg.Rect(0, 0, 0, 0)
+    self.update()
+
+  def updateInnerBox(self):
+    newX = self.section.x + (self.section.width * self.innerBoxPadding)
+    newY = self.section.y  + (self.section.height * self.innerBoxPadding)
+    newW = (self.section.width / 2) * (1 - (self.innerBoxPadding * 2))
+    newH = self.section.height * (1 - (self.innerBoxPadding * 2))
+
+    if self.toggled:
+      newX = self.section.x + (self.section.width / 2)
+
+    self.innerBox.update(newX, newY, newW, newH)
 
   def checkEvent(self, event: pg.event.Event) -> Optional[bool]:
     if not (self.active and self.activeEvents):
@@ -369,16 +387,22 @@ class Toggle:
 
       if self.toggled:
         self.section.background = self.toggledBackground
-        self.innerBox.update(self.section.x + (self.section.width / 2), self.innerBox.y, self.innerBox.width, self.innerBox.height)
       else:
         self.section.background = self.defaultBackground
-        self.innerBox.update(self.section.x + 4, self.section.y + 4, self.innerBox.width, self.innerBox.height)
+
+      self.updateInnerBox()
 
       if self.onClick:
-        if self.sendStateInfoOnClick:
-          self.onClick(self.onClickParams, self.toggled)
+        if self.onClickParams is not None:
+          if self.sendStateInfoOnClick:
+            self.onClick(self.onClickParams, self.toggled)
+          else:
+            self.onClick(self.onClickParams)
         else:
-          self.onClick(self.onClickParams)
+          if self.sendStateInfoOnClick:
+            self.onClick(self.toggled)
+          else:
+            self.onClick()
 
       return True
     return False
@@ -389,17 +413,17 @@ class Toggle:
 
     self.section.update()
 
+    if self.toggled:
+      self.section.background = self.toggledBackground
+    else:
+      self.section.background = self.defaultBackground
+
     newBorderX, newBorderY = self.section.x - self.border, self.section.y - self.border
     newBorderWidth, newBorderHeight = self.section.width + (self.border * 2), self.section.height + (self.border * 2)
 
-    newInnerX, newInnerY = self.section.x + 4, self.section.y + 4
-    if self.toggled:
-      newInnerX = self.section.x + (self.section.width / 2)
-
-    newInnerWidth, newInnerHeight = (self.section.width / 2) - 4, self.section.height - 8
-
     self.borderRect.update(newBorderX, newBorderY, newBorderWidth, newBorderHeight)
-    self.innerBox.update(newInnerX, newInnerY, newInnerWidth, newInnerHeight)
+
+    self.updateInnerBox()
 
   def draw(self, surface: pg.surface.Surface):
     if not (self.active and self.activeDraw):
@@ -606,16 +630,14 @@ class Slider():
 
       if scroll:
         if event.x > 0 or event.y > 0:
-          scrollValue += self.scrollSpeed
+          updatedValue += self.scrollSpeed
         elif event.x < 0 or event.y < 0:
-          scrollValue -= self.scrollSpeed
+          updatedValue -= self.scrollSpeed
 
-        updatedValue += scrollValue
-
-        if updatedValue < self.valueRange[0]:
-          updatedValue = self.valueRange[0]
-        elif updatedValue > self.valueRange[1]:
-          updatedValue = self.valueRange[1]
+        if updatedValue < min(self.valueRange[0], self.valueRange[1]):
+          updatedValue = min(self.valueRange[0], self.valueRange[1])
+        elif updatedValue > max(self.valueRange[0], self.valueRange[1]):
+          updatedValue = max(self.valueRange[0], self.valueRange[1])
 
         if self.value != updatedValue:
           self.value = updatedValue

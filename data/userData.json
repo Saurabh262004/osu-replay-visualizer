@@ -1,0 +1,13 @@
+{
+  "firstBoot": true,
+  "skin": "",
+  "volume": 0.05,
+  "highQualitySliders": false,
+  "playfieldBorder": true,
+  "renderSkinCursor": true,
+  "renerCursorTracker": true,
+  "renderHitJudgments": false,
+  "URLs": {
+    "osuFolder": ""
+  }
+}

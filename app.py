@@ -124,13 +124,17 @@ try:
     userData = json.load(rawData)
 except:
   # create default user data
-
   userData = {
-    'firstBoot': True,
-    'skin': '',
-    'volume': 0.5,
-    'URLs': {
-      'osuFolder': ''
+    "firstBoot": True,
+    "skin": "",
+    "volume": 0.2,
+    "highQualitySliders": False,
+    "playfieldBorder": True,
+    "renderSkinCursor": True,
+    "renerCursorTracker": True,
+    "renderHitJudgments": False,
+    "URLs": {
+      "osuFolder": ""
     }
   }
 

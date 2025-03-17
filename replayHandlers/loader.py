@@ -48,7 +48,7 @@ def loadRendererWithReplay(window: Window):
     print(f"Audio duration: {audioDurationMS} ms")
 
     pg.mixer.music.load(audioFileURL)
-    pg.mixer.music.set_volume(userData['volume'])
+    pg.mixer.music.set_volume(userData['volume'] / 2)
   except Exception as e:
     traceback.print_exc()
     print(e)
@@ -73,7 +73,7 @@ def loadRendererWithReplay(window: Window):
       replayURL,
       window.systems['main'].elements['replaySection'].background,
       resolutionMultiplier,
-      userData['highQualitySliders']
+      userData
     )
     # print('initializing beatmap renderer done.')
   except Exception as e:

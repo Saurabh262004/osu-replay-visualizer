@@ -15,11 +15,13 @@ class Hitcircle:
     self.time = self.rawDict['time']
     self.comboIndex = 0
     self.comboColorIndex = 0
+    self.hit = False
+    self.judgment = -1
 
-    if not hitTime is None:
-      self.hit = hitTime
+    if hitTime is not None:
+      self.hitTime = hitTime
     else:
-      self.hit = self.time
+      self.hitTime = self.time
 
 class Slider:
   def __init__(self, objectDict: dict, beatmap, hitTime: Optional[numType] = None):
@@ -39,13 +41,15 @@ class Slider:
     self.bodyPath = []
     self.baseBodyPath = []
     self.transformedBodyPath = []
+    self.hit = False
+    self.judgment = -1
 
     if not hitTime is None:
-      self.hit = hitTime
+      self.hitTime = hitTime
     else:
-      self.hit = self.time
+      self.hitTime = self.time
 
-    self.head = Hitcircle(self.rawDict, self.beatmap, self.hit)
+    self.head = Hitcircle(self.rawDict, self.beatmap, self.hitTime)
 
     self.anchors = [
       {

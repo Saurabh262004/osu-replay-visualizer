@@ -6,7 +6,7 @@ from modules.beatmapElements.hitobjects import Hitcircle, Slider, Spinner
 from modules.beatmapElements.beatmap import Beatmap
 
 class MapRenderer:
-  def __init__(self, osuURL: str, beatmapURL: dict, skinName: str, replayURL: Optional[str], surface: pg.Surface, playFieldResMultiplier: Union[int, float], highResSliders: bool):
+  def __init__(self, osuURL: str, beatmapURL: dict, skinName: str, replayURL: Optional[str], surface: pg.Surface, playFieldResMultiplier: Union[int, float], userData: bool):
     # print('creating a new renderer...')
     if replayURL is not None:
       # print('initializing beatmap with replay...')
@@ -21,7 +21,7 @@ class MapRenderer:
     self.playFieldXpadding = (self.surface.get_width() - self.playFieldRes[0]) / 2
     self.playFieldYpadding = (self.surface.get_height() - self.playFieldRes[1]) / 2
     self.drawSliderAnchors = False
-    self.highResSliders = highResSliders
+    self.userData = userData
 
     self.cursorScaled = pg.transform.smoothscale_by(self.beatmap.cursor, self.playFieldResMultiplier)
     self.cursorScaledHalfWidth = (self.cursorScaled.get_width() / 2)
@@ -36,7 +36,7 @@ class MapRenderer:
     # print('transforming and rendering slider bodies...')
     for slider in self.beatmap.sliders:
       slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
-      slider.renderBody(self.playFieldResMultiplier, self.highResSliders)
+      slider.renderBody(self.playFieldResMultiplier, self.userData['highQualitySliders'])
     # print('done.')
 
   def updateSurface(self, newSurface: pg.Surface, newResMultiplier: Union[int, float]):
@@ -58,13 +58,15 @@ class MapRenderer:
 
     for slider in self.beatmap.sliders:
       slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
-      slider.renderBody(self.playFieldResMultiplier, self.highResSliders)
+      slider.renderBody(self.playFieldResMultiplier, self.userData['highQualitySliders'])
 
   def render(self, time: int):
-    renderObjects = self.beatmap.hitObjectsAtTime(time)
+    renderObjects = self.beatmap.hitobjectsAtTime(time)
 
     self.surface.fill((0, 0, 0))
-    pg.draw.rect(self.surface, (255, 255, 255), (self.playFieldXpadding, self.playFieldYpadding, self.playFieldRes[0], self.playFieldRes[1]), 1)
+
+    if self.userData['playfieldBorder']:
+      pg.draw.rect(self.surface, (200, 200, 200), (self.playFieldXpadding, self.playFieldYpadding, self.playFieldRes[0], self.playFieldRes[1]), 1)
 
     for i in range(len(renderObjects) - 1, -1, -1):
       if isinstance(renderObjects[i], Hitcircle): self.drawHitcircle(renderObjects[i], time)
@@ -72,7 +74,17 @@ class MapRenderer:
       elif isinstance(renderObjects[i], Spinner): self.drawSpinner(renderObjects[i], time)
 
     if self.beatmap.mode == 'replay':
-      self.drawCursor(time)
+      trails = []
+
+      if self.userData['renerCursorTracker']:
+        trails.append('connected')
+      if self.userData['renderSkinCursor']:
+        trails.append('default')
+
+      self.drawCursor(time, trails)
+
+      if self.userData['renderKeyOverlay']:
+        self.drawKeyOverlay(time)
 
   def drawHitcircle(self, hitcircle: Hitcircle, time: int):
     comboStr = str(hitcircle.comboIndex)
@@ -87,18 +99,18 @@ class MapRenderer:
     fadeWindowEnd = drawWindowStart + self.beatmap.fadeIn
 
     if hitcircle.time >= time:
-      approachCircleMultiplier = self.playFieldResMultiplier * mapRange(time, drawWindowStart, hitcircle.time, 3, 1)
+      approachCircleMultiplier = self.playFieldResMultiplier * mapRange(time, drawWindowStart, hitcircle.time, 4, 1)
       hitcircleMultiplier = 1
       hitobjectAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, 255)
     else:
       approachCircleMultiplier = 0
 
-      if hitcircle.hit >= time:
+      if hitcircle.hitTime >= time:
         hitcircleMultiplier = 1
         hitobjectAlpha = 255
       else:
-        hitcircleMultiplier = mapRange(time, hitcircle.hit, hitcircle.hit + self.beatmap.objectFadeout, 1, 1.5)
-        hitobjectAlpha = mapRange(time, hitcircle.hit, hitcircle.hit + self.beatmap.objectFadeout, 255, 0)
+        hitcircleMultiplier = mapRange(time, hitcircle.hitTime, hitcircle.hitTime + self.beatmap.objectFadeout, 1, 1.5)
+        hitobjectAlpha = mapRange(time, hitcircle.hitTime, hitcircle.hitTime + self.beatmap.objectFadeout, 255, 0)
 
     if approachCircleMultiplier < 0:
       approachCircleMultiplier = 0
@@ -109,18 +121,19 @@ class MapRenderer:
     hitcircleScaled.set_alpha(hitobjectAlpha)
     hitcircleOverlayScaled.set_alpha(hitobjectAlpha)
 
-    hitcirclePos = ((hitcircle.x * self.playFieldResMultiplier) - (hitcircleScaled.get_width() / 2) + self.playFieldXpadding, (hitcircle.y * self.playFieldResMultiplier) - (hitcircleScaled.get_height() / 2) + self.playFieldYpadding)
+    hitcirclePos = ((hitcircle.x * self.playFieldResMultiplier) + self.playFieldXpadding, (hitcircle.y * self.playFieldResMultiplier) + self.playFieldYpadding)
+    hitcircleImgPos = (hitcirclePos[0] - (hitcircleScaled.get_width() / 2), hitcirclePos[1] - (hitcircleScaled.get_height() / 2))
     hitcircleOverlayPos = ((hitcircle.x * self.playFieldResMultiplier) - (hitcircleOverlayScaled.get_width() / 2) + self.playFieldXpadding, (hitcircle.y * self.playFieldResMultiplier) - (hitcircleOverlayScaled.get_height() / 2) + self.playFieldYpadding)
 
-    self.surface.blit(hitcircleScaled, hitcirclePos)
+    self.surface.blit(hitcircleScaled, hitcircleImgPos)
 
-    if hitcircle.hit >= time:
+    if hitcircle.hitTime >= time:
       comboImagesScaled = [pg.transform.smoothscale_by(comboImage, self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier) for comboImage in comboImages]
       for comboImage in comboImagesScaled:
         comboImage.set_alpha(hitobjectAlpha)
       comboWidth = comboImagesScaled[0].get_width()
-      firstComboPosX = hitcirclePos[0] + ((hitcircleScaled.get_width() - (comboWidth * comboLength)) / 2)
-      comboPosY = hitcirclePos[1] + ((hitcircleScaled.get_height() - comboImagesScaled[0].get_height()) / 2)
+      firstComboPosX = hitcircleImgPos[0] + ((hitcircleScaled.get_width() - (comboWidth * comboLength)) / 2)
+      comboPosY = hitcircleImgPos[1] + ((hitcircleScaled.get_height() - comboImagesScaled[0].get_height()) / 2)
       comboPosesX = [firstComboPosX + (comboWidth * i) for i in range(comboLength)]
 
       for i in range(comboLength):
@@ -133,6 +146,20 @@ class MapRenderer:
       self.surface.blit(approachcircleScaled, approachCirclePos)
 
     self.surface.blit(hitcircleOverlayScaled, hitcircleOverlayPos)
+    if self.userData['renderHitJudgments']:
+      if not hitcircle.judgment == -1:
+        judgmentCol = (255, 255, 255)
+
+        if hitcircle.judgment == 0:
+          judgmentCol = (255, 0, 0)
+        elif hitcircle.judgment == 50:
+          judgmentCol = (255, 255, 0)
+        elif hitcircle.judgment == 100:
+          judgmentCol = (0, 255, 0)
+        elif hitcircle.judgment == 300:
+          judgmentCol = (0, 0, 255)
+
+        pg.draw.circle(self.surface, judgmentCol, hitcirclePos, 5)
 
   def drawSlider(self, slider: Slider, time: int):
     sliderDurationEnd = slider.time + (slider.slideTime * slider.slides)
@@ -198,7 +225,6 @@ class MapRenderer:
           pg.draw.line(self.surface, (255, 255, 255), (slider.anchors[i - 1]['x'] * self.playFieldResMultiplier + self.playFieldXpadding, slider.anchors[i - 1]['y'] * self.playFieldResMultiplier + self.playFieldYpadding), anchorPos, 1)
 
     if slider.slides > 1 and time <= sliderDurationEnd:
-
       currentTimingPoints = self.beatmap.effectiveTimingPointAtTime(time)
 
       if len(currentTimingPoints) > 0 and (currentTimingPoints[0] is not None):
@@ -230,14 +256,13 @@ class MapRenderer:
           p2 = slider.bodyPath[-2]
 
         reverseArrow = self.beatmap.reverseArrow
-        reverseArrow = pg.transform.smoothscale_by(reverseArrow, self.playFieldResMultiplier)
 
         dx, dy = p2['x'] - p1['x'], p2['y'] - p1['y']
 
         radiansAngle = atan2(-dy, dx)
         degreesAngle = degrees(radiansAngle)
 
-        reverseArrowNow = pg.transform.smoothscale_by(reverseArrow, 1 + reverseArrowSizeMultiplier)
+        reverseArrowNow = pg.transform.smoothscale_by(reverseArrow, (1 + reverseArrowSizeMultiplier) * self.playFieldResMultiplier)
         reverseArrowNow = pg.transform.rotate(reverseArrowNow, degreesAngle)
         reverseArrowNow.set_alpha(sliderAlpha)
 
@@ -258,7 +283,7 @@ class MapRenderer:
           radiansAngleNxt = atan2(-dyNxt, dxNxt)
           degreesAngleNxt = degrees(radiansAngleNxt)
 
-          reverseArrowNxt = pg.transform.smoothscale_by(reverseArrow, 1 + (.3 - reverseArrowSizeMultiplier))
+          reverseArrowNxt = pg.transform.smoothscale_by(reverseArrow, (1 + (.3 - reverseArrowSizeMultiplier)) * self.playFieldResMultiplier)
           reverseArrowNxt = pg.transform.rotate(reverseArrowNxt, degreesAngleNxt)
           reverseArrowNxt.set_alpha(sliderAlpha)
 
@@ -275,9 +300,10 @@ class MapRenderer:
     pg.draw.circle(self.surface, (255, 255, 255), center, 5, 1)
     pg.draw.circle(self.surface, (255, 255, 255), center, self.playFieldRes[1] / 3, 1)
 
-  def drawCursor(self, time: int, trailType: str = 'default'):
-    if trailType not in ['default', 'connected']:
-      raise ValueError('Invalid trail type')
+  def drawCursor(self, time: int, trails: list = ['default']):
+    for trail in trails:
+      if trail not in ['default', 'connected']:
+        raise ValueError('trail types must be \'default\' or \'connected\'')
 
     trailLength = 10
     cursorTrail = self.beatmap.getCursorTrailAtTimeTransformed(time, trailLength)
@@ -285,12 +311,18 @@ class MapRenderer:
     if len(cursorTrail) == 0:
       return None
 
-    for i in range(len(cursorTrail) - 1):
-      if trailType == 'connected':
-        pg.draw.line(self.surface, (255, 255, 255), ((cursorTrail[i]['x'] * self.playFieldResMultiplier) + self.playFieldXpadding, cursorTrail[i]['y'] + self.playFieldYpadding), (cursorTrail[i + 1]['x'] + self.playFieldXpadding, (cursorTrail[i + 1]['y'] * self.playFieldResMultiplier) + self.playFieldYpadding), 1)
-      else:
+    if 'default' in trails:
+      for i in range(len(cursorTrail) - 1):
         trailAlpha = mapRange(i, 0, trailLength, 0, 255)
         self.cursorTrailScaled.set_alpha(trailAlpha)
         self.surface.blit(self.cursorTrailScaled, (cursorTrail[i]['x'] - self.cursorTrailScaledHalfWidth, cursorTrail[i]['y'] - self.cursorTrailScaledHalfHeight))
+      self.surface.blit(self.cursorScaled, (cursorTrail[-1]['x'] - self.cursorScaledHalfWidth, cursorTrail[-1]['y'] - self.cursorScaledHalfHeight))
 
-    self.surface.blit(self.cursorScaled, (cursorTrail[-1]['x'] - self.cursorScaledHalfWidth, cursorTrail[-1]['y'] - self.cursorScaledHalfHeight))
+    if 'connected' in trails:
+      for i in range(len(cursorTrail) - 1):
+        pg.draw.line(self.surface, (255, 255, 255), (cursorTrail[i]['x'] , cursorTrail[i]['y']), (cursorTrail[i + 1]['x'], cursorTrail[i + 1]['y']), 1)
+        pg.draw.circle(self.surface, (0, 128, 200), (cursorTrail[i]['x'] , cursorTrail[i]['y']), 2)
+      pg.draw.circle(self.surface, (0, 200, 128), (cursorTrail[-1]['x'] , cursorTrail[-1]['y']), 4)
+  
+  def drawKeyOverlay(self, time: int):
+    pass

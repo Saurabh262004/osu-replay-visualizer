@@ -22,7 +22,7 @@ def setUserVolume(volume: Union[int, float], window: Window):
   audioIndicator.text = f'{volume:.2f}'
   audioIndicator.update()
 
-  pg.mixer.music.set_volume(volume)
+  pg.mixer.music.set_volume(volume / 2)
 
 def addMain(window: Window):
   system = System(preLoadState=True)
@@ -94,7 +94,7 @@ def addMain(window: Window):
       timeStampSectionDim,
       AppColors.gray
     ),
-    '-:- / -:-',
+    '--:-- / --:--',
     'Courier New',
     AppColors.cream
   )
@@ -121,7 +121,7 @@ def addMain(window: Window):
     Section(audioControlDim, AppColors.darkGray, borderRadius=2),
     Section(audioControlDragDim, AppColors.cream, 2),
     (1, 0),
-    .1,
+    -0.1,
     AppColors.listElement1,
     {
       'callable': setUserVolume,
@@ -145,7 +145,7 @@ def addMain(window: Window):
   audioIndicator = TextBox(
     Section(
       audioIndicatorSectionDim,
-      AppColors.primary1
+      AppColors.gray
     ),
     f'{audioControl.value:.2f}',
     'Courier New',

@@ -45,9 +45,17 @@ class Beatmap:
     # process replay array #
     if self.mode == 'replay':
       self.replayArray = self.replay['replayArray']
-      self.replayArrayByTime = [{'x': self.replayArray[0]['x'], 'y': self.replayArray[0]['y'], 'time': self.replayArray[0]['interval']}]
+      self.replayArray.pop()
+      self.replayArrayByTime = [
+        {
+          'x': self.replayArray[0]['x'],
+          'y': self.replayArray[0]['y'],
+          'time': self.replayArray[0]['interval'],
+          'keys': self.replayArray[0]['keys']
+        }
+      ]
 
-      for i in range(1, len(self.replayArray) - 1):
+      for i in range(1, len(self.replayArray)):
         currentPos = self.replayArray[i]
         lastStamp = self.replayArrayByTime[-1]['time']
         currentInterval = currentPos['interval']
@@ -89,6 +97,7 @@ class Beatmap:
     self.hitWindow300 = 80 - 6 * self.OD
     self.hitWindow100 = 140 - 8 * self.OD
     self.hitWindow50 = 200 - 10 * self.OD
+    self.missWindow = 400
 
     if self.OD < 5:
       self.requiredRPS = 5 - 2 * (5 - self.OD) / 5
@@ -96,6 +105,79 @@ class Beatmap:
       self.requiredRPS = 5 + 2.5 * (self.OD - 5) / 5
     else:
       self.requiredRPS = 5
+
+    # calculating hit judgments #
+    ## !!! WIP !!! ##
+    if self.mode == 'replay':
+      k1 = k1In = k1Out = k2 = k2In = k2Out = False
+      for pos in self.replayArrayByTime:
+        if 'k1' in pos['keys'] or 'm1' in pos['keys']:
+          if not k1:
+            k1 = True
+            k1In = True
+          else:
+            k1In = False
+        elif k1:
+          k1 = False
+          k1Out = True
+        else:
+          k1Out = False
+
+        if 'k2' in pos['keys'] or 'm2' in pos['keys']:
+          if not k2:
+            k2 = True
+            k2In = True
+          else:
+            k2In = False
+        elif k2:
+          k2 = False
+          k2Out = True
+        else:
+          k2Out = False
+
+        time = pos['time']
+        hitobjects = self.hitobjectsAtTime(time)
+        for i in range(len(hitobjects)):
+          obj = hitobjects[i]
+
+          if isinstance(obj, Spinner):
+            continue
+
+          insideUpperHitwindow = (time < (obj.time + self.hitWindow50))
+          insideLowerHitwindow = (time > (obj.time - self.missWindow))
+          inHitArea = dist(pos['x'], pos['y'], obj.x, obj.y) <= self.circleRadius
+
+          if obj.hit or not insideUpperHitwindow or not insideLowerHitwindow:
+            continue
+          elif inHitArea and (k1In or k2In):
+            hitError = abs(obj.time - time)
+            hit = False
+
+            if hitError < self.hitWindow300:
+              obj.judgment = 300
+              hit = obj.hit = True
+              # print('300')
+            elif hitError < self.hitWindow100:
+              obj.judgment = 100
+              hit = obj.hit = True
+              # print('100')
+            elif hitError < self.hitWindow50:
+              obj.judgment = 50
+              hit = obj.hit = True
+              # print('50')
+            elif hitError < self.missWindow:
+              obj.judgment = 0
+              hit = obj.hit = True
+              # print('0')
+
+            if hit:
+              obj.hitTime = time
+              break
+
+      for obj in self.hitobjects:
+        if not isinstance(obj, Spinner) and not obj.hit:
+          obj.hitTime = obj.time
+          obj.judgment = 0
 
     # get combo colors #
     if 'Colours' in self.map:
@@ -192,7 +274,7 @@ class Beatmap:
     return [possibleUninheritedTimingPoint, possibleInheritedTimingPoint]
 
   # get the hitobjects that are active / on screen at a certain time #
-  def hitObjectsAtTime(self, time: int) -> List[Union[Hitcircle, Slider, Spinner]]:
+  def hitobjectsAtTime(self, time: int) -> List[Union[Hitcircle, Slider, Spinner]]:
     returnHitobjects = []
 
     timeClose = time + self.preempt
@@ -229,6 +311,9 @@ class Beatmap:
       returnTrail = returnTrail[-trailLength:]
 
     return returnTrail
+
+  def getInputsAtTime(self, time: int) -> Dict[str, Union[int, float]]:
+    pass
 
   def getCursorTrailAtTime(self, time: int, trailLength: Optional[int] = 10) -> List[Dict[str, Union[int, float]]]:
     returnTrail = []
