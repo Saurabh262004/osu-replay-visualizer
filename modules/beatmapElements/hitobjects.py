@@ -10,13 +10,14 @@ class Hitcircle:
   def __init__(self, objectDict: dict, beatmap, hitTime: Optional[numType] = None):
     self.rawDict = objectDict
     self.beatmap = beatmap
-    self.x = self.rawDict['x']
-    self.y = self.rawDict['y']
-    self.time = self.rawDict['time']
+    self.endX = self.x = self.rawDict['x']
+    self.endY = self.y = self.rawDict['y']
+    self.endTime = self.time = self.rawDict['time']
     self.comboIndex = 0
     self.comboColorIndex = 0
     self.hit = False
     self.judgment = -1
+    self.stackCount = 0
 
     if hitTime is not None:
       self.hitTime = hitTime
@@ -43,6 +44,8 @@ class Slider:
     self.transformedBodyPath = []
     self.hit = False
     self.judgment = -1
+    self.stackCount = 0
+    self.endTime = 0
 
     if not hitTime is None:
       self.hitTime = hitTime
@@ -78,8 +81,6 @@ class Slider:
       else:
         tmpCurve.append(self.anchors[i])
 
-    self.computeBaseBodyPath()
-
   def computeBaseBodyPath(self):
     if self.curveType == 'B':
       for curve in self.curves:
@@ -95,6 +96,21 @@ class Slider:
         self.baseBodyPath = self.computeLinearBody(self.anchors, 0.005)
       else:
         self.baseBodyPath = self.computeCircleBody(self.anchors, 0.005)
+
+    if self.curveType == 'B':
+      if self.slides % 2 == 0:
+        self.endX = self.baseBodyPath[0][0]['x']
+        self.endY = self.baseBodyPath[0][0]['y']
+      else:
+        self.endX = self.baseBodyPath[-1][-1]['x']
+        self.endY = self.baseBodyPath[-1][-1]['y']
+    else:
+      if self.slides % 2 == 0:
+        self.endX = self.baseBodyPath[0]['x']
+        self.endY = self.baseBodyPath[0]['y']
+      else:
+        self.endX = self.baseBodyPath[-1]['x']
+        self.endY = self.baseBodyPath[-1]['y']
 
   @staticmethod
   def lerpAnchors(anchor1: Dict[str, numType], anchor2: Dict[str, numType], t: numType) -> Dict[str, numType]:

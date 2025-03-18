@@ -79,6 +79,7 @@ class Beatmap:
     self.sliderMultiplier = self.map['difficulty']['SliderMultiplier']
     self.sliderTickRate = self.map['difficulty']['SliderTickRate']
     self.objectFadeout = 200
+    self.stackLeniency = self.map['general']['StackLeniency']
 
     # calculate some needed values #
     # self.requiredRPM = 60000 / (self.mapDict['timingPoints'][0]['bpm'] * self.sliderMultiplier)
@@ -105,6 +106,83 @@ class Beatmap:
       self.requiredRPS = 5 + 2.5 * (self.OD - 5) / 5
     else:
       self.requiredRPS = 5
+
+    # calculate slider slide times (the time it takes for the slider to complete one slide) #
+    for slider in self.sliders:
+      timingPoints = self.effectiveTimingPointAtTime(slider.time)
+
+      if not (timingPoints[1] is None):
+        SV = -100 / timingPoints[1]['inverseSliderVelocityMultiplier']
+      else:
+        SV = 1
+
+      slider.slideTime = slider.length / (self.map['difficulty']['SliderMultiplier'] * 100 * SV) * timingPoints[0]['beatLength']
+      slider.endTime = slider.time + (slider.slideTime * slider.slides)
+
+    # calculating stacks #
+    # the algorithm is taken straight from peppy: https://gist.github.com/peppy/1167470 #
+    stackOffset = self.circleRadius / 10
+
+    STACK_LENIENCE = 3
+
+    for i in range(len(self.hitobjects) - 1, -1, -1):
+      n = i
+      objectI = self.hitobjects[i]
+
+      if isinstance(objectI, Spinner) or not (objectI.stackCount == 0): continue
+
+      if isinstance(objectI, Hitcircle):
+        while n > 0:
+          n -= 1
+
+          objectN = self.hitobjects[n]
+
+          if isinstance(objectN, Spinner): continue
+
+          if (objectI.time - (self.preempt * self.stackLeniency) > objectN.endTime): break
+
+          if isinstance(objectN, Slider) and dist(objectN.endX, objectN.endY, objectI.x, objectI.y) < STACK_LENIENCE:
+            offset = objectI.stackCount - objectN.stackCount + 1
+
+            for j in range(n + 1, i + 1):
+              if (dist(objectN.endX, objectN.endY, self.hitobjects[j].x, self.hitobjects[j].y) < STACK_LENIENCE):
+                self.hitobjects[j].stackCount -= offset
+
+            break
+
+          if dist(objectN.x, objectN.y, objectI.x, objectI.y) < STACK_LENIENCE:
+            objectN.stackCount = objectI.stackCount + 1
+            objectI = objectN
+      elif isinstance(objectI, Slider):
+        while n > 0:
+          n -= 1
+
+          objectN = self.hitobjects[n]
+
+          if isinstance(objectN, Spinner): continue
+
+          if (objectI.time - (self.preempt * self.stackLeniency) > objectN.time): break
+
+          if (dist(objectN.endX, objectN.endY, objectI.x, objectI.y) < STACK_LENIENCE):
+            objectN.stackCount = objectI.stackCount + 1
+            objectI = objectN
+
+    for obj in self.hitobjects:
+      if isinstance(obj, Spinner) or obj.stackCount == 0:
+        continue
+
+      totalOffset = (stackOffset * obj.stackCount)
+
+      obj.x -= totalOffset
+      obj.y -= totalOffset
+
+      if isinstance(obj, Slider):
+        for anchor in obj.anchors:
+          anchor['x'] -= totalOffset
+          anchor['y'] -= totalOffset
+
+    for slider in self.sliders:
+      slider.computeBaseBodyPath()
 
     # calculating hit judgments #
     ## !!! WIP !!! ##
@@ -245,17 +323,6 @@ class Beatmap:
           tintImage(self.sliderBallCombos[-1][-1], self.comboColors[i])
 
     # print('done.')
-
-    # calculate slider slide times (the time it takes for the slider to complete one slide) #
-    for slider in self.sliders:
-      timingPoints = self.effectiveTimingPointAtTime(slider.time)
-
-      if not (timingPoints[1] is None):
-        SV = -100 / timingPoints[1]['inverseSliderVelocityMultiplier']
-      else:
-        SV = 1
-
-      slider.slideTime = slider.length / (self.map['difficulty']['SliderMultiplier'] * 100 * SV) * timingPoints[0]['beatLength']
 
   # get the timing points that are in effect at a certain time #
   def effectiveTimingPointAtTime(self, time: int) -> List[Dict[str, Union[int, float]]]:

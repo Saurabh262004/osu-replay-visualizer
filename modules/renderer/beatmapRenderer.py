@@ -162,15 +162,13 @@ class MapRenderer:
         pg.draw.circle(self.surface, judgmentCol, hitcirclePos, 5)
 
   def drawSlider(self, slider: Slider, time: int):
-    sliderDurationEnd = slider.time + (slider.slideTime * slider.slides)
-
     if slider.time >= time:
       drawWindowStart = slider.time - self.beatmap.preempt
       fadeWindowEnd = drawWindowStart + self.beatmap.fadeIn
       sliderAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, 255)
     else:
-      if sliderDurationEnd <= time:
-        sliderAlpha = mapRange(time, sliderDurationEnd, sliderDurationEnd + self.beatmap.objectFadeout, 255, 0)
+      if slider.endTime <= time:
+        sliderAlpha = mapRange(time, slider.endTime, slider.endTime + self.beatmap.objectFadeout, 255, 0)
       else:
         sliderAlpha = 255
 
@@ -179,9 +177,9 @@ class MapRenderer:
     self.surface.blit(slider.bodySurface, slider.bodySurfacePos)
 
     slide = 1
-    if time >= slider.time and time <= sliderDurationEnd + self.beatmap.objectFadeout:
-      if time <= sliderDurationEnd:
-        slide = mapRange(time, slider.time, sliderDurationEnd, 1, slider.slides + 1)
+    if time >= slider.time and time <= slider.endTime + self.beatmap.objectFadeout:
+      if time <= slider.endTime:
+        slide = mapRange(time, slider.time, slider.endTime, 1, slider.slides + 1)
         pointPos = int(abs((slide % 2) - 1) * (len(slider.bodyPath) - 1))
 
         sliderBall = self.beatmap.sliderBallCombos[slider.comboColorIndex]
@@ -197,8 +195,8 @@ class MapRenderer:
       sliderFollowCircleScaled = pg.transform.smoothscale_by(sliderFollowCircle, self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier)
 
       alphaAndScaleMult = 1
-      if time > sliderDurationEnd:
-        alphaAndScaleMult = mapRange(time, sliderDurationEnd, sliderDurationEnd + self.beatmap.objectFadeout, 1, 0)
+      if time > slider.endTime:
+        alphaAndScaleMult = mapRange(time, slider.endTime, slider.endTime + self.beatmap.objectFadeout, 1, 0)
       elif time < slider.time + self.beatmap.objectFadeout:
         alphaAndScaleMult = mapRange(time, slider.time, slider.time + self.beatmap.objectFadeout, 0, 1)
 
@@ -224,7 +222,7 @@ class MapRenderer:
         if i > 0:
           pg.draw.line(self.surface, (255, 255, 255), (slider.anchors[i - 1]['x'] * self.playFieldResMultiplier + self.playFieldXpadding, slider.anchors[i - 1]['y'] * self.playFieldResMultiplier + self.playFieldYpadding), anchorPos, 1)
 
-    if slider.slides > 1 and time <= sliderDurationEnd:
+    if slider.slides > 1 and time <= slider.endTime:
       currentTimingPoints = self.beatmap.effectiveTimingPointAtTime(time)
 
       if len(currentTimingPoints) > 0 and (currentTimingPoints[0] is not None):
