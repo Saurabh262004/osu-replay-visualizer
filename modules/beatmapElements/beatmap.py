@@ -244,7 +244,7 @@ class Beatmap:
 
       for obj in self.hitobjects:
         if not isinstance(obj, Spinner) and not obj.hit:
-          obj.hitTime = obj.time
+          obj.hitTime = obj.time + self.hitWindow50
           obj.judgment = 0
 
     # get combo colors #

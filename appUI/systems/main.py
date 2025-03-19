@@ -1,5 +1,6 @@
 from typing import Union
 import pygame as pg
+from modules.misc.helpers import tintImage
 from appUI.colors import AppColors
 from modules.UI.UIElements import DynamicValue as DV, Section, Circle, TextBox, Slider, System
 from modules.UI.windowManager import Window
@@ -153,5 +154,42 @@ def addMain(window: Window):
   )
 
   system.addElement(audioIndicator, 'audioIndicator')
+
+  # alerts and error messages #
+  UED_X = DV('classPer', window, classAttr='screenWidth', percent=35)
+  UED_WIDTH = DV('classPer', window, classAttr='screenWidth', percent=30)
+  UED_HEIGHT = DV('classPer', window, classAttr='screenWidth', percent=15)
+  UED_Y = DV('customCallable', lambda params: (params[0].screenHeight - params[1].value) / 2, callableParameters=(window, UED_HEIGHT))
+
+  errorDim = {
+    'x': UED_X,
+    'y': UED_Y,
+    'width': UED_WIDTH,
+    'height': UED_HEIGHT
+  }
+
+  errorMsgBox = Section(errorDim, AppColors.gray, 7, 'fit', 20)
+
+  system.addElement(errorMsgBox, 'errorMsgBox')
+
+  AID_HEIGHT = DV('classPer', UED_HEIGHT, classAttr='value', percent=20)
+  AID_WIDTH = DV('classNum', AID_HEIGHT, classAttr='value')
+  AID_Y = DV('customCallable', lambda params: params[0].value + params[1].value, callableParameters=(UED_Y, AID_HEIGHT))
+  AID_X = DV('customCallable', lambda params: params[0].value + ((params[1].value - params[2].value) / 2), callableParameters=(UED_X, UED_WIDTH, AID_WIDTH))
+
+  alertIconDim = {
+    'x': AID_X,
+    'y': AID_Y,
+    'width': AID_WIDTH,
+    'height': AID_HEIGHT
+  }
+
+  alertIconImg = pg.image.load(f'assets/UI/alert-circle.png')
+
+  tintImage(alertIconImg, pg.Color(30, 30, 30))
+
+  alertIcon = Section(alertIconDim, alertIconImg)
+
+  system.addElement(alertIcon, 'alertIcon')
 
   window.addSystem(system, 'main')
