@@ -18,6 +18,7 @@ class Hitcircle:
     self.hit = False
     self.judgment = -1
     self.stackCount = 0
+    self.stackOffset = 0
 
     if hitTime is not None:
       self.hitTime = hitTime
@@ -45,6 +46,7 @@ class Slider:
     self.hit = False
     self.judgment = -1
     self.stackCount = 0
+    self.stackOffset = 0
     self.endTime = 0
 
     if not hitTime is None:
@@ -81,7 +83,11 @@ class Slider:
       else:
         tmpCurve.append(self.anchors[i])
 
+    self.computeBaseBodyPath()
+
   def computeBaseBodyPath(self):
+    self.baseBodyPath = []
+
     if self.curveType == 'B':
       for curve in self.curves:
         self.baseBodyPath.append(self.computeBezier(curve, 0.005))
@@ -96,6 +102,35 @@ class Slider:
         self.baseBodyPath = self.computeLinearBody(self.anchors, 0.005)
       else:
         self.baseBodyPath = self.computeCircleBody(self.anchors, 0.005)
+
+    # maybe I should reparameterize the body path before this #
+    self.calcLength = 0
+    self.snappedBaseBody = []
+    if not self.curveType == 'B':
+      self.snappedBaseBody = [self.baseBodyPath[0]]
+      for i in range(1, len(self.baseBodyPath) - 1):
+        p1 = self.baseBodyPath[i-1]
+        p2 = self.baseBodyPath[i]
+        self.calcLength += dist(p1['x'], p1['y'], p2['x'], p2['y'])
+
+        if self.calcLength <= self.length:
+          self.snappedBaseBody.append(p1)
+        else: break
+    else:
+      for curve in self.baseBodyPath:
+        self.snappedBaseBody.append([curve[0]])
+
+        for i in range(1, len(curve) - 1):
+          p1 = curve[i-1]
+          p2 = curve[i]
+          self.calcLength += dist(p1['x'], p1['y'], p2['x'], p2['y'])
+
+          if self.calcLength <= self.length:
+            self.snappedBaseBody[-1].append(p1)
+          else: break
+
+    del self.baseBodyPath
+    self.baseBodyPath = self.snappedBaseBody
 
     if self.curveType == 'B':
       if self.slides % 2 == 0:

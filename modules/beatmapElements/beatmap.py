@@ -168,21 +168,11 @@ class Beatmap:
             objectI = objectN
 
     for obj in self.hitobjects:
-      if isinstance(obj, Spinner) or obj.stackCount == 0:
-        continue
+      if not isinstance(obj, Spinner) and not (obj.stackCount == 0):
+        obj.stackOffset = (stackOffset * obj.stackCount)
 
-      totalOffset = (stackOffset * obj.stackCount)
-
-      obj.x -= totalOffset
-      obj.y -= totalOffset
-
-      if isinstance(obj, Slider):
-        for anchor in obj.anchors:
-          anchor['x'] -= totalOffset
-          anchor['y'] -= totalOffset
-
-    for slider in self.sliders:
-      slider.computeBaseBodyPath()
+        if isinstance(obj, Slider):
+          obj.head.stackOffset = obj.stackOffset
 
     # calculating hit judgments #
     ## !!! WIP !!! ##

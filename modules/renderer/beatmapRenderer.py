@@ -1,12 +1,14 @@
-from typing import Union, Optional
+from typing import Union, Optional, List
 from math import atan2, degrees
 import pygame as pg
 from modules.misc.helpers import mapRange
 from modules.beatmapElements.hitobjects import Hitcircle, Slider, Spinner
 from modules.beatmapElements.beatmap import Beatmap
 
+numType = Union[int, float]
+
 class MapRenderer:
-  def __init__(self, osuURL: str, beatmapURL: dict, skinName: str, replayURL: Optional[str], surface: pg.Surface, playFieldResMultiplier: Union[int, float], userData: bool):
+  def __init__(self, osuURL: str, beatmapURL: dict, skinName: str, replayURL: Optional[str], surface: pg.Surface, playFieldResMultiplier: numType, userData: bool):
     # print('creating a new renderer...')
     if replayURL is not None:
       # print('initializing beatmap with replay...')
@@ -22,6 +24,12 @@ class MapRenderer:
     self.playFieldYpadding = (self.surface.get_height() - self.playFieldRes[1]) / 2
     self.drawSliderAnchors = False
     self.userData = userData
+    self.maxImgAlpha = 255
+
+    self.center = (
+      self.playFieldXpadding + (self.playFieldRes[0] / 2),
+      self.playFieldYpadding + (self.playFieldRes[1] / 2)
+    )
 
     self.cursorScaled = pg.transform.smoothscale_by(self.beatmap.cursor, self.playFieldResMultiplier)
     self.cursorScaledHalfWidth = (self.cursorScaled.get_width() / 2)
@@ -39,12 +47,17 @@ class MapRenderer:
       slider.renderBody(self.playFieldResMultiplier, self.userData['highQualitySliders'])
     # print('done.')
 
-  def updateSurface(self, newSurface: pg.Surface, newResMultiplier: Union[int, float]):
+  def updateSurface(self, newSurface: pg.Surface, newResMultiplier: numType):
     self.surface = newSurface
     self.playFieldResMultiplier = newResMultiplier
     self.playFieldRes = (self.playFieldResMultiplier * 512, self.playFieldResMultiplier * 384)
     self.playFieldXpadding = (self.surface.get_width() - self.playFieldRes[0]) / 2
     self.playFieldYpadding = (self.surface.get_height() - self.playFieldRes[1]) / 2
+
+    self.center = (
+      self.playFieldXpadding + (self.playFieldRes[0] / 2),
+      self.playFieldYpadding + (self.playFieldRes[1] / 2)
+    )
 
     self.cursorScaled = pg.transform.smoothscale_by(self.beatmap.cursor, self.playFieldResMultiplier)
     self.cursorScaledHalfWidth = (self.cursorScaled.get_width() / 2)
@@ -101,16 +114,16 @@ class MapRenderer:
     if hitcircle.time >= time:
       approachCircleMultiplier = self.playFieldResMultiplier * mapRange(time, drawWindowStart, hitcircle.time, 4, 1)
       hitcircleMultiplier = 1
-      hitobjectAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, 255)
+      hitobjectAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, self.maxImgAlpha)
     else:
       approachCircleMultiplier = 0
 
       if hitcircle.hitTime >= time:
         hitcircleMultiplier = 1
-        hitobjectAlpha = 255
+        hitobjectAlpha = self.maxImgAlpha
       else:
         hitcircleMultiplier = mapRange(time, hitcircle.hitTime, hitcircle.hitTime + self.beatmap.objectFadeout, 1, 1.5)
-        hitobjectAlpha = mapRange(time, hitcircle.hitTime, hitcircle.hitTime + self.beatmap.objectFadeout, 255, 0)
+        hitobjectAlpha = mapRange(time, hitcircle.hitTime, hitcircle.hitTime + self.beatmap.objectFadeout, self.maxImgAlpha, 0)
 
     if approachCircleMultiplier < 0:
       approachCircleMultiplier = 0
@@ -121,20 +134,35 @@ class MapRenderer:
     hitcircleScaled.set_alpha(hitobjectAlpha)
     hitcircleOverlayScaled.set_alpha(hitobjectAlpha)
 
-    hitcirclePos = ((hitcircle.x * self.playFieldResMultiplier) + self.playFieldXpadding, (hitcircle.y * self.playFieldResMultiplier) + self.playFieldYpadding)
-    hitcircleImgPos = (hitcirclePos[0] - (hitcircleScaled.get_width() / 2), hitcirclePos[1] - (hitcircleScaled.get_height() / 2))
-    hitcircleOverlayPos = ((hitcircle.x * self.playFieldResMultiplier) - (hitcircleOverlayScaled.get_width() / 2) + self.playFieldXpadding, (hitcircle.y * self.playFieldResMultiplier) - (hitcircleOverlayScaled.get_height() / 2) + self.playFieldYpadding)
+    hitcirclePos = (
+      ((hitcircle.x - hitcircle.stackOffset) * self.playFieldResMultiplier) + self.playFieldXpadding,
+      ((hitcircle.y - hitcircle.stackOffset) * self.playFieldResMultiplier) + self.playFieldYpadding
+    )
+
+    hitcircleImgPos = (
+      hitcirclePos[0] - (hitcircleScaled.get_width() / 2),
+      hitcirclePos[1] - (hitcircleScaled.get_height() / 2)
+    )
+
+    hitcircleOverlayPos = (
+      hitcirclePos[0] - (hitcircleOverlayScaled.get_width() / 2),
+      hitcirclePos[1] - (hitcircleOverlayScaled.get_height() / 2)
+    )
 
     self.surface.blit(hitcircleScaled, hitcircleImgPos)
 
     if hitcircle.hitTime >= time:
       comboImagesScaled = [pg.transform.smoothscale_by(comboImage, self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier) for comboImage in comboImages]
+
       for comboImage in comboImagesScaled:
         comboImage.set_alpha(hitobjectAlpha)
+
       comboWidth = comboImagesScaled[0].get_width()
+
       firstComboPosX = hitcircleImgPos[0] + ((hitcircleScaled.get_width() - (comboWidth * comboLength)) / 2)
-      comboPosY = hitcircleImgPos[1] + ((hitcircleScaled.get_height() - comboImagesScaled[0].get_height()) / 2)
       comboPosesX = [firstComboPosX + (comboWidth * i) for i in range(comboLength)]
+
+      comboPosY = hitcircleImgPos[1] + ((hitcircleScaled.get_height() - comboImagesScaled[0].get_height()) / 2)
 
       for i in range(comboLength):
         self.surface.blit(comboImagesScaled[i], (comboPosesX[i], comboPosY))
@@ -142,39 +170,52 @@ class MapRenderer:
     if hitcircle.time >= time:
       approachcircleScaled = pg.transform.smoothscale_by(approachcircleImage, approachCircleMultiplier)
       approachcircleScaled.set_alpha(hitobjectAlpha)
-      approachCirclePos = ((hitcircle.x * self.playFieldResMultiplier) - (approachcircleScaled.get_width() / 2) + self.playFieldXpadding, (hitcircle.y * self.playFieldResMultiplier) - (approachcircleScaled.get_height() / 2) + self.playFieldYpadding)
+
+      approachCirclePos = (
+        hitcirclePos[0] - (approachcircleScaled.get_width() / 2),
+        hitcirclePos[1] - (approachcircleScaled.get_height() / 2)
+      )
+
       self.surface.blit(approachcircleScaled, approachCirclePos)
 
     self.surface.blit(hitcircleOverlayScaled, hitcircleOverlayPos)
+
     if self.userData['renderHitJudgments']:
-      if not hitcircle.judgment == -1:
-        judgmentCol = (255, 255, 255)
+      self.drawJudgments(hitcircle, hitcirclePos)
 
-        if hitcircle.judgment == 0:
-          judgmentCol = (255, 0, 0)
-        elif hitcircle.judgment == 50:
-          judgmentCol = (255, 255, 0)
-        elif hitcircle.judgment == 100:
-          judgmentCol = (0, 255, 0)
-        elif hitcircle.judgment == 300:
-          judgmentCol = (0, 0, 255)
+  def drawJudgments(self, hitcircle: Hitcircle, hitcirclePos: List[numType]):
+    ## !!! WIP !!! ##
+    
+    if not hitcircle.judgment == -1:
+      judgmentCol = (255, 255, 255)
 
-        pg.draw.circle(self.surface, judgmentCol, hitcirclePos, 5)
+      if hitcircle.judgment == 0:
+        judgmentCol = (255, 0, 0)
+      elif hitcircle.judgment == 50:
+        judgmentCol = (255, 255, 0)
+      elif hitcircle.judgment == 100:
+        judgmentCol = (0, 255, 0)
+      elif hitcircle.judgment == 300:
+        judgmentCol = (0, 0, 255)
+
+      pg.draw.circle(self.surface, judgmentCol, hitcirclePos, 5)
 
   def drawSlider(self, slider: Slider, time: int):
     if slider.time >= time:
       drawWindowStart = slider.time - self.beatmap.preempt
       fadeWindowEnd = drawWindowStart + self.beatmap.fadeIn
-      sliderAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, 255)
+      sliderAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, self.maxImgAlpha)
     else:
       if slider.endTime <= time:
-        sliderAlpha = mapRange(time, slider.endTime, slider.endTime + self.beatmap.objectFadeout, 255, 0)
+        sliderAlpha = mapRange(time, slider.endTime, slider.endTime + self.beatmap.objectFadeout, self.maxImgAlpha, 0)
       else:
-        sliderAlpha = 255
+        sliderAlpha = self.maxImgAlpha
 
     slider.bodySurface.set_alpha(sliderAlpha)
+    
+    scaledStackOffset = slider.stackOffset * self.playFieldResMultiplier
 
-    self.surface.blit(slider.bodySurface, slider.bodySurfacePos)
+    self.surface.blit(slider.bodySurface, (slider.bodySurfacePos[0] - scaledStackOffset, slider.bodySurfacePos[1] - scaledStackOffset))
 
     slide = 1
     if time >= slider.time and time <= slider.endTime + self.beatmap.objectFadeout:
@@ -184,7 +225,11 @@ class MapRenderer:
 
         sliderBall = self.beatmap.sliderBallCombos[slider.comboColorIndex]
         sliderBallScaled = pg.transform.smoothscale_by(sliderBall, self.playFieldResMultiplier)
-        sliderBallPos = (slider.bodyPath[pointPos]['x'] - (sliderBallScaled.get_width() / 2), slider.bodyPath[pointPos]['y'] - (sliderBallScaled.get_height() / 2))
+
+        sliderBallPos = (
+          slider.bodyPath[pointPos]['x'] - (sliderBallScaled.get_width() / 2) - scaledStackOffset,
+          slider.bodyPath[pointPos]['y'] - (sliderBallScaled.get_height() / 2) - scaledStackOffset
+        )
 
         self.surface.blit(sliderBallScaled, sliderBallPos)
       else:
@@ -206,10 +251,13 @@ class MapRenderer:
         alphaAndScaleMult = 0
 
       if not alphaAndScaleMult == 1:
-        sliderFollowCircleScaled.set_alpha(255 * alphaAndScaleMult)
+        sliderFollowCircleScaled.set_alpha(self.maxImgAlpha * alphaAndScaleMult)
         sliderFollowCircleScaled = pg.transform.smoothscale_by(sliderFollowCircleScaled, mapRange(alphaAndScaleMult, 0, 1, .7, 1))
 
-      sliderFollowCirclePos = (slider.bodyPath[pointPos]['x'] - (sliderFollowCircleScaled.get_width() / 2), slider.bodyPath[pointPos]['y'] - (sliderFollowCircleScaled.get_height() / 2))
+      sliderFollowCirclePos = (
+        slider.bodyPath[pointPos]['x'] - (sliderFollowCircleScaled.get_width() / 2) - scaledStackOffset,
+        slider.bodyPath[pointPos]['y'] - (sliderFollowCircleScaled.get_height() / 2) - scaledStackOffset
+      )
 
       self.surface.blit(sliderFollowCircleScaled, sliderFollowCirclePos)
 
@@ -217,10 +265,25 @@ class MapRenderer:
       for i in range(len(slider.anchors)):
         anchor = slider.anchors[i]
         anchorColor = (255, 0, 0) if anchor['red'] else (255, 255, 255)
-        anchorPos = (anchor['x'] * self.playFieldResMultiplier + self.playFieldXpadding, anchor['y'] * self.playFieldResMultiplier + self.playFieldYpadding)
+
+        anchorPos = (
+          (anchor['x'] - scaledStackOffset) * self.playFieldResMultiplier + self.playFieldXpadding,
+          (anchor['y'] - scaledStackOffset) * self.playFieldResMultiplier + self.playFieldYpadding
+        )
+
         pg.draw.circle(self.surface, anchorColor, anchorPos, 3)
+
         if i > 0:
-          pg.draw.line(self.surface, (255, 255, 255), (slider.anchors[i - 1]['x'] * self.playFieldResMultiplier + self.playFieldXpadding, slider.anchors[i - 1]['y'] * self.playFieldResMultiplier + self.playFieldYpadding), anchorPos, 1)
+          pg.draw.line(
+            self.surface,
+            (255, 255, 255),
+            (
+              (slider.anchors[i - 1]['x'] - scaledStackOffset) * self.playFieldResMultiplier + self.playFieldXpadding,
+              (slider.anchors[i - 1]['y'] - scaledStackOffset) * self.playFieldResMultiplier + self.playFieldYpadding
+            ),
+            anchorPos,
+            1
+          )
 
     if slider.slides > 1 and time <= slider.endTime:
       currentTimingPoints = self.beatmap.effectiveTimingPointAtTime(time)
@@ -264,7 +327,10 @@ class MapRenderer:
         reverseArrowNow = pg.transform.rotate(reverseArrowNow, degreesAngle)
         reverseArrowNow.set_alpha(sliderAlpha)
 
-        reverseArrowNowPos = (p1['x'] - (reverseArrowNow.get_width() / 2), p1['y'] - (reverseArrowNow.get_height() / 2))
+        reverseArrowNowPos = (
+          p1['x'] - (reverseArrowNow.get_width() / 2) - scaledStackOffset,
+          p1['y'] - (reverseArrowNow.get_height() / 2) - scaledStackOffset
+        )
 
         self.surface.blit(reverseArrowNow, reverseArrowNowPos)
 
@@ -285,7 +351,10 @@ class MapRenderer:
           reverseArrowNxt = pg.transform.rotate(reverseArrowNxt, degreesAngleNxt)
           reverseArrowNxt.set_alpha(sliderAlpha)
 
-          reverseArrowNxtPos = (p1Nxt['x'] - (reverseArrowNxt.get_width() / 2), p1Nxt['y'] - (reverseArrowNxt.get_height() / 2))
+          reverseArrowNxtPos = (
+            p1Nxt['x'] - (reverseArrowNxt.get_width() / 2) - scaledStackOffset,
+            p1Nxt['y'] - (reverseArrowNxt.get_height() / 2) - scaledStackOffset
+          )
 
           self.surface.blit(reverseArrowNxt, reverseArrowNxtPos)
 
@@ -293,34 +362,51 @@ class MapRenderer:
 
   def drawSpinner(self, spinner: Spinner, time: int):
     ## WIP ##
-    center = (self.playFieldXpadding + (self.playFieldRes[0] / 2), self.playFieldYpadding + (self.playFieldRes[1] / 2))
 
-    pg.draw.circle(self.surface, (255, 255, 255), center, 5, 1)
-    pg.draw.circle(self.surface, (255, 255, 255), center, self.playFieldRes[1] / 3, 1)
+    pg.draw.circle(self.surface, (255, 255, 255), self.center, 5, 1)
+    pg.draw.circle(self.surface, (255, 255, 255), self.center, self.playFieldRes[1] / 3, 1)
 
   def drawCursor(self, time: int, trails: list = ['default']):
     for trail in trails:
       if trail not in ['default', 'connected']:
         raise ValueError('trail types must be \'default\' or \'connected\'')
 
-    trailLength = 10
+    trailLength = 15
     cursorTrail = self.beatmap.getCursorTrailAtTimeTransformed(time, trailLength)
 
     if len(cursorTrail) == 0:
       return None
 
     if 'default' in trails:
-      for i in range(len(cursorTrail) - 1):
+      for i in range(4, len(cursorTrail) - 1):
         trailAlpha = mapRange(i, 0, trailLength, 0, 255)
         self.cursorTrailScaled.set_alpha(trailAlpha)
-        self.surface.blit(self.cursorTrailScaled, (cursorTrail[i]['x'] - self.cursorTrailScaledHalfWidth, cursorTrail[i]['y'] - self.cursorTrailScaledHalfHeight))
-      self.surface.blit(self.cursorScaled, (cursorTrail[-1]['x'] - self.cursorScaledHalfWidth, cursorTrail[-1]['y'] - self.cursorScaledHalfHeight))
+
+        cursorTrailPos = (
+          cursorTrail[i]['x'] - self.cursorTrailScaledHalfWidth,
+          cursorTrail[i]['y'] - self.cursorTrailScaledHalfHeight
+        )
+
+        self.surface.blit(self.cursorTrailScaled, cursorTrailPos)
+
+      lastTrailPos = (
+        cursorTrail[-1]['x'] - self.cursorScaledHalfWidth,
+        cursorTrail[-1]['y'] - self.cursorScaledHalfHeight
+      )
+
+      self.surface.blit(self.cursorScaled, lastTrailPos)
 
     if 'connected' in trails:
       for i in range(len(cursorTrail) - 1):
-        pg.draw.line(self.surface, (255, 255, 255), (cursorTrail[i]['x'] , cursorTrail[i]['y']), (cursorTrail[i + 1]['x'], cursorTrail[i + 1]['y']), 1)
-        pg.draw.circle(self.surface, (0, 128, 200), (cursorTrail[i]['x'] , cursorTrail[i]['y']), 2)
-      pg.draw.circle(self.surface, (0, 200, 128), (cursorTrail[-1]['x'] , cursorTrail[-1]['y']), 4)
+        cursorTrailPos1 = (cursorTrail[i]['x'] , cursorTrail[i]['y'])
+        cursorTrailPos2 = (cursorTrail[i + 1]['x'], cursorTrail[i + 1]['y'])
+
+        pg.draw.line(self.surface, (255, 255, 255), cursorTrailPos1, cursorTrailPos2, 1)
+        pg.draw.circle(self.surface, (0, 128, 200), cursorTrailPos1, 2)
+
+      lastTrailPos = (cursorTrail[-1]['x'] , cursorTrail[-1]['y'])
+
+      pg.draw.circle(self.surface, (255, 0, 0), lastTrailPos, 4)
   
   def drawKeyOverlay(self, time: int):
     pass
