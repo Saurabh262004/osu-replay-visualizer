@@ -227,6 +227,11 @@ class MapRenderer:
         pointPos = int(abs((slide % 2) - 1) * (len(slider.bodyPath) - 1))
 
         sliderBall = self.beatmap.sliderBallCombos[slider.comboColorIndex]
+
+        # temporary fix before adding animation support for in-game elements #
+        if isinstance(sliderBall, list):
+          sliderBall = sliderBall[0]
+
         sliderBallScaled = pg.transform.smoothscale_by(sliderBall, self.playFieldResMultiplier)
 
         sliderBallPos = (

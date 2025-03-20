@@ -120,7 +120,7 @@ def addSettings():
   system.elements['t5-tgl'].updateInnerBox()
 
   LSK_HEIGHT = DV('classPer', window, classAttr='screenHeight', percent=5)
-  LSK_WIDTH = DV('classPer', LSK_HEIGHT, classAttr='value', percent=300)
+  LSK_WIDTH = DV('classPer', LSK_HEIGHT, classAttr='value', percent=320)
   LSK_Y = DV('customCallable', lambda params: params[0].screenHeight - (params[1].value * 1.5), callableParameters=(window, LSK_HEIGHT))
   LSK_X = DV('customCallable', lambda params: params[0].screenWidth - params[1].value - (params[2].value * .5), callableParameters=(window, LSK_WIDTH, LSK_HEIGHT))
 
