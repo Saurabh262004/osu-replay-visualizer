@@ -1,8 +1,33 @@
+import os
+from easygui import diropenbox
+from modules.readers.importSkin import importSkin
 from appUI.colors import AppColors
-from modules.UI.UIElements import DynamicValue as DV, Section, System, TextBox, Toggle
+from modules.UI.UIElements import DynamicValue as DV, Section, System, TextBox, Toggle, Button
 from modules.UI.windowManager import Window
+from appManagers.manageAlerts import deactivateAlert
+import sharedWindow
 
-def addOption(text: str, id: str, pos: int, callback: callable, callbackParams, system: System, window: Window):
+def changeSkin():
+  window: Window = sharedWindow.window
+  skinURL = ''
+
+  skinURL = diropenbox('Please select a valid skin folder')
+
+  if skinURL is not None:
+    skinName = os.path.basename(skinURL)
+  else:
+    return
+
+  try:
+    window.customData['skin'] = importSkin(skinName, window.customData['userData']['URLs']['osuFolder'])
+    window.customData['userData']['skin'] = skinName
+    deactivateAlert()
+  except Exception as e:
+    print(e)
+
+def addOption(text: str, id: str, pos: int, callback: callable, callbackParams, system: System):
+  window: Window = sharedWindow.window
+
   optionToggleSectionWidth = DV('classPer', window, classAttr='screenHeight', percent=6)
 
   optionToggleSection = Section(
@@ -59,7 +84,9 @@ def togglePlayfieldBorder(userData: dict, val: bool):
 def changeUserData(userDataAndKey, val):
   userDataAndKey[0][userDataAndKey[1]] = val
 
-def addSettings(window: Window):
+def addSettings():
+  window: Window = sharedWindow.window
+
   system = System(preLoadState=True)
 
   system.addElement(
@@ -72,24 +99,49 @@ def addSettings(window: Window):
   )
 
   hqSliderOptionText = 'High Quality Sliders *might take a long time to process on slow devices*'
-  addOption(hqSliderOptionText, 't1', 1, changeUserData, (window.customData['userData'], 'highQualitySliders'), system, window)
+  addOption(hqSliderOptionText, 't1', 1, changeUserData, (window.customData['userData'], 'highQualitySliders'), system)
   system.elements['t1-tgl'].toggled = window.customData['userData']['highQualitySliders']
   system.elements['t1-tgl'].updateInnerBox()
 
-  addOption('Display Playfield Border', 't2', 2, changeUserData, (window.customData['userData'], 'playfieldBorder'), system, window)
+  addOption('Display Playfield Border', 't2', 2, changeUserData, (window.customData['userData'], 'playfieldBorder'), system)
   system.elements['t2-tgl'].toggled = window.customData['userData']['playfieldBorder']
   system.elements['t2-tgl'].updateInnerBox()
 
-  addOption('Render Default Skin Cursor', 't3', 3, changeUserData, (window.customData['userData'], 'renderSkinCursor'), system, window)
+  addOption('Render Default Skin Cursor', 't3', 3, changeUserData, (window.customData['userData'], 'renderSkinCursor'), system)
   system.elements['t3-tgl'].toggled = window.customData['userData']['renderSkinCursor']
   system.elements['t3-tgl'].updateInnerBox()
 
-  addOption('Render Cursor Tracker', 't4', 4, changeUserData, (window.customData['userData'], 'renerCursorTracker'), system, window)
+  addOption('Render Cursor Tracker', 't4', 4, changeUserData, (window.customData['userData'], 'renerCursorTracker'), system)
   system.elements['t4-tgl'].toggled = window.customData['userData']['renerCursorTracker']
   system.elements['t4-tgl'].updateInnerBox()
 
-  addOption('Render Hit Judgments', 't5', 5, changeUserData, (window.customData['userData'], 'renderHitJudgments'), system, window)
+  addOption('Render Hit Judgments', 't5', 5, changeUserData, (window.customData['userData'], 'renderHitJudgments'), system)
   system.elements['t5-tgl'].toggled = window.customData['userData']['renderHitJudgments']
   system.elements['t5-tgl'].updateInnerBox()
+
+  LSK_HEIGHT = DV('classPer', window, classAttr='screenHeight', percent=5)
+  LSK_WIDTH = DV('classPer', LSK_HEIGHT, classAttr='value', percent=300)
+  LSK_Y = DV('customCallable', lambda params: params[0].screenHeight - (params[1].value * 1.5), callableParameters=(window, LSK_HEIGHT))
+  LSK_X = DV('customCallable', lambda params: params[0].screenWidth - params[1].value - (params[2].value * .5), callableParameters=(window, LSK_WIDTH, LSK_HEIGHT))
+
+  loadSkinDim = {
+    'x': LSK_X,
+    'y': LSK_Y,
+    'width': LSK_WIDTH,
+    'height': LSK_HEIGHT
+  }
+
+  loadSkinBTN = Button(
+    Section(loadSkinDim, AppColors.gray, 3),
+    AppColors.darkGray,
+    None,
+    None,
+    'Change Skin',
+    'Helvetica',
+    AppColors.background1,
+    changeSkin
+  )
+
+  system.addElement(loadSkinBTN, 'loadSkinBTN')
 
   window.addSystem(system, 'settings')

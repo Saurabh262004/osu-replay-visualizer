@@ -1,5 +1,8 @@
 import os
 import traceback
+import sharedWindow
+from appManagers.manageAlerts import *
+from appUI.colors import AppColors
 from modules.UI.windowManager import Window
 from modules.readers.replayReader import getReplayData
 from modules.readers.osudbReader import getMapByMD5
@@ -7,7 +10,8 @@ from modules.renderer.beatmapRenderer import MapRenderer
 import pygame as pg
 from mutagen.mp3 import MP3
 
-def loadRendererWithReplay(window: Window):
+def loadRendererWithReplay():
+  window: Window = sharedWindow.window
   window.loggedSystemSwitch = 'main'
   userData = window.customData['userData']
 
@@ -21,6 +25,8 @@ def loadRendererWithReplay(window: Window):
     replayData = getReplayData(replayURL)
     # print('done.')
   except Exception as e:
+    activateAlert('Couldn\'t read osu database!')
+
     traceback.print_exc()
     print(e)
     return e
@@ -29,8 +35,15 @@ def loadRendererWithReplay(window: Window):
   try:
     # print('getting beatmap data...')
     beatmapData = getMapByMD5(osuDbURL, replayData['beatmapMD5Hash'])
+    
+    if beatmapData is None:
+      activateAlert('You don\'t have the beatmap!')
+      return False
+
     # print('done.')
   except Exception as e:
+    activateAlert('Couldn\'t get map!')
+
     traceback.print_exc()
     print(e)
     return e
@@ -50,6 +63,8 @@ def loadRendererWithReplay(window: Window):
     pg.mixer.music.load(audioFileURL)
     pg.mixer.music.set_volume(userData['volume'] / 2)
   except Exception as e:
+    activateAlert('Couldn\'t load the audio!')
+
     traceback.print_exc()
     print(e)
     return e
@@ -60,23 +75,25 @@ def loadRendererWithReplay(window: Window):
   resolutionMultiplier = (replaySectionHeight * .8) / defaultHeight
 
   # set the replay section background to a new pg surface #
-  window.systems['main'].elements['replaySection'].background = pg.surface.Surface((window.screenWidth, replaySectionHeight))
-  window.systems['main'].elements['replaySection'].update()
+  replaySection = window.systems['main'].elements['replaySection']
+  replaySection.background = pg.surface.Surface((window.screenWidth, replaySectionHeight))
+  replaySection.update()
 
   # initialize the beatmap renderer #
   try:
     # print('initializing beatmap renderer...')
     window.customData['beatmapRenderer'] = MapRenderer(
-      userData['URLs']['osuFolder'],
       beatmapURL,
-      userData['skin'],
       replayURL,
-      window.systems['main'].elements['replaySection'].background,
-      resolutionMultiplier,
-      userData
+      replaySection.background,
+      resolutionMultiplier
     )
     # print('initializing beatmap renderer done.')
   except Exception as e:
+    replaySection.background = AppColors.background1
+
+    activateAlert('Error initializing the renderer!')
+
     traceback.print_exc()
     print(e)
     return e
@@ -107,5 +124,8 @@ def loadRendererWithReplay(window: Window):
   window.customData['replayLoaded'] = True
   window.customData['timeStampMax'] = timeStampMax
 
-def loadRendererWithoutReplay(window: Window):
+  deactivateAlert()
+
+def loadRendererWithoutReplay():
+  window: Window = sharedWindow.window
   pass

@@ -299,7 +299,10 @@ class Button:
         self.section.update()
 
       if self.onClick and self.onClickActuation == 'buttonDown':
-        self.onClick(self.onClickParams)
+        if self.onClickParams is None:
+          self.onClick()
+        else:
+          self.onClick(self.onClickParams)
 
       return True
     elif event.type == pg.MOUSEBUTTONUP and self.pressed:
@@ -307,7 +310,10 @@ class Button:
       self.section.background = self.defaultBackground
 
       if self.onClick and self.onClickActuation == 'buttonUp':
-        self.onClick(self.onClickParams)
+        if self.onClickParams is None:
+          self.onClick()
+        else:
+          self.onClick(self.onClickParams)
       
       self.section.update()
 
@@ -320,7 +326,10 @@ class Button:
 
     if not isinstance(self.section, pg.Rect):
       if self.hasText:
-        self.textBox.update()
+        try:
+          self.textBox.update()
+        except Exception as e:
+          print(e)
       else:
         self.section.update()
 
@@ -732,21 +741,21 @@ class System:
         if self.elements[elementID].active:
           self.elements[elementID].update()
 
-  def handleEvents(self, event: pg.event.Event):
+  def handleEvents(self, event: pg.event.Event) -> Union[str, None]:
     if self.locked:
       print('System is currently locked')
       return None
 
     mousePos = pg.mouse.get_pos()
 
-    changeCursor = False
+    changeCursor = None
     for buttonID in self.buttons:
       if self.buttons[buttonID].active:
         if not changeCursor:
           if self.buttons[buttonID].section.rect.collidepoint(mousePos):
             changeCursor = 'hand'
 
-      self.buttons[buttonID].checkEvent(event)
+        self.buttons[buttonID].checkEvent(event)
 
     for toggleID in self.toggles:
       if self.toggles[toggleID].active:
@@ -754,7 +763,7 @@ class System:
           if self.toggles[toggleID].section.rect.collidepoint(mousePos):
             changeCursor = 'hand'
 
-      self.toggles[toggleID].checkEvent(event)
+        self.toggles[toggleID].checkEvent(event)
 
     for sliderID in self.sliders:
       if self.sliders[sliderID].active:
@@ -762,12 +771,9 @@ class System:
           if self.sliders[sliderID].section.rect.collidepoint(mousePos):
             changeCursor = 'hand'
 
-      self.sliders[sliderID].checkEvent(event)
+        self.sliders[sliderID].checkEvent(event)
 
-    if changeCursor == 'hand':
-      pg.mouse.set_cursor(pg.SYSTEM_CURSOR_HAND)
-    else:
-      pg.mouse.set_cursor(pg.SYSTEM_CURSOR_ARROW)
+    return changeCursor
 
   def initiate(self, surface: pg.surface.Surface):
     self.surface = surface

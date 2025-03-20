@@ -4,20 +4,20 @@ from pygame import Color as pgColor, transform as pgTransform
 from modules.misc.helpers import tintImage
 from modules.readers.beatmapReader import readMap
 from modules.readers.replayReader import getReplayData
-from modules.readers.importSkin import importSkin
 from modules.beatmapElements.hitobjects import *
 
 # stores all the data about beatmap and replay #
 class Beatmap:
-  def __init__(self, osuURL: str, mapURL: str, skinName: str, replayURL: str = None):
+  def __init__(self, mapURL: str, skin: dict, replayURL: str = None):
     # print('creating a new beatmap...\nreading map data...')
     self.map = readMap(mapURL)
-    # print('done.\nimporting skin...')
-    self.skin = importSkin(skinName, osuURL)
+
     # print('done.\nreading replay data again...')
     self.replay = getReplayData(replayURL) if replayURL else None
+
     # print('done.')
 
+    self.skin = skin
     # sort out hitobjects #
     self.hitobjects: List[Union[Hitcircle, Slider, Spinner]] = []
     self.hitcircles: List[Hitcircle] = []

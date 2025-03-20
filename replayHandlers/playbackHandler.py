@@ -1,8 +1,11 @@
 from typing import Union, Optional
 import pygame as pg
+import sharedWindow
 from modules.UI.windowManager import Window
 
-def updateTimeStamp(window: Window, time: int):
+def updateTimeStamp(time: int):
+  window: Window = sharedWindow.window
+
   totalSecs = int(time / 1000)
   currentTimeMS = int(time - (totalSecs * 1000))
   currentTimeSecs = int(totalSecs % 60)
@@ -13,7 +16,9 @@ def updateTimeStamp(window: Window, time: int):
   timeStamp.text = f'{currentTimeMinutes:02d}:{currentTimeSecs:02d}.{currentTimeMS:03d} / {window.customData['timeStampMax']}'
   timeStamp.update()
 
-def handleReplayPlayback(window: Window):
+def handleReplayPlayback():
+  window: Window = sharedWindow.window
+
   if window.customData['replayTimeStarted']:
     timeline = window.systems['main'].elements['replayTimeline']
 
@@ -23,12 +28,12 @@ def handleReplayPlayback(window: Window):
 
       if newTime > timeline.valueRange[1]:
         newTime = timeline.valueRange[1]
-        pauseReplay(window)
+        pauseReplay()
       elif newTime < timeline.valueRange[0]:
         newTime = timeline.valueRange[0]
 
       window.customData['timelineTimeLog'] = newTime
-      updateTimeStamp(window, newTime)
+      updateTimeStamp(newTime)
 
       timeline.value = newTime
       timeline.update()
@@ -38,7 +43,9 @@ def handleReplayPlayback(window: Window):
     window.customData['replayTimeStarted'] = True
     window.customData['startTime'] = window.time.get_ticks()
 
-def timelineCallback(value: Union[int, float], window: Window):
+def timelineCallback(value: Union[int, float]):
+  window: Window = sharedWindow.window
+
   if not 'replayLoaded' in window.customData or not window.customData['replayLoaded']:
     return None
 
@@ -48,11 +55,13 @@ def timelineCallback(value: Union[int, float], window: Window):
 
   window.customData['userDragOffset'] += timelineDifference
 
-  updateTimeStamp(window, int(value))
+  updateTimeStamp(int(value))
 
-  pauseReplay(window, True)
+  pauseReplay(True)
 
-def pauseReplay(window: Window, unpauseAfter: Optional[bool] = False):
+def pauseReplay(unpauseAfter: Optional[bool] = False):
+  window: Window = sharedWindow.window
+
   if (not 'replayLoaded' in window.customData or not window.customData['replayLoaded']) or window.customData['replayPaused']:
     return None
 
@@ -63,9 +72,11 @@ def pauseReplay(window: Window, unpauseAfter: Optional[bool] = False):
   pg.mixer.music.pause()
 
   if unpauseAfter:
-    unpauseReplay(window)
+    unpauseReplay()
 
-def unpauseReplay(window: Window):
+def unpauseReplay():
+  window: Window = sharedWindow.window
+
   if (not 'replayLoaded' in window.customData or not window.customData['replayLoaded']) or not window.customData['replayPaused']:
     return None
 
@@ -87,11 +98,13 @@ def unpauseReplay(window: Window):
 
   pg.mixer.music.play(start=(newTime/1000))
 
-def pauseToggle(window: Window):
+def pauseToggle():
+  window: Window = sharedWindow.window
+
   if not 'replayLoaded' in window.customData or not window.customData['replayLoaded']:
     return None
 
   if window.customData['replayPaused']:
-    unpauseReplay(window)
+    unpauseReplay()
   else:
-    pauseReplay(window)
+    pauseReplay()

@@ -4,6 +4,7 @@ from modules.misc.helpers import tintImage
 from appUI.colors import AppColors
 from modules.UI.UIElements import DynamicValue as DV, Section, Button, System
 from modules.UI.windowManager import Window
+import sharedWindow
 
 def setLoggedSystemSwitch(params: Iterable):
   window: Window = params[0]
@@ -32,7 +33,9 @@ def addNavButton(system: System, iconName: pg.Surface, window: Window, switchSys
     ), buttonID
   )
 
-def addNav(window: Window):
+def addNav():
+  window: Window = sharedWindow.window
+
   system = System(preLoadState=True)
 
   system.addElement(

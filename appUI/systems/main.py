@@ -2,8 +2,9 @@ from typing import Union
 import pygame as pg
 from modules.misc.helpers import tintImage
 from appUI.colors import AppColors
-from modules.UI.UIElements import DynamicValue as DV, Section, Circle, TextBox, Slider, System
+from modules.UI.UIElements import DynamicValue as DV, Section, TextBox, Slider, System
 from modules.UI.windowManager import Window
+import sharedWindow
 from replayHandlers.playbackHandler import timelineCallback
 
 def toggleActivation(system: System):
@@ -25,7 +26,9 @@ def setUserVolume(volume: Union[int, float], window: Window):
 
   pg.mixer.music.set_volume(volume / 2)
 
-def addMain(window: Window):
+def addMain():
+  window: Window = sharedWindow.window
+
   system = System(preLoadState=True)
 
   mainDim = {
@@ -75,7 +78,7 @@ def addMain(window: Window):
     AppColors.darkGray,
     {
       'callable': timelineCallback,
-      'params': window,
+      'params': None,
       'sendValue': True
     }
   )
@@ -168,13 +171,14 @@ def addMain(window: Window):
     'height': UED_HEIGHT
   }
 
-  errorMsgBox = Section(errorDim, AppColors.gray, 7, 'fit', 20)
+  alertBox = Section(errorDim, pg.Color(241, 188, 208), 7, 'fit', 20)
+  # alertBox.activeDraw = False
 
-  system.addElement(errorMsgBox, 'errorMsgBox')
+  system.addElement(alertBox, 'alertBox')
 
   AID_HEIGHT = DV('classPer', UED_HEIGHT, classAttr='value', percent=20)
   AID_WIDTH = DV('classNum', AID_HEIGHT, classAttr='value')
-  AID_Y = DV('customCallable', lambda params: params[0].value + params[1].value, callableParameters=(UED_Y, AID_HEIGHT))
+  AID_Y = DV('customCallable', lambda params: params[0].value + (params[1].value / 2), callableParameters=(UED_Y, AID_HEIGHT))
   AID_X = DV('customCallable', lambda params: params[0].value + ((params[1].value - params[2].value) / 2), callableParameters=(UED_X, UED_WIDTH, AID_WIDTH))
 
   alertIconDim = {
@@ -186,10 +190,26 @@ def addMain(window: Window):
 
   alertIconImg = pg.image.load(f'assets/UI/alert-circle.png')
 
-  tintImage(alertIconImg, pg.Color(30, 30, 30))
+  tintImage(alertIconImg, AppColors.background1)
 
   alertIcon = Section(alertIconDim, alertIconImg)
+  # alertIcon.activeDraw = False
 
   system.addElement(alertIcon, 'alertIcon')
+
+  alertTextBox = Section(
+    {
+      'x': UED_X,
+      'y': DV('customCallable', lambda params: params[0].value + (params[1].value * 2.3), callableParameters=(UED_Y, AID_HEIGHT)),
+      'width': UED_WIDTH,
+      'height': DV('classPer', UED_HEIGHT, classAttr='value', percent=25)
+    },
+    AppColors.darkGray
+  )
+
+  alertText = TextBox(alertTextBox, '-', 'Helvetica', AppColors.background1)
+  # alertText.activeDraw = False
+
+  system.addElement(alertText, 'alertText')
 
   window.addSystem(system, 'main')

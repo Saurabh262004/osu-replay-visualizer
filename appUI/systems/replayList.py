@@ -4,6 +4,7 @@ import pygame as pg
 from appUI.colors import AppColors
 from modules.UI.UIElements import DynamicValue as DV, Section, Button, TextBox, System, Slider
 from modules.UI.windowManager import Window
+import sharedWindow
 
 def getReplayElementY(params):
   system: System = params[0]
@@ -57,7 +58,9 @@ def getReplayElements(replayNames: Iterable[str], window: Window, system: System
     system.addElement(textBox, f'replayListText-{replayNum}')
     replayNum += 1
 
-def addReplayList(window: Window):
+def addReplayList():
+  window: Window = sharedWindow.window
+
   replayFolderURL = os.path.join(window.customData['userData']['URLs']['osuFolder'], 'Replays')
 
   dirList = os.listdir(replayFolderURL)

@@ -1,6 +1,7 @@
 from typing import Union, Optional, List
 from math import atan2, degrees
 import pygame as pg
+import sharedWindow
 from modules.misc.helpers import mapRange
 from modules.beatmapElements.hitobjects import Hitcircle, Slider, Spinner
 from modules.beatmapElements.beatmap import Beatmap
@@ -8,14 +9,17 @@ from modules.beatmapElements.beatmap import Beatmap
 numType = Union[int, float]
 
 class MapRenderer:
-  def __init__(self, osuURL: str, beatmapURL: dict, skinName: str, replayURL: Optional[str], surface: pg.Surface, playFieldResMultiplier: numType, userData: bool):
+  def __init__(self, beatmapURL: dict, replayURL: Optional[str], surface: pg.Surface, playFieldResMultiplier: numType):
+    self.window = sharedWindow.window
+    self.userData = self.window.customData['userData']
+
     # print('creating a new renderer...')
     if replayURL is not None:
       # print('initializing beatmap with replay...')
-      self.beatmap = Beatmap(osuURL, beatmapURL, skinName, replayURL)
+      self.beatmap = Beatmap(beatmapURL, self.window.customData['skin'], replayURL)
       # print('initializing beatmap done.')
     else:
-      self.beatmap = Beatmap(osuURL, beatmapURL, skinName)
+      self.beatmap = Beatmap(beatmapURL, self.window.customData['skin'])
 
     self.surface = surface
     self.playFieldResMultiplier = playFieldResMultiplier
@@ -23,7 +27,6 @@ class MapRenderer:
     self.playFieldXpadding = (self.surface.get_width() - self.playFieldRes[0]) / 2
     self.playFieldYpadding = (self.surface.get_height() - self.playFieldRes[1]) / 2
     self.drawSliderAnchors = False
-    self.userData = userData
     self.maxImgAlpha = 255
 
     self.center = (
