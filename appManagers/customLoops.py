@@ -53,7 +53,7 @@ def windowCustomUpdate():
       activateAlert('No skin selected!')
     else:
       try:
-        window.customData['skin'] = importSkin(userData['skin'], userData['URLs']['osuFolder'])
+        window.customData['skin'] = importSkin(userData['skin'], 'assets/defaultSkin', userData['URLs']['osuFolder'])
       except:
         activateAlert('Couldn\'t load the skin!')
 

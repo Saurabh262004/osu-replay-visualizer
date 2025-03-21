@@ -19,7 +19,7 @@ def changeSkin():
     return
 
   try:
-    window.customData['skin'] = importSkin(skinName, window.customData['userData']['URLs']['osuFolder'])
+    window.customData['skin'] = importSkin(skinName, 'assets/defaultSkin', window.customData['userData']['URLs']['osuFolder'])
     window.customData['userData']['skin'] = skinName
     deactivateAlert()
   except Exception as e:
@@ -107,17 +107,21 @@ def addSettings():
   system.elements['t2-tgl'].toggled = window.customData['userData']['playfieldBorder']
   system.elements['t2-tgl'].updateInnerBox()
 
-  addOption('Render Default Skin Cursor', 't3', 3, changeUserData, (window.customData['userData'], 'renderSkinCursor'), system)
-  system.elements['t3-tgl'].toggled = window.customData['userData']['renderSkinCursor']
+  addOption('Display Sldier Anchors', 't3', 3, changeUserData, (window.customData['userData'], 'sliderAnchors'), system)
+  system.elements['t3-tgl'].toggled = window.customData['userData']['sliderAnchors']
   system.elements['t3-tgl'].updateInnerBox()
 
-  addOption('Render Cursor Tracker', 't4', 4, changeUserData, (window.customData['userData'], 'renerCursorTracker'), system)
-  system.elements['t4-tgl'].toggled = window.customData['userData']['renerCursorTracker']
+  addOption('Render Default Skin Cursor', 't4', 4, changeUserData, (window.customData['userData'], 'renderSkinCursor'), system)
+  system.elements['t4-tgl'].toggled = window.customData['userData']['renderSkinCursor']
   system.elements['t4-tgl'].updateInnerBox()
 
-  addOption('Render Hit Judgments', 't5', 5, changeUserData, (window.customData['userData'], 'renderHitJudgments'), system)
-  system.elements['t5-tgl'].toggled = window.customData['userData']['renderHitJudgments']
+  addOption('Render Cursor Tracker', 't5', 5, changeUserData, (window.customData['userData'], 'renerCursorTracker'), system)
+  system.elements['t5-tgl'].toggled = window.customData['userData']['renerCursorTracker']
   system.elements['t5-tgl'].updateInnerBox()
+
+  addOption('Render Hit Judgments', 't6', 6, changeUserData, (window.customData['userData'], 'renderHitJudgments'), system)
+  system.elements['t6-tgl'].toggled = window.customData['userData']['renderHitJudgments']
+  system.elements['t6-tgl'].updateInnerBox()
 
   LSK_HEIGHT = DV('classPer', window, classAttr='screenHeight', percent=5)
   LSK_WIDTH = DV('classPer', LSK_HEIGHT, classAttr='value', percent=320)

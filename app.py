@@ -3,7 +3,6 @@ import json
 import sharedWindow
 from appManagers.openCloseSeq import *
 from appManagers.customLoops import *
-from appManagers.manageAlerts import activateAlert
 from modules.UI.windowManager import Window
 from appUI.systems.nav import addNav
 from appUI.systems.main import addMain
@@ -23,6 +22,7 @@ except:
     "volume": 0.2,
     "highQualitySliders": False,
     "playfieldBorder": True,
+    "sliderAnchors": False,
     "renderSkinCursor": True,
     "renerCursorTracker": True,
     "renderHitJudgments": False,

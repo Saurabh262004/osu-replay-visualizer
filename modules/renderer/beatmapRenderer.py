@@ -1,4 +1,5 @@
 from typing import Union, Optional, List
+from concurrent.futures import ThreadPoolExecutor
 from math import atan2, degrees
 import pygame as pg
 import sharedWindow
@@ -26,7 +27,6 @@ class MapRenderer:
     self.playFieldRes = (self.playFieldResMultiplier * 512, self.playFieldResMultiplier * 384)
     self.playFieldXpadding = (self.surface.get_width() - self.playFieldRes[0]) / 2
     self.playFieldYpadding = (self.surface.get_height() - self.playFieldRes[1]) / 2
-    self.drawSliderAnchors = False
     self.maxImgAlpha = 255
 
     self.center = (
@@ -44,12 +44,28 @@ class MapRenderer:
 
     self.beatmap.transformCursorData(self.playFieldResMultiplier, self.playFieldXpadding, self.playFieldYpadding)
 
-    # print('transforming and rendering slider bodies...')
-    for slider in self.beatmap.sliders:
-      slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
-      slider.renderBody(self.playFieldResMultiplier, self.userData['highQualitySliders'])
-    # print('done.')
+    with ThreadPoolExecutor() as executor:
+      transforms = [
+          executor.submit(
+          slider.transformBodyPath,
+          (self.playFieldResMultiplier, self.playFieldResMultiplier),
+          (self.playFieldXpadding, self.playFieldYpadding)
+        ) for slider in self.beatmap.sliders
+      ]
 
+      [t.result() for t in transforms]
+
+      renders = [
+        executor.submit(
+          slider.renderBody,
+          self.playFieldResMultiplier,
+          self.userData['highQualitySliders']
+        ) for slider in self.beatmap.sliders
+      ]
+
+      [r.result() for r in renders]
+
+    # print('post-render')
   def updateSurface(self, newSurface: pg.Surface, newResMultiplier: numType):
     self.surface = newSurface
     self.playFieldResMultiplier = newResMultiplier
@@ -72,9 +88,26 @@ class MapRenderer:
 
     self.beatmap.transformCursorData(self.playFieldResMultiplier, self.playFieldXpadding, self.playFieldYpadding)
 
-    for slider in self.beatmap.sliders:
-      slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
-      slider.renderBody(self.playFieldResMultiplier, self.userData['highQualitySliders'])
+    with ThreadPoolExecutor() as executor:
+      transforms = [
+          executor.submit(
+          slider.transformBodyPath,
+          (self.playFieldResMultiplier, self.playFieldResMultiplier),
+          (self.playFieldXpadding, self.playFieldYpadding)
+        ) for slider in self.beatmap.sliders
+      ]
+
+      [t.result() for t in transforms]
+
+      renders = [
+        executor.submit(
+          slider.renderBody,
+          self.playFieldResMultiplier,
+          self.userData['highQualitySliders']
+        ) for slider in self.beatmap.sliders
+      ]
+
+      [r.result() for r in renders]
 
   def render(self, time: int):
     renderObjects = self.beatmap.hitobjectsAtTime(time)
@@ -83,6 +116,22 @@ class MapRenderer:
 
     if self.userData['playfieldBorder']:
       pg.draw.rect(self.surface, (200, 200, 200), (self.playFieldXpadding, self.playFieldYpadding, self.playFieldRes[0], self.playFieldRes[1]), 1)
+
+      pg.draw.line(
+        self.surface,
+        (200, 200, 200),
+        (self.playFieldXpadding + (self.playFieldRes[0] / 2), self.playFieldYpadding),
+        (self.playFieldXpadding + (self.playFieldRes[0] / 2), self.playFieldYpadding + self.playFieldRes[1]),
+        1
+      )
+
+      pg.draw.line(
+        self.surface,
+        (200, 200, 200),
+        (self.playFieldXpadding, self.playFieldYpadding + (self.playFieldRes[1] / 2)),
+        (self.playFieldXpadding + self.playFieldRes[0], self.playFieldYpadding + (self.playFieldRes[1] / 2)),
+        1
+      )
 
     for i in range(len(renderObjects) - 1, -1, -1):
       if isinstance(renderObjects[i], Hitcircle): self.drawHitcircle(renderObjects[i], time)
@@ -156,6 +205,7 @@ class MapRenderer:
 
     if hitcircle.hitTime >= time:
       comboImagesScaled = [pg.transform.smoothscale_by(comboImage, self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier) for comboImage in comboImages]
+      # comboImagesScaled = [pg.transform.smoothscale_by(comboImage, self.playFieldResMultiplier) for comboImage in comboImages]
 
       for comboImage in comboImagesScaled:
         comboImage.set_alpha(hitobjectAlpha)
@@ -246,6 +296,7 @@ class MapRenderer:
       sliderFollowCircle = self.beatmap.skin['elements']['sliderfollowcircle']
 
       sliderFollowCircleScaled = pg.transform.smoothscale_by(sliderFollowCircle, self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier)
+      # sliderFollowCircleScaled = pg.transform.smoothscale_by(sliderFollowCircle, self.playFieldResMultiplier)
 
       alphaAndScaleMult = 1
       if time > slider.endTime:
@@ -269,7 +320,7 @@ class MapRenderer:
 
       self.surface.blit(sliderFollowCircleScaled, sliderFollowCirclePos)
 
-    if self.drawSliderAnchors:
+    if self.userData['sliderAnchors']:
       for i in range(len(slider.anchors)):
         anchor = slider.anchors[i]
         anchorColor = (255, 0, 0) if anchor['red'] else (255, 255, 255)

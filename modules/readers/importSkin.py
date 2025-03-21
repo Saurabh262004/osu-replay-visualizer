@@ -4,7 +4,7 @@ from modules.misc.helpers import customStrip
 from modules.misc.gameLists import SKIN_ELEMENTS, FONT_ELEMENTS
 from modules.readers.parsingHelpers import keyValuePairs
 
-def importSkin(skinName: str, osuURL: str) -> dict:
+def importSkin(skinName: str, defaultSkinURL: str, osuURL: str) -> dict:
   if not os.path.isdir(osuURL):
     raise FileNotFoundError(f"The directory '{osuURL}' does not exist. Please provide a valid path to the osu! folder.")
 
@@ -65,14 +65,19 @@ def importSkin(skinName: str, osuURL: str) -> dict:
           skin['elements'][element] = image.load(stillImageURL).convert_alpha()
         elif SKIN_ELEMENTS[element]['required']:
           skin['elements'].pop(element)
+          stillImageURL = f"{defaultSkinURL}/{element}.png"
+          skin['elements'][element] = image.load(stillImageURL).convert_alpha()
           requiredElementNotFound = True
+
     elif os.path.isfile(stillImageURL):
       skin['elements'][element] = image.load(stillImageURL).convert_alpha()
     elif SKIN_ELEMENTS[element]['required']:
+      stillImageURL = f"{defaultSkinURL}/{element}.png"
+      skin['elements'][element] = image.load(stillImageURL).convert_alpha()
       requiredElementNotFound = True
 
     if requiredElementNotFound:
-      raise FileNotFoundError(f"One of the necessary skin elements, '{element}', is missing from the skin '{skinName}'. Please provide a valid skin")
+      print(f"One of the necessary skin elements, '{element}', is missing from the skin '{skinName}'. Imported element from default skin")
 
   # load the font elements
   for element in FONT_ELEMENTS:

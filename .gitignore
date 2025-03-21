@@ -3,3 +3,4 @@ testFiles/
 *.pyc
 __init__.py
 setup.py
+assets/defaultSkin

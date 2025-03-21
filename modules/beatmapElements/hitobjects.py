@@ -90,18 +90,18 @@ class Slider:
 
     if self.curveType == 'B':
       for curve in self.curves:
-        self.baseBodyPath.append(self.computeBezier(curve, 0.005))
+        self.baseBodyPath.append(self.computeBezier(curve, 0.002))
     elif self.curveType == 'L':
-      self.baseBodyPath = self.computeLinearBody(self.anchors, 0.005)
+      self.baseBodyPath = self.computeLinearBody(self.anchors, 0.002)
     elif self.curveType == 'P':
       anchors = self.anchors
       coordBottom = 2*((anchors[0]['x'] * (anchors[1]['y'] - anchors[2]['y'])) + (anchors[1]['x'] * (anchors[2]['y'] - anchors[0]['y'])) + (anchors[2]['x'] * (anchors[0]['y'] - anchors[1]['y'])))
 
       if coordBottom == 0:
         self.curveType = 'L'
-        self.baseBodyPath = self.computeLinearBody(self.anchors, 0.005)
+        self.baseBodyPath = self.computeLinearBody(self.anchors, 0.002)
       else:
-        self.baseBodyPath = self.computeCircleBody(self.anchors, 0.005)
+        self.baseBodyPath = self.computeCircleBody(self.anchors, 0.002)
 
     # maybe I should reparameterize the body path before this #
     self.calcLength = 0
@@ -250,7 +250,7 @@ class Slider:
       lastDistance = 0
       self.bodyPath = []
       self.bodyPath.append(self.transformedBodyPath[0])
-      targetDistance = 5
+      targetDistance = 2
       for i in range(1, len(self.transformedBodyPath)):
         totalBezierLength += dist(self.transformedBodyPath[i-1]['x'], self.transformedBodyPath[i-1]['y'], self.transformedBodyPath[i]['x'], self.transformedBodyPath[i]['y'])
 
@@ -308,7 +308,7 @@ class Slider:
     self.bodySurfacePos = (minX / renderResMultiplier, minY / renderResMultiplier)
     highResBodySurface.fill((0, 0, 0, 0))
 
-    totalAlphaIterations = 20
+    totalAlphaIterations = int(CR)
     sliderOutlineAlpha = 150
     sliderOutlineSize = .1
     maxAlpha = 90
