@@ -1,5 +1,4 @@
 from typing import Union, Optional, List
-from concurrent.futures import ThreadPoolExecutor
 from math import atan2, degrees
 import pygame as pg
 import sharedWindow
@@ -29,6 +28,12 @@ class MapRenderer:
     self.playFieldYpadding = (self.surface.get_height() - self.playFieldRes[1]) / 2
     self.maxImgAlpha = 255
 
+    self.timeMultiplier = 1
+    if 'DT' in self.beatmap.replay['mods']:
+      self.timeMultiplier = (2/3)
+    elif 'HT' in self.beatmap.replay['mods']:
+      self.timeMultiplier = 1 + (1/3)
+
     self.center = (
       self.playFieldXpadding + (self.playFieldRes[0] / 2),
       self.playFieldYpadding + (self.playFieldRes[1] / 2)
@@ -44,28 +49,10 @@ class MapRenderer:
 
     self.beatmap.transformCursorData(self.playFieldResMultiplier, self.playFieldXpadding, self.playFieldYpadding)
 
-    with ThreadPoolExecutor() as executor:
-      transforms = [
-          executor.submit(
-          slider.transformBodyPath,
-          (self.playFieldResMultiplier, self.playFieldResMultiplier),
-          (self.playFieldXpadding, self.playFieldYpadding)
-        ) for slider in self.beatmap.sliders
-      ]
+    for slider in self.beatmap.sliders:
+      slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
+      slider.renderBody(self.playFieldResMultiplier, self.userData['highQualitySliders'])
 
-      [t.result() for t in transforms]
-
-      renders = [
-        executor.submit(
-          slider.renderBody,
-          self.playFieldResMultiplier,
-          self.userData['highQualitySliders']
-        ) for slider in self.beatmap.sliders
-      ]
-
-      [r.result() for r in renders]
-
-    # print('post-render')
   def updateSurface(self, newSurface: pg.Surface, newResMultiplier: numType):
     self.surface = newSurface
     self.playFieldResMultiplier = newResMultiplier
@@ -88,55 +75,22 @@ class MapRenderer:
 
     self.beatmap.transformCursorData(self.playFieldResMultiplier, self.playFieldXpadding, self.playFieldYpadding)
 
-    with ThreadPoolExecutor() as executor:
-      transforms = [
-          executor.submit(
-          slider.transformBodyPath,
-          (self.playFieldResMultiplier, self.playFieldResMultiplier),
-          (self.playFieldXpadding, self.playFieldYpadding)
-        ) for slider in self.beatmap.sliders
-      ]
-
-      [t.result() for t in transforms]
-
-      renders = [
-        executor.submit(
-          slider.renderBody,
-          self.playFieldResMultiplier,
-          self.userData['highQualitySliders']
-        ) for slider in self.beatmap.sliders
-      ]
-
-      [r.result() for r in renders]
+    for slider in self.beatmap.sliders:
+      slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
+      slider.renderBody(self.playFieldResMultiplier, self.userData['highQualitySliders'])
 
   def render(self, time: int):
-    renderObjects = self.beatmap.hitobjectsAtTime(time)
+    renderObjects = self.beatmap.hitobjectsAtTime(time / self.timeMultiplier)
 
     self.surface.fill((0, 0, 0))
 
     if self.userData['playfieldBorder']:
       pg.draw.rect(self.surface, (200, 200, 200), (self.playFieldXpadding, self.playFieldYpadding, self.playFieldRes[0], self.playFieldRes[1]), 1)
 
-      pg.draw.line(
-        self.surface,
-        (200, 200, 200),
-        (self.playFieldXpadding + (self.playFieldRes[0] / 2), self.playFieldYpadding),
-        (self.playFieldXpadding + (self.playFieldRes[0] / 2), self.playFieldYpadding + self.playFieldRes[1]),
-        1
-      )
-
-      pg.draw.line(
-        self.surface,
-        (200, 200, 200),
-        (self.playFieldXpadding, self.playFieldYpadding + (self.playFieldRes[1] / 2)),
-        (self.playFieldXpadding + self.playFieldRes[0], self.playFieldYpadding + (self.playFieldRes[1] / 2)),
-        1
-      )
-
     for i in range(len(renderObjects) - 1, -1, -1):
-      if isinstance(renderObjects[i], Hitcircle): self.drawHitcircle(renderObjects[i], time)
-      elif isinstance(renderObjects[i], Slider): self.drawSlider(renderObjects[i], time)
-      elif isinstance(renderObjects[i], Spinner): self.drawSpinner(renderObjects[i], time)
+      if isinstance(renderObjects[i], Hitcircle): self.drawHitcircle(renderObjects[i], time / self.timeMultiplier)
+      elif isinstance(renderObjects[i], Slider): self.drawSlider(renderObjects[i], time / self.timeMultiplier)
+      elif isinstance(renderObjects[i], Spinner): self.drawSpinner(renderObjects[i], time / self.timeMultiplier)
 
     if self.beatmap.mode == 'replay':
       trails = []
@@ -146,39 +100,45 @@ class MapRenderer:
       if self.userData['renderSkinCursor']:
         trails.append('default')
 
-      self.drawCursor(time, trails)
+      self.drawCursor(time / self.timeMultiplier, trails)
 
       if self.userData['renderKeyOverlay']:
-        self.drawKeyOverlay(time)
+        self.drawKeyOverlay(time / self.timeMultiplier)
 
   def drawHitcircle(self, hitcircle: Hitcircle, time: int):
     comboStr = str(hitcircle.comboIndex)
     comboLength = len(comboStr)
 
     hitcircleImage = self.beatmap.hitcircleCombos[hitcircle.comboColorIndex]
-    comboImages = [self.beatmap.skin['elements'][f'score-{comboNumber}'] for comboNumber in comboStr]
+    comboImages = [self.beatmap.skin['elements'][f'default-{comboNumber}'] for comboNumber in comboStr]
     hitcircleOverlayImage = self.beatmap.hitcircleOverlay
-    approachcircleImage = self.beatmap.approachcircleCombos[hitcircle.comboColorIndex]
 
     drawWindowStart = hitcircle.time - self.beatmap.preempt
     fadeWindowEnd = drawWindowStart + self.beatmap.fadeIn
 
-    if hitcircle.time >= time:
-      approachCircleMultiplier = self.playFieldResMultiplier * mapRange(time, drawWindowStart, hitcircle.time, 4, 1)
-      hitcircleMultiplier = 1
-      hitobjectAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, self.maxImgAlpha)
-    else:
-      approachCircleMultiplier = 0
-
-      if hitcircle.hitTime >= time:
+    if not 'HD' in self.beatmap.replay['mods']:
+      if hitcircle.time >= time:
         hitcircleMultiplier = 1
-        hitobjectAlpha = self.maxImgAlpha
+        hitobjectAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, self.maxImgAlpha)
       else:
-        hitcircleMultiplier = mapRange(time, hitcircle.hitTime, hitcircle.hitTime + self.beatmap.objectFadeout, 1, 1.5)
-        hitobjectAlpha = mapRange(time, hitcircle.hitTime, hitcircle.hitTime + self.beatmap.objectFadeout, self.maxImgAlpha, 0)
+        if hitcircle.hitTime >= time:
+          hitcircleMultiplier = 1
+          hitobjectAlpha = self.maxImgAlpha
+        else:
+          hitcircleMultiplier = mapRange(time, hitcircle.hitTime, hitcircle.hitTime + self.beatmap.objectFadeout, 1, 1.5)
+          hitobjectAlpha = mapRange(time, hitcircle.hitTime, hitcircle.hitTime + self.beatmap.objectFadeout, self.maxImgAlpha, 0)
+    else:
+      hitcircleMultiplier = 1
 
-    if approachCircleMultiplier < 0:
-      approachCircleMultiplier = 0
+      if time < fadeWindowEnd:
+        hitobjectAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, self.maxImgAlpha)
+      else:
+        hitobjectAlpha = mapRange(time, fadeWindowEnd, hitcircle.time - ((hitcircle.time - fadeWindowEnd) * .5), self.maxImgAlpha, 0)
+
+    if hitobjectAlpha > self.maxImgAlpha:
+      hitobjectAlpha = self.maxImgAlpha
+    elif hitobjectAlpha < 0:
+      hitobjectAlpha = 0
 
     hitcircleScaled = pg.transform.smoothscale_by(hitcircleImage, self.playFieldResMultiplier * hitcircleMultiplier)
     hitcircleOverlayScaled = pg.transform.smoothscale_by(hitcircleOverlayImage, self.playFieldResMultiplier * hitcircleMultiplier)
@@ -204,8 +164,7 @@ class MapRenderer:
     self.surface.blit(hitcircleScaled, hitcircleImgPos)
 
     if hitcircle.hitTime >= time:
-      comboImagesScaled = [pg.transform.smoothscale_by(comboImage, self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier) for comboImage in comboImages]
-      # comboImagesScaled = [pg.transform.smoothscale_by(comboImage, self.playFieldResMultiplier) for comboImage in comboImages]
+      comboImagesScaled = [pg.transform.smoothscale_by(comboImage, self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier * .8) for comboImage in comboImages]
 
       for comboImage in comboImagesScaled:
         comboImage.set_alpha(hitobjectAlpha)
@@ -220,16 +179,27 @@ class MapRenderer:
       for i in range(comboLength):
         self.surface.blit(comboImagesScaled[i], (comboPosesX[i], comboPosY))
 
-    if hitcircle.time >= time:
-      approachcircleScaled = pg.transform.smoothscale_by(approachcircleImage, approachCircleMultiplier)
-      approachcircleScaled.set_alpha(hitobjectAlpha)
+    if not 'HD' in self.beatmap.replay['mods']:
+      approachcircleImage = self.beatmap.approachcircleCombos[hitcircle.comboColorIndex]
 
-      approachCirclePos = (
-        hitcirclePos[0] - (approachcircleScaled.get_width() / 2),
-        hitcirclePos[1] - (approachcircleScaled.get_height() / 2)
-      )
+      if hitcircle.time >= time:
+        approachCircleMultiplier = self.playFieldResMultiplier * mapRange(time, drawWindowStart, hitcircle.time, 4, 1)
+      else:
+        approachCircleMultiplier = 0
 
-      self.surface.blit(approachcircleScaled, approachCirclePos)
+      if approachCircleMultiplier < 0:
+        approachCircleMultiplier = 0
+
+      if hitcircle.time >= time:
+        approachcircleScaled = pg.transform.smoothscale_by(approachcircleImage, approachCircleMultiplier)
+        approachcircleScaled.set_alpha(hitobjectAlpha)
+
+        approachCirclePos = (
+          hitcirclePos[0] - (approachcircleScaled.get_width() / 2),
+          hitcirclePos[1] - (approachcircleScaled.get_height() / 2)
+        )
+
+        self.surface.blit(approachcircleScaled, approachCirclePos)
 
     self.surface.blit(hitcircleOverlayScaled, hitcircleOverlayPos)
 
@@ -254,9 +224,10 @@ class MapRenderer:
       pg.draw.circle(self.surface, judgmentCol, hitcirclePos, 5)
 
   def drawSlider(self, slider: Slider, time: int):
+    drawWindowStart = slider.time - self.beatmap.preempt
+    fadeWindowEnd = drawWindowStart + self.beatmap.fadeIn
+
     if slider.time >= time:
-      drawWindowStart = slider.time - self.beatmap.preempt
-      fadeWindowEnd = drawWindowStart + self.beatmap.fadeIn
       sliderAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, self.maxImgAlpha)
     else:
       if slider.endTime <= time:
@@ -264,8 +235,27 @@ class MapRenderer:
       else:
         sliderAlpha = self.maxImgAlpha
 
-    slider.bodySurface.set_alpha(sliderAlpha)
-    
+    if 'HD' in self.beatmap.replay['mods']:
+      if time < fadeWindowEnd:
+        sliderAlphaHD = mapRange(time, drawWindowStart, fadeWindowEnd, 0, self.maxImgAlpha)
+      else:
+        sliderAlphaHD = mapRange(time, fadeWindowEnd, fadeWindowEnd + (slider.slideTime * slider.slides), self.maxImgAlpha, 0)
+
+      if sliderAlphaHD > self.maxImgAlpha:
+        sliderAlpha = self.maxImgAlpha
+      elif sliderAlphaHD < 0:
+        sliderAlphaHD = 0
+
+    if sliderAlpha > self.maxImgAlpha:
+      sliderAlpha = self.maxImgAlpha
+    elif sliderAlpha < 0:
+      sliderAlpha = 0
+
+    if 'HD' in self.beatmap.replay['mods']:
+      slider.bodySurface.set_alpha(sliderAlphaHD)
+    else:
+      slider.bodySurface.set_alpha(sliderAlpha)
+
     scaledStackOffset = slider.stackOffset * self.playFieldResMultiplier
 
     self.surface.blit(slider.bodySurface, (slider.bodySurfacePos[0] - scaledStackOffset, slider.bodySurfacePos[1] - scaledStackOffset))
@@ -370,10 +360,10 @@ class MapRenderer:
         evenSlide = currentSlide / 2 == int(currentSlide / 2)
         if evenSlide:
           p1 = slider.bodyPath[0]
-          p2 = slider.bodyPath[1]
+          p2 = slider.bodyPath[2]
         else:
           p1 = slider.bodyPath[-1]
-          p2 = slider.bodyPath[-2]
+          p2 = slider.bodyPath[-3]
 
         reverseArrow = self.beatmap.reverseArrow
 
@@ -396,10 +386,10 @@ class MapRenderer:
         if doubleArrows:
           if evenSlide:
             p1Nxt = slider.bodyPath[-1]
-            p2Nxt = slider.bodyPath[-2]
+            p2Nxt = slider.bodyPath[-3]
           else:
             p1Nxt = slider.bodyPath[0]
-            p2Nxt = slider.bodyPath[1]
+            p2Nxt = slider.bodyPath[2]
 
           dxNxt, dyNxt = p2Nxt['x'] - p1Nxt['x'], p2Nxt['y'] - p1Nxt['y']
 
@@ -430,14 +420,14 @@ class MapRenderer:
       if trail not in ['default', 'connected']:
         raise ValueError('trail types must be \'default\' or \'connected\'')
 
-    trailLength = 15
+    trailLength = 20
     cursorTrail = self.beatmap.getCursorTrailAtTimeTransformed(time, trailLength)
 
     if len(cursorTrail) == 0:
       return None
 
     if 'default' in trails:
-      for i in range(4, len(cursorTrail) - 1):
+      for i in range(9, len(cursorTrail) - 1):
         trailAlpha = mapRange(i, 0, trailLength, 0, 255)
         self.cursorTrailScaled.set_alpha(trailAlpha)
 

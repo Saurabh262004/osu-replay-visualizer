@@ -1,8 +1,12 @@
 from typing import Union
+from traceback import print_exc
 import os
 import json
 from time import sleep
 from easygui import diropenbox
+import pygame as pg
+from modules.UI.windowManager import Window
+import sharedWindow
 
 def validOsuURL(url: str) -> bool:
   testURLs = [
@@ -64,9 +68,11 @@ def firstBootSetup(userData: dict):
 
   userData['firstBoot'] = False
 
-# save the user data and close the application
+# save the user data, delete temp files and close the application
 def closingSetup(userData: dict):
   print('closing the application...')
+
+  window: Window = sharedWindow.window
 
   userDataFilePath = 'data/userData.json'
 
@@ -82,10 +88,31 @@ def closingSetup(userData: dict):
         break
     except Exception as e:
       print(f'Failed to save user data: {e}')
+      print_exc()
 
       if attempt < saveAttempts - 1:
         print('trying again in 1 second...')
         sleep(1)
       else:
         print(e)
+        print_exc()
         print("Exiting the app anyway.")
+
+  if 'tmpAudioPath' in window.customData and os.path.exists(window.customData['tmpAudioPath']):
+    deleteAttempts = 2
+    for attempt in range(deleteAttempts):
+      try:
+        os.remove(window.customData['tmpAudioPath'])
+        print('Successfully deleted temp files.')
+        break
+      except Exception as e:
+        print(f'Failed to delete temp files: {e}')
+        print_exc()
+
+        if attempt < saveAttempts - 1:
+          print('trying again in 1 second...')
+          sleep(1)
+        else:
+          print(e)
+          print_exc()
+          print("Exiting the app anyway.")

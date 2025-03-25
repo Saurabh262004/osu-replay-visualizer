@@ -81,6 +81,24 @@ class Beatmap:
     self.objectFadeout = 200
     self.stackLeniency = self.map['general']['StackLeniency']
 
+    if 'EZ' in self.replay['mods']:
+      self.CS /= 2
+      self.AR /= 2
+      self.OD /= 2
+      self.HP /= 2
+    elif 'HR' in self.replay['mods']:
+      newCS = self.CS * 1.3
+      self.CS = newCS if newCS <= 10 else 10
+
+      newAR = self.AR * 1.4
+      self.AR = newAR if newAR <= 10 else 10
+
+      newOD = self.OD * 1.4
+      self.OD = newOD if newOD <= 10 else 10
+
+      newHP = self.HP * 1.4
+      self.HP = newHP if newHP <= 10 else 10
+
     # calculate some needed values #
     # self.requiredRPM = 60000 / (self.mapDict['timingPoints'][0]['bpm'] * self.sliderMultiplier)
     self.circleRadius = 54.4 - 4.48 * self.CS
@@ -279,26 +297,27 @@ class Beatmap:
     self.elementsScaleMultiplier = (self.circleRadius * 2) / self.skin['elements']['hitcircle'].get_width()
 
     # import and process needed skin elements #
-    self.hitcircleOverlay = self.skin['elements']['hitcircleoverlay']
-    self.hitcircleOverlay = pgTransform.smoothscale_by(self.hitcircleOverlay, self.elementsScaleMultiplier)
-    self.cursor = self.skin['elements']['cursor']
-    self.cursor = pgTransform.smoothscale_by(self.cursor, self.elementsScaleMultiplier)
-    self.cursorTrail = self.skin['elements']['cursortrail']
-    self.cursorTrail = pgTransform.smoothscale_by(self.cursorTrail, self.elementsScaleMultiplier)
-    self.reverseArrow = self.skin['elements']['reversearrow']
-    self.reverseArrow = pgTransform.smoothscale_by(self.reverseArrow, self.elementsScaleMultiplier)
+    self.approachcircle = pgTransform.smoothscale_by(self.skin['elements']['approachcircle'], self.elementsScaleMultiplier * 1.1)
+
+    self.hitcircle = pgTransform.smoothscale_by(self.skin['elements']['hitcircle'], self.elementsScaleMultiplier * 1.1)
+
+    self.hitcircleOverlay = pgTransform.smoothscale_by(self.skin['elements']['hitcircleoverlay'], self.elementsScaleMultiplier * 1.1)
+
+    self.cursor = pgTransform.smoothscale_by(self.skin['elements']['cursor'], self.elementsScaleMultiplier)
+
+    self.cursorTrail = pgTransform.smoothscale_by(self.skin['elements']['cursortrail'], self.elementsScaleMultiplier)
+
+    self.reverseArrow = pgTransform.smoothscale_by(self.skin['elements']['reversearrow'], self.elementsScaleMultiplier)
 
     # create combo colored hitcircles, approachcircles, and slider balls #
     self.hitcircleCombos = []
     self.approachcircleCombos = []
     self.sliderBallCombos = []
     for i in range(len(self.comboColors)):
-      self.hitcircleCombos.append(self.skin['elements']['hitcircle'].copy())
-      self.hitcircleCombos[-1] = pgTransform.smoothscale_by(self.hitcircleCombos[-1], self.elementsScaleMultiplier)
+      self.hitcircleCombos.append(self.hitcircle.copy())
       tintImage(self.hitcircleCombos[-1], self.comboColors[i])
 
-      self.approachcircleCombos.append(self.skin['elements']['approachcircle'].copy())
-      self.approachcircleCombos[-1] = pgTransform.smoothscale_by(self.approachcircleCombos[-1], self.elementsScaleMultiplier)
+      self.approachcircleCombos.append(self.approachcircle.copy())
       tintImage(self.approachcircleCombos[-1], self.comboColors[i])
 
       if isinstance(self.skin['elements']['sliderb'], pg.Surface):

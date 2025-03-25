@@ -77,6 +77,8 @@ class Window:
     interrupted = False
 
     if not isinstance(systemIDs, str):
+      deleteSystems = []
+
       for systemID in systemIDs:
         if not systemID in self.activeSystems:
           print(f'A system with ID: {systemID} does not exist or is already deactivated. Automatically skipped this task.')
@@ -84,13 +86,17 @@ class Window:
         else:
           self.activeSystems[systemID].locked = True
           del self.activeSystems[systemID].surface
-          del self.activeSystems[systemID]
+          deleteSystems.append(systemID)
+
+      for systemID in deleteSystems:
+        del self.activeSystems[systemID]
     else:
       if systemIDs == 'all':
         for systemID in self.activeSystems:
-          self.activeSystems[systemIDs].locked = True
-          del self.activeSystems[systemIDs].surface
-          del self.activeSystems[systemIDs]
+          self.activeSystems[systemID].locked = True
+          del self.activeSystems[systemID].surface
+
+        self.activeSystems = []
       elif not systemIDs in self.systems:
         print(f'A system with ID: {systemIDs} does not exist or is already deactivated. Automatically skipped this task.')
         interrupted = True
@@ -156,6 +162,8 @@ class Window:
 
       pg.display.flip()
       self.clock.tick(self.fps)
+
+    self.closeWindow()
 
   def closeWindow(self):
     self.running = False

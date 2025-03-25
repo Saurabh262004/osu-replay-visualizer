@@ -1,7 +1,7 @@
 from typing import Union, List, Dict, Optional
 import math
 from copy import deepcopy
-from modules.misc.helpers import dist
+from modules.misc.helpers import dist, mapRange
 import pygame as pg
 
 numType = Union[int, float]
@@ -278,10 +278,10 @@ class Slider:
       ]
       self.bodyPath = self.transformedBodyPath
 
-  def renderBody(self, renderResMultiplier: numType, highResRender: bool):
-    highResMultiplier = 2 if highResRender else 1
+  def renderBody(self, renderResMultiplier: numType, highQualitySliders: bool):
+    highResMultiplier = 2
 
-    CR = (self.beatmap.circleRadius * .9) * renderResMultiplier * highResMultiplier
+    CR = self.beatmap.circleRadius * renderResMultiplier * highResMultiplier
 
     translatedBodyPath = []
 
@@ -308,25 +308,28 @@ class Slider:
     self.bodySurfacePos = (minX / renderResMultiplier, minY / renderResMultiplier)
     highResBodySurface.fill((0, 0, 0, 0))
 
-    totalAlphaIterations = int(CR)
-    sliderOutlineAlpha = 150
-    sliderOutlineSize = .1
-    maxAlpha = 90
+    sliderOutlineAlpha = 180
+    sliderOutlineSize = .15
+    totalAlphaIterations = int(CR * (1 - sliderOutlineSize))
 
-    for i in range(totalAlphaIterations):
-      alpha = i * (maxAlpha / totalAlphaIterations)
-      radius = CR - (i * (CR / totalAlphaIterations))
+    for point in translatedBodyPath:
+      pg.draw.circle(highResBodySurface, (255, 255, 255, sliderOutlineAlpha), (point['x'], point['y']), CR)
 
-      if radius >= (CR * (1 - sliderOutlineSize)):
-        alpha = sliderOutlineAlpha
+    if highQualitySliders:
+      maxAlpha = 80
+      minAlpha = 10
 
-      for point in translatedBodyPath:
-        pg.draw.circle(highResBodySurface, (255, 255, 255, alpha), (point['x'], point['y']), radius)
+      for i in range(totalAlphaIterations):
+        alpha = mapRange(i, 0, totalAlphaIterations, minAlpha, maxAlpha)
+        radius = totalAlphaIterations - i
 
-    if highResRender:
-      self.bodySurface = pg.transform.smoothscale(highResBodySurface, bodySize)
+        for point in translatedBodyPath:
+          pg.draw.circle(highResBodySurface, (255, 255, 255, alpha), (point['x'], point['y']), radius)
     else:
-      self.bodySurface = highResBodySurface
+      for point in translatedBodyPath:
+        pg.draw.circle(highResBodySurface, (255, 255, 255, 15), (point['x'], point['y']), totalAlphaIterations)
+
+    self.bodySurface = pg.transform.smoothscale(highResBodySurface, bodySize)
 
 class Spinner:
   def __init__(self, objectDict: dict, map):

@@ -1,6 +1,8 @@
 import os
 import traceback
 import sharedWindow
+from pydub import AudioSegment
+from tempfile import mkstemp
 from appManagers.manageAlerts import *
 from appUI.colors import AppColors
 from modules.UI.windowManager import Window
@@ -8,7 +10,28 @@ from modules.readers.replayReader import getReplayData
 from modules.readers.osudbReader import getMapByMD5
 from modules.renderer.beatmapRenderer import MapRenderer
 import pygame as pg
-from mutagen.mp3 import MP3
+
+def loadPgMusicAtSpeed(audio: AudioSegment, speed: float):
+  window: Window = sharedWindow.window
+
+  if 'tmpAudioPath' in window.customData and os.path.exists(window.customData['tmpAudioPath']):
+    pg.mixer.music.unload()
+    os.remove(window.customData['tmpAudioPath'])
+    del window.customData['tmpAudioPath']
+
+  newFrameRate = int(audio.frame_rate * speed)
+
+  newAudio = audio._spawn(audio.raw_data, overrides={'frame_rate': newFrameRate}).set_frame_rate(audio.frame_rate)
+
+  fd, tmpAudioPath = mkstemp(suffix=".mp3", text=False)
+
+  os.close(fd)
+
+  newAudio.export(tmpAudioPath, format="mp3")
+
+  pg.mixer.music.load(tmpAudioPath)
+
+  window.customData['tmpAudioPath'] = tmpAudioPath
 
 def loadRendererWithReplay():
   window: Window = sharedWindow.window
@@ -53,22 +76,6 @@ def loadRendererWithReplay():
   mapFolderURL = os.path.dirname(beatmapURL)
   audioFileURL = os.path.join(mapFolderURL, beatmapData['audioFileName'])
 
-  # load the audio file #
-  try:
-    audio = MP3(audioFileURL)
-    audioDurationMS = int(audio.info.length * 1000)
-
-    print(f"Audio duration: {audioDurationMS} ms")
-
-    pg.mixer.music.load(audioFileURL)
-    pg.mixer.music.set_volume(userData['volume'] / 2)
-  except Exception as e:
-    activateAlert('Couldn\'t load the audio!')
-
-    traceback.print_exc()
-    print(e)
-    return e
-
   defaultHeight = 384
   replaySectionHeight = window.screenHeight - window.systems['nav'].elements['topNav'].height
 
@@ -76,7 +83,7 @@ def loadRendererWithReplay():
 
   # set the replay section background to a new pg surface #
   replaySection = window.systems['main'].elements['replaySection']
-  replaySection.background = pg.surface.Surface((window.screenWidth, replaySectionHeight))
+  replaySection.background = pg.surface.Surface((window.screenWidth, replaySectionHeight), pg.SRCALPHA)
   replaySection.update()
 
   # initialize the beatmap renderer #
@@ -97,6 +104,40 @@ def loadRendererWithReplay():
     traceback.print_exc()
     print(e)
     return e
+
+  mods = window.customData['beatmapRenderer'].beatmap.replay['mods']
+
+  # load the audio file #
+  try:
+    audio = AudioSegment.from_file(audioFileURL)
+    audioDurationMS = len(audio)
+
+    print(f"Audio duration: {audioDurationMS} ms")
+
+    if 'DT' in mods:
+      loadPgMusicAtSpeed(audio, 1.5)
+    elif 'HT' in mods:
+      loadPgMusicAtSpeed(audio, .75)
+    else:
+      if 'tmpAudioPath' in window.customData and os.path.exists(window.customData['tmpAudioPath']):
+        pg.mixer.music.unload()
+        os.remove(window.customData['tmpAudioPath'])
+        del window.customData['tmpAudioPath']
+
+      pg.mixer.music.load(audioFileURL)
+
+    pg.mixer.music.set_volume(userData['volume'] / 2)
+  except Exception as e:
+    activateAlert('Couldn\'t load the audio!')
+
+    traceback.print_exc()
+    print(e)
+    return e
+
+  if 'DT' in mods:
+    audioDurationMS *= (2/3)
+  elif 'HT' in mods:
+    audioDurationMS *= (4/3)
 
   timelineRange = (0, audioDurationMS)
 
