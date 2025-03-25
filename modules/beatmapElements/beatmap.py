@@ -294,14 +294,32 @@ class Beatmap:
     # print('processing skin elements...')
 
     # the multiplier for scaling all in-game elements (such as hitobjects) #
-    self.elementsScaleMultiplier = (self.circleRadius * 2) / self.skin['elements']['hitcircle'].get_width()
+    hitcircleSkinSize = 0
+
+    self.baseImage = self.skin['elements']['hitcircleoverlay']
+
+    self.baseImage.lock()
+
+    imgW, imgH = self.baseImage.get_size()
+
+    for x in range(imgW):
+      y = imgH / 2
+      _, _, _, alpha = self.baseImage.get_at((x, y))
+
+      if alpha > 200:
+        hitcircleSkinSize = dist(x, y, imgW / 2, imgH / 2)
+        break
+
+    self.baseImage.unlock()
+
+    self.elementsScaleMultiplier = self.circleRadius / hitcircleSkinSize
 
     # import and process needed skin elements #
-    self.approachcircle = pgTransform.smoothscale_by(self.skin['elements']['approachcircle'], self.elementsScaleMultiplier * 1.1)
+    self.approachcircle = pgTransform.smoothscale_by(self.skin['elements']['approachcircle'], self.elementsScaleMultiplier)
 
-    self.hitcircle = pgTransform.smoothscale_by(self.skin['elements']['hitcircle'], self.elementsScaleMultiplier * 1.1)
+    self.hitcircle = pgTransform.smoothscale_by(self.skin['elements']['hitcircle'], self.elementsScaleMultiplier)
 
-    self.hitcircleOverlay = pgTransform.smoothscale_by(self.skin['elements']['hitcircleoverlay'], self.elementsScaleMultiplier * 1.1)
+    self.hitcircleOverlay = pgTransform.smoothscale_by(self.skin['elements']['hitcircleoverlay'], self.elementsScaleMultiplier)
 
     self.cursor = pgTransform.smoothscale_by(self.skin['elements']['cursor'], self.elementsScaleMultiplier)
 

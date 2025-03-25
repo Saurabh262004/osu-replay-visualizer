@@ -4,6 +4,7 @@
   "volume": 0.05,
   "highQualitySliders": false,
   "playfieldBorder": true,
+  "sliderAnchors": false,
   "renderSkinCursor": true,
   "renerCursorTracker": false,
   "renderHitJudgments": false,

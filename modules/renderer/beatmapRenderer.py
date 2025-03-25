@@ -29,7 +29,7 @@ class MapRenderer:
     self.maxImgAlpha = 255
 
     self.timeMultiplier = 1
-    if 'DT' in self.beatmap.replay['mods']:
+    if 'DT' in self.beatmap.replay['mods'] or 'NC' in self.beatmap.replay['mods']:
       self.timeMultiplier = (2/3)
     elif 'HT' in self.beatmap.replay['mods']:
       self.timeMultiplier = 1 + (1/3)
@@ -428,7 +428,7 @@ class MapRenderer:
 
     if 'default' in trails:
       for i in range(9, len(cursorTrail) - 1):
-        trailAlpha = mapRange(i, 0, trailLength, 0, 255)
+        trailAlpha = mapRange(i, 9, trailLength, 0, 255)
         self.cursorTrailScaled.set_alpha(trailAlpha)
 
         cursorTrailPos = (

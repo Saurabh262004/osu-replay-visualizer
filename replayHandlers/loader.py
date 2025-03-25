@@ -114,7 +114,7 @@ def loadRendererWithReplay():
 
     print(f"Audio duration: {audioDurationMS} ms")
 
-    if 'DT' in mods:
+    if 'DT' in mods or 'NC' in mods:
       loadPgMusicAtSpeed(audio, 1.5)
     elif 'HT' in mods:
       loadPgMusicAtSpeed(audio, .75)
@@ -134,7 +134,7 @@ def loadRendererWithReplay():
     print(e)
     return e
 
-  if 'DT' in mods:
+  if 'DT' in mods or 'NC' in mods:
     audioDurationMS *= (2/3)
   elif 'HT' in mods:
     audioDurationMS *= (4/3)
