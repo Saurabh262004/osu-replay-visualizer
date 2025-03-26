@@ -123,6 +123,10 @@ def addSettings():
   system.elements['t6-tgl'].toggled = window.customData['userData']['renderHitJudgments']
   system.elements['t6-tgl'].updateInnerBox()
 
+  addOption('Render key overlay', 't7', 7, changeUserData, (window.customData['userData'], 'renderKeyOverlay'), system)
+  system.elements['t7-tgl'].toggled = window.customData['userData']['renderKeyOverlay']
+  system.elements['t7-tgl'].updateInnerBox()
+
   LSK_HEIGHT = DV('classPer', window, classAttr='screenHeight', percent=5)
   LSK_WIDTH = DV('classPer', LSK_HEIGHT, classAttr='value', percent=320)
   LSK_Y = DV('customCallable', lambda params: params[0].screenHeight - (params[1].value * 1.5), callableParameters=(window, LSK_HEIGHT))

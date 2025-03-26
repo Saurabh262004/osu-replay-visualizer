@@ -79,7 +79,7 @@ def loadRendererWithReplay():
   defaultHeight = 384
   replaySectionHeight = window.screenHeight - window.systems['nav'].elements['topNav'].height
 
-  resolutionMultiplier = (replaySectionHeight * .8) / defaultHeight
+  resolutionMultiplier = (replaySectionHeight * .7) / defaultHeight
 
   # set the replay section background to a new pg surface #
   replaySection = window.systems['main'].elements['replaySection']

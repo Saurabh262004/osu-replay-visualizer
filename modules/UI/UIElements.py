@@ -325,7 +325,7 @@ class Button:
       return None
 
     if not isinstance(self.section, pg.Rect):
-      if self.hasText:
+      if self.hasText and self.activeDraw:
         try:
           self.textBox.update()
         except Exception as e:
@@ -751,7 +751,7 @@ class System:
     changeCursor = None
     for buttonID in self.buttons:
       if self.buttons[buttonID].active:
-        if not changeCursor:
+        if not changeCursor and self.buttons[buttonID].activeEvents:
           if self.buttons[buttonID].section.rect.collidepoint(mousePos):
             changeCursor = 'hand'
 
@@ -759,7 +759,7 @@ class System:
 
     for toggleID in self.toggles:
       if self.toggles[toggleID].active:
-        if not changeCursor:
+        if not changeCursor and self.toggles[toggleID].activeEvents:
           if self.toggles[toggleID].section.rect.collidepoint(mousePos):
             changeCursor = 'hand'
 
@@ -767,7 +767,7 @@ class System:
 
     for sliderID in self.sliders:
       if self.sliders[sliderID].active:
-        if not changeCursor:
+        if not changeCursor and self.sliders[sliderID].activeEvents:
           if self.sliders[sliderID].section.rect.collidepoint(mousePos):
             changeCursor = 'hand'
 

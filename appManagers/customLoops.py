@@ -2,6 +2,7 @@ import pygame as pg
 from copy import copy
 from appManagers.manageAlerts import activateAlert
 from modules.UI.windowManager import Window
+from appUI.systems.replayList import scrollReplayList
 from modules.readers.importSkin import importSkin
 from replayHandlers.loader import loadRendererWithReplay
 from replayHandlers.playbackHandler import handleReplayPlayback, pauseToggle
@@ -42,6 +43,7 @@ def windowCustomUpdate():
   window: Window = sharedWindow.window
   userData = window.customData['userData']
 
+  ## First Update ##
   if window.customData['firstUpdate']:
     activateAlert('No replay Loaded')
 
@@ -57,22 +59,27 @@ def windowCustomUpdate():
       except:
         activateAlert('Couldn\'t load the skin!')
 
+  ## Screen Resolution Change Update ##
   resChange = False
   if 'lastScreenRes' in window.customData and window.customData['lastScreenRes'] != (window.screenWidth, window.screenHeight):
     resChange = True
 
+  ## Update Replay Section On Resolution Change ##
   if resChange and 'replayLoaded' in window.customData and window.customData['replayLoaded'] and not window.customData['firstUpdate']:
     defaultHeight = 384
 
     replaySectionHeight = window.screenHeight - window.systems['nav'].elements['topNav'].height
 
-    resolutionMultiplier = (replaySectionHeight * .8) / defaultHeight
+    resolutionMultiplier = (replaySectionHeight * .7) / defaultHeight
 
     window.systems['main'].elements['replaySection'].background = pg.surface.Surface((window.screenWidth, replaySectionHeight))
 
     window.customData['beatmapRenderer'].updateSurface(window.systems['main'].elements['replaySection'].background, resolutionMultiplier)
 
   window.customData['lastScreenRes'] = (window.screenWidth, window.screenHeight)
+
+  if not window.systems['replayList'].locked:
+    scrollReplayList(window.systems['replayList'])
 
   # print('update')
 

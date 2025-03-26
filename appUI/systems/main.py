@@ -50,7 +50,7 @@ def addMain():
     'height': DV('customCallable', lambda window: window.screenHeight - window.systems['nav'].elements['topNav'].height, window)
   }
 
-  replaySection = Section(replaySectionDim, AppColors.background1, backgroundSizeType='none')
+  replaySection = Section(replaySectionDim, AppColors.b, backgroundSizeType='none')
 
   system.addElement(replaySection, 'replaySection')
 

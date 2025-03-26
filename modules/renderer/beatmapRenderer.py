@@ -21,11 +21,6 @@ class MapRenderer:
     else:
       self.beatmap = Beatmap(beatmapURL, self.window.customData['skin'])
 
-    self.surface = surface
-    self.playFieldResMultiplier = playFieldResMultiplier
-    self.playFieldRes = (self.playFieldResMultiplier * 512, self.playFieldResMultiplier * 384)
-    self.playFieldXpadding = (self.surface.get_width() - self.playFieldRes[0]) / 2
-    self.playFieldYpadding = (self.surface.get_height() - self.playFieldRes[1]) / 2
     self.maxImgAlpha = 255
 
     self.timeMultiplier = 1
@@ -34,31 +29,15 @@ class MapRenderer:
     elif 'HT' in self.beatmap.replay['mods']:
       self.timeMultiplier = 1 + (1/3)
 
-    self.center = (
-      self.playFieldXpadding + (self.playFieldRes[0] / 2),
-      self.playFieldYpadding + (self.playFieldRes[1] / 2)
-    )
-
-    self.cursorScaled = pg.transform.smoothscale_by(self.beatmap.cursor, self.playFieldResMultiplier)
-    self.cursorScaledHalfWidth = (self.cursorScaled.get_width() / 2)
-    self.cursorScaledHalfHeight = (self.cursorScaled.get_height() / 2)
-
-    self.cursorTrailScaled = pg.transform.smoothscale_by(self.beatmap.cursorTrail, self.playFieldResMultiplier)
-    self.cursorTrailScaledHalfWidth = (self.cursorTrailScaled.get_width() / 2)
-    self.cursorTrailScaledHalfHeight = (self.cursorTrailScaled.get_height() / 2)
-
-    self.beatmap.transformCursorData(self.playFieldResMultiplier, self.playFieldXpadding, self.playFieldYpadding)
-
-    for slider in self.beatmap.sliders:
-      slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
-      slider.renderBody(self.playFieldResMultiplier, self.userData['highQualitySliders'])
+    self.updateSurface(surface, playFieldResMultiplier)
 
   def updateSurface(self, newSurface: pg.Surface, newResMultiplier: numType):
     self.surface = newSurface
     self.playFieldResMultiplier = newResMultiplier
     self.playFieldRes = (self.playFieldResMultiplier * 512, self.playFieldResMultiplier * 384)
-    self.playFieldXpadding = (self.surface.get_width() - self.playFieldRes[0]) / 2
-    self.playFieldYpadding = (self.surface.get_height() - self.playFieldRes[1]) / 2
+    self.screenWidth, self.screenHeight = self.surface.get_size()
+    self.playFieldXpadding = (self.screenWidth - self.playFieldRes[0]) / 2
+    self.playFieldYpadding = ((self.screenHeight - self.playFieldRes[1]) / 2) - (self.screenHeight * .05)
 
     self.center = (
       self.playFieldXpadding + (self.playFieldRes[0] / 2),
@@ -78,6 +57,26 @@ class MapRenderer:
     for slider in self.beatmap.sliders:
       slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
       slider.renderBody(self.playFieldResMultiplier, self.userData['highQualitySliders'])
+
+    keySize = int(self.playFieldRes[0] / 25)
+    self.keyBorderRadius = int(keySize * .15)
+
+    self.k1Rect = pg.Rect(
+      int(self.screenWidth - (keySize * 1.2)),
+      int((self.screenHeight * .5) - (keySize * 1.1)),
+      keySize,
+      keySize
+    )
+
+    self.k2Rect = pg.Rect(
+      int(self.screenWidth - (keySize * 1.2)),
+      int((self.screenHeight * .5) + (keySize * 0.1)),
+      keySize,
+      keySize
+    )
+
+    self.keyHighlight = pg.Color(30, 255, 180)
+    self.keyOff = pg.Color(30, 30, 30)
 
   def render(self, time: int):
     renderObjects = self.beatmap.hitobjectsAtTime(time / self.timeMultiplier)
@@ -164,7 +163,7 @@ class MapRenderer:
     self.surface.blit(hitcircleScaled, hitcircleImgPos)
 
     if hitcircle.hitTime >= time:
-      comboImagesScaled = [pg.transform.smoothscale_by(comboImage, self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier * .8) for comboImage in comboImages]
+      comboImagesScaled = [pg.transform.smoothscale_by(comboImage, (self.beatmap.elementsScaleMultiplier * self.playFieldResMultiplier) * .6) for comboImage in comboImages]
 
       for comboImage in comboImagesScaled:
         comboImage.set_alpha(hitobjectAlpha)
@@ -238,8 +237,10 @@ class MapRenderer:
     if 'HD' in self.beatmap.replay['mods']:
       if time < fadeWindowEnd:
         sliderAlphaHD = mapRange(time, drawWindowStart, fadeWindowEnd, 0, self.maxImgAlpha)
+      elif time < slider.time:
+        sliderAlphaHD = self.maxImgAlpha
       else:
-        sliderAlphaHD = mapRange(time, fadeWindowEnd, fadeWindowEnd + (slider.slideTime * slider.slides), self.maxImgAlpha, 0)
+        sliderAlphaHD = mapRange(time, slider.time, slider.time + (slider.slideTime * slider.slides * .9), self.maxImgAlpha, 0)
 
       if sliderAlphaHD > self.maxImgAlpha:
         sliderAlpha = self.maxImgAlpha
@@ -458,4 +459,14 @@ class MapRenderer:
       pg.draw.circle(self.surface, (255, 0, 0), lastTrailPos, 4)
   
   def drawKeyOverlay(self, time: int):
-    pass
+    cursorNow = self.beatmap.getCursorTrailAtTime(time, 1)[0]
+
+    if 'k1' in cursorNow['keys'] or 'm1' in cursorNow['keys']:
+      pg.draw.rect(self.surface, self.keyHighlight, self.k1Rect, border_radius=self.keyBorderRadius)
+    else:
+      pg.draw.rect(self.surface, self.keyOff, self.k1Rect, border_radius=self.keyBorderRadius)
+
+    if 'k2' in cursorNow['keys'] or 'm2' in cursorNow['keys']:
+      pg.draw.rect(self.surface, self.keyHighlight, self.k2Rect, border_radius=self.keyBorderRadius)
+    else:
+      pg.draw.rect(self.surface, self.keyOff, self.k2Rect, border_radius=self.keyBorderRadius)

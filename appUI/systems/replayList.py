@@ -7,9 +7,9 @@ from modules.UI.windowManager import Window
 import sharedWindow
 
 def getReplayElementY(params):
+  window: Window = sharedWindow.window
   system: System = params[0]
   replayNum: int = params[1]
-  window: Window = params[2]
 
   mainHeight = system.elements['mainSection'].height
   scrollOffset = system.elements['scrollBar'].value
@@ -18,44 +18,52 @@ def getReplayElementY(params):
 
   return ((mainHeight * .05 * (replayNum - scrollOffset)) + (replayNum * relativePadding)) + absolutePadding
 
-def setLoadReplay(params):
-  window = params[0]
-  replayName = params[1]
+def setLoadReplay(replayName: str):
+  window: Window = sharedWindow.window
   window.customData['loadReplay'] = replayName
 
-def getReplayElements(replayNames: Iterable[str], window: Window, system: System):
+def scrollReplayList(system: System):
+  window: Window = sharedWindow.window
+
+  system.update()
+
+  for elementID in window.systems['replayList'].elements:
+    if elementID.startswith('replayList-'):
+      element = window.systems['replayList'].elements[elementID]
+      if element.section.y > (window.screenHeight + element.section.height) or (element.section.height + element.section.y) < window.systems['nav'].elements['topNav'].height:
+        element.activeEvents = False
+        element.activeDraw = False
+      else:
+        element.activeDraw = True
+        element.activeEvents = True
+
+  system.update()
+
+def getReplayElements(replayNames: Iterable[str], system: System):
   replayNum = 1
+
   for replayName in replayNames:
     replaySection = Button(
-      section = Section(
+      Section(
       {
         'x': DV('classPer', system.elements['mainSection'], classAttr='width', percent=2),
-        'y': DV('customCallable', getReplayElementY, callableParameters=(system, replayNum, window)),
+        'y': DV('customCallable', getReplayElementY, callableParameters=(system, replayNum)),
         'width': DV('classPer', system.elements['mainSection'], classAttr='width', percent=96),
         'height': DV('classPer', system.elements['mainSection'], classAttr='height', percent=5)
       },
       AppColors.listElement1Heighlight2,
       borderRadius=5
       ),
+      text = replayName,
+      fontPath = 'Helvetica',
+      textColor = AppColors.gray,
       pressedBackground = AppColors.listElement1Heighlight1,
       onClick = setLoadReplay,
-      onClickParams = (window, replayName)
+      onClickParams = replayName
     )
+
     system.addElement(replaySection, f'replayList-{replayNum}')
 
-    textBox = TextBox(
-      Section(
-      {
-        'x': DV('classNum', system.elements[f'replayList-{replayNum}'].section, classAttr='x'),
-        'y': DV('classNum', system.elements[f'replayList-{replayNum}'].section, classAttr='y'),
-        'width': DV('classNum', system.elements[f'replayList-{replayNum}'].section, classAttr='width'),
-        'height': DV('classNum', system.elements[f'replayList-{replayNum}'].section, classAttr='height')
-      },
-      pg.Color(0, 0, 0)
-      ), replayName, 'Helvetica', pg.Color(200, 200, 200)
-    )
-
-    system.addElement(textBox, f'replayListText-{replayNum}')
     replayNum += 1
 
 def addReplayList():
@@ -65,9 +73,13 @@ def addReplayList():
 
   dirList = os.listdir(replayFolderURL)
 
-  system = System(preLoadState=True)
+  replayFiles = [file for file in dirList if file.endswith('.osr')]
 
-  replayNames = [file[0:len(file)-4] for file in dirList if file.endswith('.osr')]
+  replayFiles.sort(key=lambda file: os.path.getmtime(os.path.join(replayFolderURL, file)), reverse=True)
+
+  replayNames = [file[:-4] for file in replayFiles]
+
+  system = System(preLoadState=True)
 
   mainDim = {
     'x': DV('number', 1),
@@ -97,11 +109,11 @@ def addReplayList():
     Section(scrollBarDim, AppColors.listElement1),
     Section(scrollBarDragDim, AppColors.primary1),
     (0, len(replayNames)-1),
-    -1,
+    -2,
     AppColors.listElement1,
     {
-      'callable': system.update,
-      'params': None,
+      'callable': scrollReplayList,
+      'params': system,
       'sendValue': False
     },
     False
@@ -109,6 +121,6 @@ def addReplayList():
 
   system.addElement(scrollBar, 'scrollBar')
 
-  getReplayElements(replayNames, window, system)
+  getReplayElements(replayNames, system)
 
   window.addSystem(system, 'replayList')

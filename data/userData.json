@@ -8,7 +8,7 @@
   "renderSkinCursor": true,
   "renerCursorTracker": false,
   "renderHitJudgments": false,
-  "renderKeyOverlay": false,
+  "renderKeyOverlay": true,
   "URLs": {
     "osuFolder": ""
   }

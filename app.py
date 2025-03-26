@@ -17,17 +17,17 @@ try:
 except:
   # create default user data
   userData = {
-    "firstBoot": True,
-    "skin": "",
-    "volume": 0.2,
-    "highQualitySliders": False,
-    "playfieldBorder": True,
-    "sliderAnchors": False,
-    "renderSkinCursor": True,
-    "renerCursorTracker": True,
-    "renderHitJudgments": False,
-    "renderKeyOverlay": False,
-    "URLs": {
+    'firstBoot': True,
+    'skin': '',
+    'volume': 0.05,
+    'highQualitySliders': False,
+    'playfieldBorder': True,
+    'sliderAnchors': False,
+    'renderSkinCursor': True,
+    'renerCursorTracker': False,
+    'renderHitJudgments': False,
+    'renderKeyOverlay': True,
+    'URLs': {
       "osuFolder": ""
     }
   }
