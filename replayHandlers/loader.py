@@ -33,13 +33,18 @@ def loadPgMusicAtSpeed(audio: AudioSegment, speed: float):
 
   window.customData['tmpAudioPath'] = tmpAudioPath
 
-def loadRendererWithReplay():
+def loadRendererWithReplay(customURL: str = None):
   window: Window = sharedWindow.window
   window.loggedSystemSwitch = 'main'
   userData = window.customData['userData']
 
   osuDbURL = os.path.join(userData['URLs']['osuFolder'], 'osu!.db')
-  replayURL = os.path.join(userData['URLs']['osuFolder'], 'Replays', window.customData['loadReplay'] + '.osr')
+
+  if customURL is None:
+    replayURL = os.path.join(userData['URLs']['osuFolder'], 'Replays', window.customData['loadReplay'] + '.osr')
+  else:
+    replayURL = customURL
+
   window.customData['loadReplay'] = None
 
   # get replay data #

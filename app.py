@@ -19,7 +19,7 @@ except:
   userData = {
     'firstBoot': True,
     'skin': '',
-    'volume': 0.05,
+    'volume': 0.1,
     'highQualitySliders': False,
     'playfieldBorder': True,
     'sliderAnchors': False,
@@ -28,7 +28,7 @@ except:
     'renderHitJudgments': False,
     'renderKeyOverlay': True,
     'URLs': {
-      "osuFolder": ""
+      'osuFolder': ''
     }
   }
 

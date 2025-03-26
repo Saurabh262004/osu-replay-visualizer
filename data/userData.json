@@ -1,7 +1,7 @@
 {
   "firstBoot": true,
   "skin": "",
-  "volume": 0.05,
+  "volume": 0.1,
   "highQualitySliders": false,
   "playfieldBorder": true,
   "sliderAnchors": false,

@@ -1,9 +1,10 @@
 import os
-from easygui import diropenbox
+from easygui import diropenbox, fileopenbox
 from modules.readers.importSkin import importSkin
 from appUI.colors import AppColors
 from modules.UI.UIElements import DynamicValue as DV, Section, System, TextBox, Toggle, Button
 from modules.UI.windowManager import Window
+from replayHandlers.loader import loadRendererWithReplay
 from appManagers.manageAlerts import deactivateAlert
 import sharedWindow
 
@@ -24,6 +25,14 @@ def changeSkin():
     deactivateAlert()
   except Exception as e:
     print(e)
+
+def loadReplay():
+  replayURL: str = fileopenbox('Please select a replay file to load')
+
+  if replayURL is not None and replayURL.endswith('.osr'):
+    loadRendererWithReplay(customURL=replayURL)
+  else:
+    return
 
 def addOption(text: str, id: str, pos: int, callback: callable, callbackParams, system: System):
   window: Window = sharedWindow.window
@@ -103,23 +112,23 @@ def addSettings():
   system.elements['t1-tgl'].toggled = window.customData['userData']['highQualitySliders']
   system.elements['t1-tgl'].updateInnerBox()
 
-  addOption('Display Playfield Border', 't2', 2, changeUserData, (window.customData['userData'], 'playfieldBorder'), system)
+  addOption('Display playfield border', 't2', 2, changeUserData, (window.customData['userData'], 'playfieldBorder'), system)
   system.elements['t2-tgl'].toggled = window.customData['userData']['playfieldBorder']
   system.elements['t2-tgl'].updateInnerBox()
 
-  addOption('Display Sldier Anchors', 't3', 3, changeUserData, (window.customData['userData'], 'sliderAnchors'), system)
+  addOption('Display sldier anchors', 't3', 3, changeUserData, (window.customData['userData'], 'sliderAnchors'), system)
   system.elements['t3-tgl'].toggled = window.customData['userData']['sliderAnchors']
   system.elements['t3-tgl'].updateInnerBox()
 
-  addOption('Render Default Skin Cursor', 't4', 4, changeUserData, (window.customData['userData'], 'renderSkinCursor'), system)
+  addOption('Render default skin cursor', 't4', 4, changeUserData, (window.customData['userData'], 'renderSkinCursor'), system)
   system.elements['t4-tgl'].toggled = window.customData['userData']['renderSkinCursor']
   system.elements['t4-tgl'].updateInnerBox()
 
-  addOption('Render Cursor Tracker', 't5', 5, changeUserData, (window.customData['userData'], 'renerCursorTracker'), system)
+  addOption('Render cursor tracker', 't5', 5, changeUserData, (window.customData['userData'], 'renerCursorTracker'), system)
   system.elements['t5-tgl'].toggled = window.customData['userData']['renerCursorTracker']
   system.elements['t5-tgl'].updateInnerBox()
 
-  addOption('Render Hit Judgments', 't6', 6, changeUserData, (window.customData['userData'], 'renderHitJudgments'), system)
+  addOption('Render hit judgments *not fully implemented yet*', 't6', 6, changeUserData, (window.customData['userData'], 'renderHitJudgments'), system)
   system.elements['t6-tgl'].toggled = window.customData['userData']['renderHitJudgments']
   system.elements['t6-tgl'].updateInnerBox()
 
@@ -151,5 +160,25 @@ def addSettings():
   )
 
   system.addElement(loadSkinBTN, 'loadSkinBTN')
+
+  loadReplayDim = {
+    'x': DV('customCallable', lambda params: params[0].value - (params[1].value * 1.1), callableParameters=(LSK_X, LSK_WIDTH)),
+    'y': LSK_Y,
+    'width': LSK_WIDTH,
+    'height': LSK_HEIGHT
+  }
+
+  loadReplayBTN = Button(
+    Section(loadReplayDim, AppColors.gray, 3),
+    AppColors.darkGray,
+    None,
+    None,
+    'Load Replay',
+    'Helvetica',
+    AppColors.background1,
+    loadReplay
+  )
+
+  system.addElement(loadReplayBTN, 'loadReplayBTN')
 
   window.addSystem(system, 'settings')
