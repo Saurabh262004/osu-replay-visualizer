@@ -11,6 +11,8 @@ from modules.readers.osudbReader import getMapByMD5
 from modules.renderer.beatmapRenderer import MapRenderer
 import pygame as pg
 
+AudioSegment.converter = 'ffmpeg/ffmpeg.exe'
+
 def loadPgMusicAtSpeed(audio: AudioSegment, speed: float):
   window: Window = sharedWindow.window
 
@@ -63,7 +65,7 @@ def loadRendererWithReplay(customURL: str = None):
   try:
     # print('getting beatmap data...')
     beatmapData = getMapByMD5(osuDbURL, replayData['beatmapMD5Hash'])
-    
+
     if beatmapData is None:
       activateAlert('You don\'t have the beatmap!')
       return False
@@ -84,7 +86,7 @@ def loadRendererWithReplay(customURL: str = None):
   defaultHeight = 384
   replaySectionHeight = window.screenHeight - window.systems['nav'].elements['topNav'].height
 
-  resolutionMultiplier = (replaySectionHeight * .7) / defaultHeight
+  resolutionMultiplier = (replaySectionHeight * .75) / defaultHeight
 
   # set the replay section background to a new pg surface #
   replaySection = window.systems['main'].elements['replaySection']

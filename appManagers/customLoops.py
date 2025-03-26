@@ -70,7 +70,7 @@ def windowCustomUpdate():
 
     replaySectionHeight = window.screenHeight - window.systems['nav'].elements['topNav'].height
 
-    resolutionMultiplier = (replaySectionHeight * .7) / defaultHeight
+    resolutionMultiplier = (replaySectionHeight * .75) / defaultHeight
 
     window.systems['main'].elements['replaySection'].background = pg.surface.Surface((window.screenWidth, replaySectionHeight))
 
