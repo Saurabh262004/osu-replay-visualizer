@@ -36,13 +36,13 @@ except:
 if userData['firstBoot']:
   firstBootSetup(userData)
 
-ffmpeg_path = os.path.join(os.path.dirname(__file__), "ffmpeg", "bin", "ffmpeg.exe")
-AudioSegment.converter = ffmpeg_path
+ffmpegPath = os.path.join(os.path.dirname(__file__), "ffmpeg", "bin", "ffmpeg.exe")
+AudioSegment.converter = ffmpegPath
 
-ffmpeg_bin_dir = os.path.join(os.path.dirname(__file__), "ffmpeg", "bin")
-os.environ["PATH"] += os.pathsep + ffmpeg_bin_dir
+ffmpegBinDir = os.path.join(os.path.dirname(__file__), "ffmpeg", "bin")
+os.environ["PATH"] += os.pathsep + ffmpegBinDir
 
-AudioSegment.ffprobe = ffmpeg_path.replace("ffmpeg", "ffprobe")
+AudioSegment.ffprobe = ffmpegPath.replace("ffmpeg", "ffprobe")
 
 for url in userData['URLs']:
   if not os.path.isdir(userData['URLs'][url]):

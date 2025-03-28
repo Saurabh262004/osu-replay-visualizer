@@ -324,7 +324,7 @@ class MapRenderer:
         pg.draw.circle(self.surface, anchorColor, anchorPos, 3)
 
         if i > 0:
-          pg.draw.line(
+          pg.draw.aaline(
             self.surface,
             (255, 255, 255),
             (
