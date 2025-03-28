@@ -11,8 +11,6 @@ from modules.readers.osudbReader import getMapByMD5
 from modules.renderer.beatmapRenderer import MapRenderer
 import pygame as pg
 
-AudioSegment.converter = 'ffmpeg/ffmpeg.exe'
-
 def loadPgMusicAtSpeed(audio: AudioSegment, speed: float):
   window: Window = sharedWindow.window
 

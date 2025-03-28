@@ -4,7 +4,6 @@ import os
 import json
 from time import sleep
 from easygui import diropenbox
-import pygame as pg
 from modules.UI.windowManager import Window
 import sharedWindow
 

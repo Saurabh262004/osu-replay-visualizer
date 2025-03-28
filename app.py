@@ -1,6 +1,7 @@
 import os
 import json
 import sharedWindow
+from pydub import AudioSegment
 from appManagers.openCloseSeq import *
 from appManagers.customLoops import *
 from modules.UI.windowManager import Window
@@ -34,6 +35,14 @@ except:
 
 if userData['firstBoot']:
   firstBootSetup(userData)
+
+ffmpeg_path = os.path.join(os.path.dirname(__file__), "ffmpeg", "bin", "ffmpeg.exe")
+AudioSegment.converter = ffmpeg_path
+
+ffmpeg_bin_dir = os.path.join(os.path.dirname(__file__), "ffmpeg", "bin")
+os.environ["PATH"] += os.pathsep + ffmpeg_bin_dir
+
+AudioSegment.ffprobe = ffmpeg_path.replace("ffmpeg", "ffprobe")
 
 for url in userData['URLs']:
   if not os.path.isdir(userData['URLs'][url]):
