@@ -125,7 +125,7 @@ def addSettings():
   system.elements['t4-tgl'].updateInnerBox()
 
   addOption('Render cursor tracker', 't5', 5, changeUserData, (window.customData['userData'], 'renerCursorTracker'), system)
-  system.elements['t5-tgl'].toggled = window.customData['userData']['renerCursorTracker']
+  system.elements['t5-tgl'].toggled = window.customData['userData']['renderCursorTracker']
   system.elements['t5-tgl'].updateInnerBox()
 
   addOption('Render hit judgments *not fully implemented yet*', 't6', 6, changeUserData, (window.customData['userData'], 'renderHitJudgments'), system)
