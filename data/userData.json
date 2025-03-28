@@ -6,7 +6,7 @@
   "playfieldBorder": true,
   "sliderAnchors": false,
   "renderSkinCursor": true,
-  "renerCursorTracker": false,
+  "renderCursorTracker": false,
   "renderHitJudgments": false,
   "renderKeyOverlay": true,
   "URLs": {

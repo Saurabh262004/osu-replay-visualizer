@@ -8,7 +8,7 @@ from modules.beatmapElements.beatmap import Beatmap
 
 numType = Union[int, float]
 
-class MapRenderer:
+class BeatmapRenderer:
   def __init__(self, beatmapURL: dict, replayURL: Optional[str], surface: pg.Surface, playFieldResMultiplier: numType):
     self.window = sharedWindow.window
     self.userData = self.window.customData['userData']
@@ -94,7 +94,7 @@ class MapRenderer:
     if self.beatmap.mode == 'replay':
       trails = []
 
-      if self.userData['renerCursorTracker']:
+      if self.userData['renderCursorTracker']:
         trails.append('connected')
       if self.userData['renderSkinCursor']:
         trails.append('default')
@@ -422,7 +422,7 @@ class MapRenderer:
         raise ValueError('trail types must be \'default\' or \'connected\'')
 
     trailLength = 20
-    cursorTrail = self.beatmap.getCursorTrailAtTimeTransformed(time, trailLength)
+    cursorTrail = self.beatmap.cursorTrailAtTimeTransformed(time, trailLength)
 
     if len(cursorTrail) == 0:
       return None
@@ -459,7 +459,7 @@ class MapRenderer:
       pg.draw.circle(self.surface, (255, 0, 0), lastTrailPos, 4)
   
   def drawKeyOverlay(self, time: int):
-    cursorNow = self.beatmap.getCursorTrailAtTime(time, 1)[0]
+    cursorNow = self.beatmap.cursorTrailAtTime(time, 1)[0]
 
     if 'k1' in cursorNow['keys'] or 'm1' in cursorNow['keys']:
       pg.draw.rect(self.surface, self.keyHighlight, self.k1Rect, border_radius=self.keyBorderRadius)

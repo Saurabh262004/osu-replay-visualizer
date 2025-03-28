@@ -8,7 +8,7 @@ from appUI.colors import AppColors
 from modules.UI.windowManager import Window
 from modules.readers.replayReader import getReplayData
 from modules.readers.osudbReader import getMapByMD5
-from modules.renderer.beatmapRenderer import MapRenderer
+from modules.renderer.beatmapRenderer import BeatmapRenderer
 import pygame as pg
 
 def loadPgMusicAtSpeed(audio: AudioSegment, speed: float):
@@ -94,7 +94,7 @@ def loadRendererWithReplay(customURL: str = None):
   # initialize the beatmap renderer #
   try:
     # print('initializing beatmap renderer...')
-    window.customData['beatmapRenderer'] = MapRenderer(
+    window.customData['beatmapRenderer'] = BeatmapRenderer(
       beatmapURL,
       replayURL,
       replaySection.background,

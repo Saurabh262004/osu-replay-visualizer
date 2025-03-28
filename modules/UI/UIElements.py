@@ -681,7 +681,7 @@ class System:
     self.buttons: Dict[str, Button] = {}
     self.toggles: Dict[str, Toggle] = {}
     self.sliders: Dict[str, Slider] = {}
-    
+
     self.firstDraw = True
 
   def addElement(self, element: elementType, elementID: str) -> bool:

@@ -391,7 +391,7 @@ class Beatmap:
       'time': pos['time']
     } for pos in self.replayArrayByTime]
 
-  def getCursorTrailAtTimeTransformed(self, time: int, trailLength: Optional[int] = 10) -> List[Dict[str, Union[int, float]]]:
+  def cursorTrailAtTimeTransformed(self, time: int, trailLength: Optional[int] = 10) -> List[Dict[str, Union[int, float]]]:
     if not self.transformedCusrorData:
       return None
 
@@ -406,10 +406,7 @@ class Beatmap:
 
     return returnTrail
 
-  def getInputsAtTime(self, time: int) -> Dict[str, Union[int, float]]:
-    pass
-
-  def getCursorTrailAtTime(self, time: int, trailLength: Optional[int] = 10) -> List[Dict[str, Union[int, float]]]:
+  def cursorTrailAtTime(self, time: int, trailLength: Optional[int] = 10) -> List[Dict[str, Union[int, float]]]:
     returnTrail = []
 
     for pos in self.replayArrayByTime:
