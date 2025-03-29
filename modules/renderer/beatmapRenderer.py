@@ -1,5 +1,5 @@
 from typing import Union, Optional, List
-from math import atan2, degrees
+from math import atan2, degrees, ceil
 import pygame as pg
 import sharedWindow
 from modules.misc.helpers import mapRange
@@ -172,6 +172,23 @@ class BeatmapRenderer:
 
       firstComboPosX = hitcircleImgPos[0] + ((hitcircleScaled.get_width() - (comboWidth * comboLength)) / 2)
       comboPosesX = [firstComboPosX + (comboWidth * i) for i in range(comboLength)]
+
+      if comboLength > 1:
+        comboPosXScaled = []
+
+        j = 0
+        for i in range(-int(comboLength/2), ceil(comboLength/2), 1):
+          shrinkingFactor = .3
+
+          currentMidPos = comboPosesX[j] + (comboWidth / 2)
+
+          currentMidPos -= i * comboWidth * shrinkingFactor
+
+          comboPosXScaled.append(currentMidPos - ((comboWidth * (1 + shrinkingFactor)) / 2))
+
+          j += 1
+
+        comboPosesX = comboPosXScaled
 
       comboPosY = hitcircleImgPos[1] + ((hitcircleScaled.get_height() - comboImagesScaled[0].get_height()) / 2)
 
