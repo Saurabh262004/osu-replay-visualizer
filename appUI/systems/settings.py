@@ -124,7 +124,7 @@ def addSettings():
   system.elements['t4-tgl'].toggled = window.customData['userData']['renderSkinCursor']
   system.elements['t4-tgl'].updateInnerBox()
 
-  addOption('Render cursor tracker', 't5', 5, changeUserData, (window.customData['userData'], 'renerCursorTracker'), system)
+  addOption('Render cursor tracker', 't5', 5, changeUserData, (window.customData['userData'], 'renderCursorTracker'), system)
   system.elements['t5-tgl'].toggled = window.customData['userData']['renderCursorTracker']
   system.elements['t5-tgl'].updateInnerBox()
 
