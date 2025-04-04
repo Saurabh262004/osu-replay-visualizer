@@ -24,6 +24,15 @@ class Beatmap:
     self.sliders: List[Slider] = []
     self.spinners: List[Spinner] = []
 
+    if 'HR' in self.replay['mods']:
+      for obj in self.map['hitobjects']:
+        obj['y'] = 384 - obj['y']
+
+        if not obj['type'] == 'slider': continue
+
+        for i in range(len(obj['curvePoints'])):
+          obj['curvePoints'][i]['y'] = 384 - obj['curvePoints'][i]['y']
+
     # print('initializing all the hitobjects...')
     for hitobject in self.map['hitobjects']:
       if hitobject['type'] == 'hitcircle':
@@ -242,19 +251,15 @@ class Beatmap:
             if hitError < self.hitWindow300:
               obj.judgment = 300
               hit = obj.hit = True
-              # print('300')
             elif hitError < self.hitWindow100:
               obj.judgment = 100
               hit = obj.hit = True
-              # print('100')
             elif hitError < self.hitWindow50:
               obj.judgment = 50
               hit = obj.hit = True
-              # print('50')
             elif hitError < self.missWindow:
               obj.judgment = 0
               hit = obj.hit = True
-              # print('0')
 
             if hit:
               obj.hitTime = time
@@ -325,7 +330,7 @@ class Beatmap:
 
     self.cursorTrail = pgTransform.smoothscale_by(self.skin['elements']['cursortrail'], self.elementsScaleMultiplier)
 
-    self.reverseArrow = pgTransform.smoothscale_by(self.skin['elements']['reversearrow'], self.elementsScaleMultiplier)
+    self.reverseArrow = self.skin['elements']['reversearrow']
 
     # create combo colored hitcircles, approachcircles, and slider balls #
     self.hitcircleCombos = []
@@ -348,6 +353,19 @@ class Beatmap:
           self.sliderBallCombos[-1].append(ball.copy())
           self.sliderBallCombos[-1][-1] = pgTransform.smoothscale_by(self.sliderBallCombos[-1][-1], self.elementsScaleMultiplier)
           tintImage(self.sliderBallCombos[-1][-1], self.comboColors[i])
+
+    # set hitsounds for all objects
+    for obj in self.hitobjects:
+      if isinstance(obj, Spinner): continue
+
+      UI_TimingPoint = self.effectiveTimingPointAtTime(obj.time)[0]
+      sampleSet = UI_TimingPoint['sampleSet']
+
+      for hitsound in obj.rawDict['hitSound']:
+        hitsoundKey = f'{sampleSet}-hit{hitsound}'
+
+        if hitsoundKey in self.skin['hitsounds']:
+          obj.hitsounds.append(self.skin['hitsounds'][hitsoundKey])
 
     # print('done.')
 
@@ -417,3 +435,14 @@ class Beatmap:
       returnTrail = returnTrail[-trailLength:]
 
     return returnTrail
+
+  def lastObjectAtTimeByHitTime(self, time: int) -> Union[Hitcircle, Slider, Spinner, bool]:
+
+    for i in range(len(self.hitobjects) - 1, -1, -1):
+      obj = self.hitobjects[i]
+      if isinstance(obj, Spinner): continue
+
+      if obj.hitTime <= time:
+        return obj
+
+    return False

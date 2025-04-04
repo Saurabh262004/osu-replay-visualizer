@@ -19,6 +19,8 @@ class Hitcircle:
     self.judgment = -1
     self.stackCount = 0
     self.stackOffset = 0
+    self.triggeredHitSound = False
+    self.hitsounds = []
 
     if hitTime is not None:
       self.hitTime = hitTime
@@ -48,6 +50,8 @@ class Slider:
     self.stackCount = 0
     self.stackOffset = 0
     self.endTime = 0
+    self.triggeredHitSound = [False for _ in range(self.slides + 1)]
+    self.hitsounds = []
 
     if not hitTime is None:
       self.hitTime = hitTime

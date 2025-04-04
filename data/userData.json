@@ -9,6 +9,8 @@
   "renderCursorTracker": false,
   "renderHitJudgments": false,
   "renderKeyOverlay": true,
+  "renderModsDisplay": true,
+  "normalHitsounds": true,
   "URLs": {
     "osuFolder": ""
   }

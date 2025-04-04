@@ -22,6 +22,10 @@ def changeSkin():
   try:
     window.customData['skin'] = importSkin(skinName, 'assets/defaultSkin', window.customData['userData']['URLs']['osuFolder'])
     window.customData['userData']['skin'] = skinName
+
+    for hitsound in window.customData['skin']['hitsounds']:
+      window.customData['skin']['hitsounds'][hitsound].set_volume(window.customData['userData']['volume'] / 2)
+
     deactivateAlert()
   except Exception as e:
     print(e)
@@ -34,8 +38,11 @@ def loadReplay():
   else:
     return
 
-def addOption(text: str, id: str, pos: int, callback: callable, callbackParams, system: System):
+def addOption(text: str, pos: int, toggleID: str, system: System):
   window: Window = sharedWindow.window
+  callbackParams = [window.customData['userData'], toggleID]
+  id = f't{pos}'
+  callback = changeUserData
 
   optionToggleSectionWidth = DV('classPer', window, classAttr='screenHeight', percent=6)
 
@@ -84,6 +91,9 @@ def addOption(text: str, id: str, pos: int, callback: callable, callbackParams, 
 
   system.addElement(optionText, f'{id}-txt')
 
+  system.elements[f'{id}-tgl'].toggled = window.customData['userData'][callbackParams[1]]
+  system.elements[f'{id}-tgl'].updateInnerBox()
+
 def toggleHighQualitySliders(userData: dict, val: bool):
   userData['highQualitySliders'] = val
 
@@ -108,33 +118,23 @@ def addSettings():
   )
 
   hqSliderOptionText = 'High Quality Sliders *might take a long time to process on slow devices*'
-  addOption(hqSliderOptionText, 't1', 1, changeUserData, (window.customData['userData'], 'highQualitySliders'), system)
-  system.elements['t1-tgl'].toggled = window.customData['userData']['highQualitySliders']
-  system.elements['t1-tgl'].updateInnerBox()
+  addOption(hqSliderOptionText, 1, 'highQualitySliders', system)
 
-  addOption('Display playfield border', 't2', 2, changeUserData, (window.customData['userData'], 'playfieldBorder'), system)
-  system.elements['t2-tgl'].toggled = window.customData['userData']['playfieldBorder']
-  system.elements['t2-tgl'].updateInnerBox()
+  addOption('Display playfield border', 2, 'playfieldBorder', system)
 
-  addOption('Display sldier anchors', 't3', 3, changeUserData, (window.customData['userData'], 'sliderAnchors'), system)
-  system.elements['t3-tgl'].toggled = window.customData['userData']['sliderAnchors']
-  system.elements['t3-tgl'].updateInnerBox()
+  addOption('Display sldier anchors', 3, 'sliderAnchors', system)
 
-  addOption('Render default skin cursor', 't4', 4, changeUserData, (window.customData['userData'], 'renderSkinCursor'), system)
-  system.elements['t4-tgl'].toggled = window.customData['userData']['renderSkinCursor']
-  system.elements['t4-tgl'].updateInnerBox()
+  addOption('Render default skin cursor', 4, 'renderSkinCursor', system)
 
-  addOption('Render cursor tracker', 't5', 5, changeUserData, (window.customData['userData'], 'renderCursorTracker'), system)
-  system.elements['t5-tgl'].toggled = window.customData['userData']['renderCursorTracker']
-  system.elements['t5-tgl'].updateInnerBox()
+  addOption('Render cursor tracker', 5, 'renderCursorTracker', system)
 
-  addOption('Render hit judgments *not fully implemented yet*', 't6', 6, changeUserData, (window.customData['userData'], 'renderHitJudgments'), system)
-  system.elements['t6-tgl'].toggled = window.customData['userData']['renderHitJudgments']
-  system.elements['t6-tgl'].updateInnerBox()
+  addOption('Render hit judgments *not fully implemented yet*', 6, 'renderHitJudgments', system)
 
-  addOption('Render key overlay', 't7', 7, changeUserData, (window.customData['userData'], 'renderKeyOverlay'), system)
-  system.elements['t7-tgl'].toggled = window.customData['userData']['renderKeyOverlay']
-  system.elements['t7-tgl'].updateInnerBox()
+  addOption('Render key overlay', 7, 'renderKeyOverlay', system)
+
+  addOption('Show mods', 8, 'renderModsDisplay', system)
+
+  addOption('Only play normal hitsounds', 9, 'normalHitsounds', system)
 
   LSK_HEIGHT = DV('classPer', window, classAttr='screenHeight', percent=5)
   LSK_WIDTH = DV('classPer', LSK_HEIGHT, classAttr='value', percent=320)
