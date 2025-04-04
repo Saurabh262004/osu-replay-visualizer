@@ -359,7 +359,11 @@ class Beatmap:
       if isinstance(obj, Spinner): continue
 
       UI_TimingPoint = self.effectiveTimingPointAtTime(obj.time)[0]
-      sampleSet = UI_TimingPoint['sampleSet']
+
+      if not UI_TimingPoint is None:
+        sampleSet = UI_TimingPoint['sampleSet']
+      else:
+        sampleSet = self.map['general']['SampleSet']
 
       for hitsound in obj.rawDict['hitSound']:
         hitsoundKey = f'{sampleSet}-hit{hitsound}'
