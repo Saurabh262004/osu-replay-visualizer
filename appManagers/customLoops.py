@@ -89,7 +89,12 @@ def windowCustomEvents(event: pg.event.Event):
     if event.key == pg.K_SPACE:
       pauseToggle()
     elif event.key == pg.K_LEFT or event.key == pg.K_RIGHT or event.key == pg.K_COMMA or event.key == pg.K_PERIOD:
-      pauseReplay()
+      if 'replayPaused' in window.customData and window.customData['replayPaused']:
+        alreadyPaused = True
+      else:
+        alreadyPaused = False
+        pauseReplay()
+
       timeline = window.systems['main'].elements['replayTimeline']
 
       if event.key == pg.K_LEFT:
@@ -110,7 +115,9 @@ def windowCustomEvents(event: pg.event.Event):
       timeline.value = newValue
       timeline.update()
       timeline.callback()
-      unpauseReplay()
+
+      if not alreadyPaused:
+        unpauseReplay()
     elif event.key == pg.K_DOWN:
       setUserVolume(userData['volume'] - .1, window)
       window.systems['main'].elements['audioControl'].value = userData['volume']
