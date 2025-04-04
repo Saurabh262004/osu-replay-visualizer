@@ -363,7 +363,7 @@ class Beatmap:
       if not UI_TimingPoint is None:
         sampleSet = UI_TimingPoint['sampleSet']
       else:
-        sampleSet = self.map['general']['SampleSet']
+        sampleSet = self.map['general']['SampleSet'].lower()
 
       for hitsound in obj.rawDict['hitSound']:
         hitsoundKey = f'{sampleSet}-hit{hitsound}'
