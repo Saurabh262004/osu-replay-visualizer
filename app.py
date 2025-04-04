@@ -25,9 +25,11 @@ except:
     'playfieldBorder': True,
     'sliderAnchors': False,
     'renderSkinCursor': True,
-    'renerCursorTracker': False,
+    'renderCursorTracker': False,
     'renderHitJudgments': False,
     'renderKeyOverlay': True,
+    'renderModsDisplay': True,
+    'normalHitsounds': True,
     'URLs': {
       'osuFolder': ''
     }
@@ -36,13 +38,13 @@ except:
 if userData['firstBoot']:
   firstBootSetup(userData)
 
-ffmpegPath = os.path.join(os.path.dirname(__file__), "ffmpeg", "bin", "ffmpeg.exe")
+ffmpegPath = os.path.join(os.path.dirname(__file__), 'ffmpeg', 'bin', 'ffmpeg.exe')
 AudioSegment.converter = ffmpegPath
 
-ffmpegBinDir = os.path.join(os.path.dirname(__file__), "ffmpeg", "bin")
-os.environ["PATH"] += os.pathsep + ffmpegBinDir
+ffmpegBinDir = os.path.join(os.path.dirname(__file__), 'ffmpeg', 'bin')
+os.environ['PATH'] += os.pathsep + ffmpegBinDir
 
-AudioSegment.ffprobe = ffmpegPath.replace("ffmpeg", "ffprobe")
+AudioSegment.ffprobe = ffmpegPath.replace('ffmpeg', 'ffprobe')
 
 for url in userData['URLs']:
   if not os.path.isdir(userData['URLs'][url]):

@@ -1,7 +1,7 @@
 from json import dumps
 from typing import Union, Optional, List, Dict
 from modules.readers.parsingHelpers import separateByComma, keyValuePairs, getFileSections
-from modules.misc.gameLists import MAP_FILE_SECTIONS
+from modules.misc.gameLists import MAP_FILE_SECTIONS, SAMPLE_SETS, HITSOUNDS
 
 ALLOWED_RETURN_TYPES = ('pyObject', 'json')
 
@@ -87,7 +87,10 @@ def processHitobjectParams(rawValues: list) -> dict:
   else:
     hitobject['maniaHoldNote'] = False
 
-  hitobject['hitSound'] = rawValues[4]
+  hitsoundBits = bin(rawValues[4])[2:].zfill(4)
+
+  hitobject['hitSound'] = [HITSOUNDS['hitSounds'][i] for i in range(4) if hitsoundBits[i] == '1']
+  hitobject['hitSound'] = ['normal'] if len(hitobject['hitSound']) == 0 else hitobject['hitSound']
 
   updateObject = (
     {'hitSample': hitSample(rawValues[5])} if hitobject['type'] == 'hitcircle'
@@ -108,7 +111,7 @@ def processTimingPoints(timingPoints: List[List[Union[int, float]]]) -> List[Dic
       'time': point[0],
       'beatLength': point[1],
       'meter': point[2],
-      'sampleSet': point[3],
+      'sampleSet': SAMPLE_SETS[point[3]],
       'sampleIndex': point[4],
       'volume': point[5],
       'uninherited': point[6],

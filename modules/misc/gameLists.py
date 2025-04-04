@@ -381,7 +381,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-cinema': {
     'animetable': False,
@@ -389,7 +389,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-doubletime': {
     'animetable': False,
@@ -397,7 +397,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-easy': {
     'animetable': False,
@@ -405,7 +405,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-fadein': {
     'animetable': False,
@@ -421,7 +421,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-halftime': {
     'animetable': False,
@@ -429,7 +429,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-hardrock': {
     'animetable': False,
@@ -437,7 +437,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-hidden': {
     'animetable': False,
@@ -445,7 +445,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-key1': {
     'animetable': False,
@@ -541,7 +541,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-nofail': {
     'animetable': False,
@@ -549,7 +549,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-perfect': {
     'animetable': False,
@@ -573,7 +573,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-relax2': {
     'animetable': False,
@@ -581,7 +581,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-scorev2': {
     'animetable': False,
@@ -589,7 +589,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-spunout': {
     'animetable': False,
@@ -597,7 +597,7 @@ SKIN_ELEMENTS = {
     'origin': 'center',
     'tintType': 'noTint',
     'alter': None,
-    'required': False
+    'required': True
   },
   'selection-mod-suddendeath': {
     'animetable': False,
@@ -845,3 +845,11 @@ FONT_ELEMENTS = {
     'prefixIdentifier': 'ScorePrefix'
   }
 }
+
+HITSOUNDS = {
+  'sampleSets': ('normal', 'soft', 'drum'),
+  'hitSounds': ('normal', 'whistle', 'finish', 'clap'),
+  'fileTypes': ('wav', 'ogg', 'mp3')
+}
+
+SAMPLE_SETS = ('default', 'normal', 'soft', 'drum')

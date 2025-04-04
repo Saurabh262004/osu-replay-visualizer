@@ -1,7 +1,7 @@
 import os
-from pygame import image
+import pygame as pg
 from modules.misc.helpers import customStrip
-from modules.misc.gameLists import SKIN_ELEMENTS, FONT_ELEMENTS
+from modules.misc.gameLists import SKIN_ELEMENTS, FONT_ELEMENTS, HITSOUNDS
 from modules.readers.parsingHelpers import keyValuePairs
 
 def importSkin(skinName: str, defaultSkinURL: str, osuURL: str) -> dict:
@@ -18,7 +18,8 @@ def importSkin(skinName: str, defaultSkinURL: str, osuURL: str) -> dict:
     'configURL': skinURL + '/skin.ini',
     'folderName': skinName,
     'elements': {},
-    'config': {}
+    'config': {},
+    'hitsounds': {}
   }
 
   # parse the skin.ini config file
@@ -56,24 +57,24 @@ def importSkin(skinName: str, defaultSkinURL: str, osuURL: str) -> dict:
       imageURL = f"{skin['url']}/{SKIN_ELEMENTS[element]['animationName'].replace('*', str(i))}.png"
 
       while os.path.isfile(imageURL):
-        skin['elements'][element].append(image.load(imageURL).convert_alpha())
+        skin['elements'][element].append(pg.image.load(imageURL).convert_alpha())
         i += 1
         imageURL = f"{skin['url']}/{SKIN_ELEMENTS[element]['animationName'].replace('*', str(i))}.png"
 
       if len(skin['elements'][element]) == 0:
         if os.path.isfile(stillImageURL):
-          skin['elements'][element] = image.load(stillImageURL).convert_alpha()
+          skin['elements'][element] = pg.image.load(stillImageURL).convert_alpha()
         elif SKIN_ELEMENTS[element]['required']:
           skin['elements'].pop(element)
           stillImageURL = f"{defaultSkinURL}/{element}.png"
-          skin['elements'][element] = image.load(stillImageURL).convert_alpha()
+          skin['elements'][element] = pg.image.load(stillImageURL).convert_alpha()
           requiredElementNotFound = True
 
     elif os.path.isfile(stillImageURL):
-      skin['elements'][element] = image.load(stillImageURL).convert_alpha()
+      skin['elements'][element] = pg.image.load(stillImageURL).convert_alpha()
     elif SKIN_ELEMENTS[element]['required']:
       stillImageURL = f"{defaultSkinURL}/{element}.png"
-      skin['elements'][element] = image.load(stillImageURL).convert_alpha()
+      skin['elements'][element] = pg.image.load(stillImageURL).convert_alpha()
       requiredElementNotFound = True
 
     if requiredElementNotFound:
@@ -88,6 +89,17 @@ def importSkin(skinName: str, defaultSkinURL: str, osuURL: str) -> dict:
       fontURL = f"{skin['url']}/{skin['config'][FONT_ELEMENTS[element]['prefixIdentifier']]}{fontURLPostfix}.png"
 
       if os.path.isfile(fontURL):
-        skin['elements'][f'{element}{fontURLPostfix}'] = image.load(fontURL).convert_alpha()
+        skin['elements'][f'{element}{fontURLPostfix}'] = pg.image.load(fontURL).convert_alpha()
+
+  # load hitsounds
+  for sampleSet in HITSOUNDS['sampleSets']:
+    for hitSound in HITSOUNDS['hitSounds']:
+      for fileType in HITSOUNDS['fileTypes']:
+        fileName = f'{sampleSet}-hit{hitSound}'
+        fileURL = f'{skin['url']}/{fileName}.{fileType}'
+
+        if os.path.isfile(fileURL):
+          skin['hitsounds'][fileName] = pg.mixer.Sound(fileURL)
+          break
 
   return skin
