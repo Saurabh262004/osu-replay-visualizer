@@ -1,9 +1,8 @@
 from typing import Union, Optional, List
 from math import atan2, degrees, ceil
 import pygame as pg
-from modules.misc.gameLists import MODS, MODS_ABRV
 import sharedWindow
-from modules.misc.helpers import mapRange, find
+from modules.misc.helpers import mapRange
 from modules.beatmapElements.hitobjects import Hitcircle, Slider, Spinner
 from modules.beatmapElements.beatmap import Beatmap
 
@@ -23,36 +22,16 @@ class BeatmapRenderer:
       self.beatmap = Beatmap(beatmapURL, self.window.customData['skin'])
 
     self.maxImgAlpha = 255
-    self.keyHighlight = pg.Color(30, 255, 180)
-    self.keyOff = pg.Color(30, 30, 30)
-
-    self.supportedModsDisplay = [
-      'AP',
-      'CN',
-      'DT',
-      'EZ',
-      'FL',
-      'HT',
-      'HR',
-      'HD',
-      'NC',
-      'NF',
-      'RX',
-      'AP',
-      'V2',
-      'SO'
-    ]
 
     self.timeMultiplier = 1
     if 'DT' in self.beatmap.replay['mods'] or 'NC' in self.beatmap.replay['mods']:
-      self.timeMultiplier = 2 / 3
+      self.timeMultiplier = (2/3)
     elif 'HT' in self.beatmap.replay['mods']:
-      self.timeMultiplier = 4 / 3
+      self.timeMultiplier = 1 + (1/3)
 
     self.updateSurface(surface, playFieldResMultiplier)
 
   def updateSurface(self, newSurface: pg.Surface, newResMultiplier: numType):
-    # updating resolution variables
     self.surface = newSurface
     self.playFieldResMultiplier = newResMultiplier
     self.playFieldRes = (self.playFieldResMultiplier * 512, self.playFieldResMultiplier * 384)
@@ -65,7 +44,6 @@ class BeatmapRenderer:
       self.playFieldYpadding + (self.playFieldRes[1] / 2)
     )
 
-    # scaling cursor images
     self.cursorScaled = pg.transform.smoothscale_by(self.beatmap.cursor, self.playFieldResMultiplier)
     self.cursorScaledHalfWidth = (self.cursorScaled.get_width() / 2)
     self.cursorScaledHalfHeight = (self.cursorScaled.get_height() / 2)
@@ -74,15 +52,12 @@ class BeatmapRenderer:
     self.cursorTrailScaledHalfWidth = (self.cursorTrailScaled.get_width() / 2)
     self.cursorTrailScaledHalfHeight = (self.cursorTrailScaled.get_height() / 2)
 
-    # transform cursor data to new resolution
     self.beatmap.transformCursorData(self.playFieldResMultiplier, self.playFieldXpadding, self.playFieldYpadding)
 
-    # transform and render slider bodies to new resolution
     for slider in self.beatmap.sliders:
       slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
       slider.renderBody(self.playFieldResMultiplier, self.userData['highQualitySliders'])
 
-    # setup the key overlay
     keySize = int(self.playFieldRes[0] / 25)
     self.keyBorderRadius = int(keySize * .15)
 
@@ -100,27 +75,8 @@ class BeatmapRenderer:
       keySize
     )
 
-    # setup mod display
-    self.modDisplays = []
-    size = int(keySize * 2)
-    padding = int(size / 4)
-
-    for mod in self.beatmap.replay['mods']:
-      if mod in self.supportedModsDisplay:
-        currentModIndex = len(self.modDisplays)
-
-        modListIndex = find(mod, MODS_ABRV['arr'])
-
-        modName = 'relax2' if mod == 'AP' else MODS['arr'][modListIndex].lower()
-
-        modImage = self.beatmap.skin['elements'][f'selection-mod-{modName}']
-
-        self.modDisplays.append(
-          {
-            'pos': (int(self.screenWidth - ((padding + size) * (currentModIndex + 1))), padding),
-            'img': pg.transform.smoothscale(modImage, (size, size))
-          }
-        )
+    self.keyHighlight = pg.Color(30, 255, 180)
+    self.keyOff = pg.Color(30, 30, 30)
 
   def render(self, time: int):
     renderObjects = self.beatmap.hitobjectsAtTime(time / self.timeMultiplier)
@@ -128,7 +84,7 @@ class BeatmapRenderer:
     self.surface.fill((0, 0, 0))
 
     if self.userData['playfieldBorder']:
-      pg.draw.rect(self.surface, (128, 128, 128), (self.playFieldXpadding, self.playFieldYpadding, self.playFieldRes[0], self.playFieldRes[1]), 1)
+      pg.draw.rect(self.surface, (200, 200, 200), (self.playFieldXpadding, self.playFieldYpadding, self.playFieldRes[0], self.playFieldRes[1]), 1)
 
     for i in range(len(renderObjects) - 1, -1, -1):
       if isinstance(renderObjects[i], Hitcircle): self.drawHitcircle(renderObjects[i], time / self.timeMultiplier)
@@ -147,9 +103,6 @@ class BeatmapRenderer:
 
       if self.userData['renderKeyOverlay']:
         self.drawKeyOverlay(time / self.timeMultiplier)
-
-      if self.userData['renderModsDisplay']:
-        self.drawModsDisplay()
 
   def drawHitcircle(self, hitcircle: Hitcircle, time: int):
     comboStr = str(hitcircle.comboIndex)
@@ -402,7 +355,6 @@ class BeatmapRenderer:
     if slider.slides > 1 and time <= slider.endTime:
       currentTimingPoints = self.beatmap.effectiveTimingPointAtTime(time)
 
-      maxArrowSizeMult = .5
       if len(currentTimingPoints) > 0 and (currentTimingPoints[0] is not None):
         currentUITimingPoint = currentTimingPoints[0]
 
@@ -414,7 +366,7 @@ class BeatmapRenderer:
 
         timeAtLastBeat = currentUITimingPoint['time'] + (currentTotalBeatsComplete * beatLength)
 
-        reverseArrowSizeMultiplier = mapRange(time, timeAtLastBeat, timeAtLastBeat + beatLength, maxArrowSizeMult, 0)
+        reverseArrowSizeMultiplier = mapRange(time, timeAtLastBeat, timeAtLastBeat + beatLength, .3, 0)
       else:
         reverseArrowSizeMultiplier = 0
 
@@ -438,7 +390,7 @@ class BeatmapRenderer:
         radiansAngle = atan2(-dy, dx)
         degreesAngle = degrees(radiansAngle)
 
-        reverseArrowNow = pg.transform.smoothscale_by(reverseArrow, (1 + reverseArrowSizeMultiplier) * self.playFieldResMultiplier * self.beatmap.elementsScaleMultiplier)
+        reverseArrowNow = pg.transform.smoothscale_by(reverseArrow, (1 + reverseArrowSizeMultiplier) * self.playFieldResMultiplier)
         reverseArrowNow = pg.transform.rotate(reverseArrowNow, degreesAngle)
         reverseArrowNow.set_alpha(sliderAlpha)
 
@@ -462,7 +414,7 @@ class BeatmapRenderer:
           radiansAngleNxt = atan2(-dyNxt, dxNxt)
           degreesAngleNxt = degrees(radiansAngleNxt)
 
-          reverseArrowNxt = pg.transform.smoothscale_by(reverseArrow, (1 + (maxArrowSizeMult - reverseArrowSizeMultiplier)) * self.playFieldResMultiplier * self.beatmap.elementsScaleMultiplier)
+          reverseArrowNxt = pg.transform.smoothscale_by(reverseArrow, (1 + (.3 - reverseArrowSizeMultiplier)) * self.playFieldResMultiplier)
           reverseArrowNxt = pg.transform.rotate(reverseArrowNxt, degreesAngleNxt)
           reverseArrowNxt.set_alpha(sliderAlpha)
 
@@ -535,10 +487,3 @@ class BeatmapRenderer:
       pg.draw.rect(self.surface, self.keyHighlight, self.k2Rect, border_radius=self.keyBorderRadius)
     else:
       pg.draw.rect(self.surface, self.keyOff, self.k2Rect, border_radius=self.keyBorderRadius)
-
-  def drawModsDisplay(self):
-    for mod in self.modDisplays:
-      modPos = mod['pos']
-      modImg = mod['img']
-
-      self.surface.blit(modImg, modPos)

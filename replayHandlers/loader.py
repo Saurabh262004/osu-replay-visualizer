@@ -169,7 +169,6 @@ def loadRendererWithReplay(customURL: str = None):
   window.customData['timelineTimeLog'] = 0
   window.customData['replayLoaded'] = True
   window.customData['timeStampMax'] = timeStampMax
-  window.customData['justTriggeredHitsound'] = False
 
   deactivateAlert()
 

@@ -5,7 +5,7 @@ from modules.UI.windowManager import Window
 from appUI.systems.replayList import scrollReplayList
 from modules.readers.importSkin import importSkin
 from replayHandlers.loader import loadRendererWithReplay
-from replayHandlers.playbackHandler import handleReplayPlayback, pauseToggle, unpauseReplay, pauseReplay
+from replayHandlers.playbackHandler import handleReplayPlayback, pauseToggle
 from appUI.systems.main import setUserVolume
 import sharedWindow
 
@@ -56,14 +56,16 @@ def windowCustomUpdate():
     else:
       try:
         window.customData['skin'] = importSkin(userData['skin'], 'assets/defaultSkin', userData['URLs']['osuFolder'])
-
-        for hitsound in window.customData['skin']['hitsounds']:
-          window.customData['skin']['hitsounds'][hitsound].set_volume(userData['volume'] / 2)
       except:
         activateAlert('Couldn\'t load the skin!')
 
+  ## Screen Resolution Change Update ##
+  resChange = False
+  if 'lastScreenRes' in window.customData and window.customData['lastScreenRes'] != (window.screenWidth, window.screenHeight):
+    resChange = True
+
   ## Update Replay Section On Resolution Change ##
-  if'replayLoaded' in window.customData and window.customData['replayLoaded'] and not window.customData['firstUpdate'] and window.secondResize:
+  if resChange and 'replayLoaded' in window.customData and window.customData['replayLoaded'] and not window.customData['firstUpdate']:
     defaultHeight = 384
 
     replaySectionHeight = window.screenHeight - window.systems['nav'].elements['topNav'].height
@@ -89,7 +91,6 @@ def windowCustomEvents(event: pg.event.Event):
     if event.key == pg.K_SPACE:
       pauseToggle()
     elif event.key == pg.K_LEFT or event.key == pg.K_RIGHT or event.key == pg.K_COMMA or event.key == pg.K_PERIOD:
-      pauseReplay()
       timeline = window.systems['main'].elements['replayTimeline']
 
       if event.key == pg.K_LEFT:
@@ -110,7 +111,6 @@ def windowCustomEvents(event: pg.event.Event):
       timeline.value = newValue
       timeline.update()
       timeline.callback()
-      unpauseReplay()
     elif event.key == pg.K_DOWN:
       setUserVolume(userData['volume'] - .1, window)
       window.systems['main'].elements['audioControl'].value = userData['volume']

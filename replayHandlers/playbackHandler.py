@@ -1,10 +1,7 @@
 from typing import Union, Optional
 import pygame as pg
 import sharedWindow
-from modules.beatmapElements.beatmap import Beatmap
-from modules.renderer.beatmapRenderer import BeatmapRenderer
 from modules.UI.windowManager import Window
-from modules.beatmapElements.hitobjects import Hitcircle, Slider, Spinner
 
 def updateTimeStamp(time: int):
   window: Window = sharedWindow.window
@@ -18,23 +15,6 @@ def updateTimeStamp(time: int):
 
   timeStamp.text = f'{currentTimeMinutes:02d}:{currentTimeSecs:02d}.{currentTimeMS:03d} / {window.customData['timeStampMax']}'
   timeStamp.update()
-
-def updateHitobjectsHitsoundTrigger(time: int):
-  window: Window = sharedWindow.window
-
-  for hitobject in window.customData['beatmapRenderer'].beatmap.hitobjects:
-    if isinstance(hitobject, Spinner): continue
-
-    if isinstance(hitobject, Slider):
-      for i in range(len(hitobject.triggeredHitSound)):
-        edgeTime = hitobject.time + (hitobject.slideTime * i)
-
-        if edgeTime > time: hitobject.triggeredHitSound[i] = False
-        else: hitobject.triggeredHitSound[i] = True
-
-    elif isinstance(hitobject, Hitcircle):
-      if hitobject.hitTime > time: hitobject.triggeredHitSound = False
-      else: hitobject.triggeredHitSound = False
 
 def handleReplayPlayback():
   window: Window = sharedWindow.window
@@ -58,47 +38,7 @@ def handleReplayPlayback():
       timeline.value = newTime
       timeline.update()
 
-    renderer: BeatmapRenderer = window.customData['beatmapRenderer']
-    renderer.render(timeline.value)
-
-    if window.customData['replayPaused']: return
-
-    currentTimeForHit = timeline.value / renderer.timeMultiplier
-    beatmap: Beatmap = renderer.beatmap
-    lastObj = beatmap.lastObjectAtTimeByHitTime(currentTimeForHit)
-
-    if not lastObj or lastObj.judgment == 0: return
-
-    if isinstance(lastObj, Hitcircle):
-      if not window.customData['justTriggeredHitsound'] and not lastObj.triggeredHitSound:
-        lastObj.triggeredHitSound = True
-
-        if window.customData['userData']['normalHitsounds']:
-          window.customData['skin']['hitsounds']['normal-hitnormal'].play()
-        else:
-          for hitsound in lastObj.hitsounds:
-            hitsound.play()
-
-        window.customData['justTriggeredHitsound'] = True
-      else:
-        window.customData['justTriggeredHitsound'] = False
-    else:
-      for i in range(len(lastObj.triggeredHitSound)):
-        edgeTrigger = lastObj.triggeredHitSound[i]
-
-        if not edgeTrigger and lastObj.time + (lastObj.slideTime * i) <= currentTimeForHit and not window.customData['justTriggeredHitsound']:
-          lastObj.triggeredHitSound[i] = True
-
-          if window.customData['userData']['normalHitsounds']:
-            window.customData['skin']['hitsounds']['normal-hitnormal'].play()
-          else:
-            for hitsound in lastObj.hitsounds:
-              hitsound.play()
-
-          window.customData['justTriggeredHitsound'] = True
-        else:
-          window.customData['justTriggeredHitsound'] = False
-
+    window.customData['beatmapRenderer'].render(timeline.value)
   else:
     window.customData['replayTimeStarted'] = True
     window.customData['startTime'] = window.time.get_ticks()
@@ -155,8 +95,6 @@ def unpauseReplay():
 
   window.systems['main'].elements['replayTimeline'].value = newTime
   window.systems['main'].elements['replayTimeline'].update()
-
-  updateHitobjectsHitsoundTrigger(newTime)
 
   pg.mixer.music.play(start=(newTime/1000))
 

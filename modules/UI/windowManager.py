@@ -15,6 +15,7 @@ class Window:
     self.screenWidth = max(self.screenRes[0], self.minRes[0])
     self.screenHeight = max(self.screenRes[1], self.minRes[1])
     self.fps = fps
+    # self.fps = 2
     self.running = False
     self.systems: Dict[str, System] = {}
     self.activeSystems: Dict[str, System] = {}
@@ -142,12 +143,12 @@ class Window:
       if systemID in self.activeSystems:
         self.activeSystems[systemID].draw()
 
-    self.secondResize = False
+    secondResize = False
     while self.running:
       self.__handleEvents()
 
-      if self.secondResize or self.__screenResized():
-        self.secondResize = not self.secondResize
+      if secondResize or self.__screenResized():
+        secondResize = not secondResize
         self.__resetUI()
 
       self.screen.fill((0, 0, 0))
