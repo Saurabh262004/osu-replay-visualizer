@@ -55,7 +55,10 @@ def windowCustomUpdate():
       activateAlert('No skin selected!')
     else:
       try:
-        window.customData['skin'] = importSkin(userData['skin'], 'assets/defaultSkin', userData['URLs']['osuFolder'])
+        if userData['skin'] == 'default':
+          window.customData['skin'] = importSkin('assets/defaultSkin', 'assets/defaultSkin', userData['URLs']['osuFolder'], True)
+        else:
+          window.customData['skin'] = importSkin(userData['skin'], 'assets/defaultSkin', userData['URLs']['osuFolder'])
 
         for hitsound in window.customData['skin']['hitsounds']:
           window.customData['skin']['hitsounds'][hitsound].set_volume(userData['volume'] / 2)

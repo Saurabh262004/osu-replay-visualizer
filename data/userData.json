@@ -1,6 +1,6 @@
 {
   "firstBoot": true,
-  "skin": "",
+  "skin": "default",
   "volume": 0.1,
   "highQualitySliders": false,
   "playfieldBorder": true,
@@ -10,7 +10,7 @@
   "renderHitJudgments": false,
   "renderKeyOverlay": true,
   "renderModsDisplay": true,
-  "normalHitsounds": true,
+  "normalHitsounds": false,
   "URLs": {
     "osuFolder": ""
   }

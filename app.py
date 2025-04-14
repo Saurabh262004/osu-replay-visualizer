@@ -19,7 +19,7 @@ except:
   # create default user data
   userData = {
     'firstBoot': True,
-    'skin': '',
+    'skin': 'default',
     'volume': 0.1,
     'highQualitySliders': False,
     'playfieldBorder': True,
@@ -29,7 +29,7 @@ except:
     'renderHitJudgments': False,
     'renderKeyOverlay': True,
     'renderModsDisplay': True,
-    'normalHitsounds': True,
+    'normalHitsounds': False,
     'URLs': {
       'osuFolder': ''
     }

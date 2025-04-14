@@ -4,11 +4,14 @@ from modules.misc.helpers import customStrip
 from modules.misc.gameLists import SKIN_ELEMENTS, FONT_ELEMENTS, HITSOUNDS
 from modules.readers.parsingHelpers import keyValuePairs
 
-def importSkin(skinName: str, defaultSkinURL: str, osuURL: str) -> dict:
+def importSkin(skinName: str, defaultSkinURL: str, osuURL: str, directSkinURL: bool = None) -> dict:
   if not os.path.isdir(osuURL):
     raise FileNotFoundError(f"The directory '{osuURL}' does not exist. Please provide a valid path to the osu! folder.")
 
-  skinURL = osuURL + '/Skins/' + skinName
+  if not directSkinURL:
+    skinURL = osuURL + '/Skins/' + skinName
+  else:
+    skinURL = skinName
 
   if not os.path.isdir(skinURL):
     raise FileNotFoundError(f"The skin '{skinName}' does not exist. Please provide a valid skin.")

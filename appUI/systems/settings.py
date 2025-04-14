@@ -30,6 +30,20 @@ def changeSkin():
   except Exception as e:
     print(e)
 
+def loadDefaultSkin():
+  window: Window = sharedWindow.window
+
+  try:
+    window.customData['skin'] = importSkin('assets/defaultSkin', 'assets/defaultSkin', window.customData['userData']['URLs']['osuFolder'], True)
+    window.customData['userData']['skin'] = 'default'
+
+    for hitsound in window.customData['skin']['hitsounds']:
+      window.customData['skin']['hitsounds'][hitsound].set_volume(window.customData['userData']['volume'] / 2)
+
+    deactivateAlert()
+  except Exception as e:
+    print(e)
+
 def loadReplay():
   replayURL: str = fileopenbox('Please select a replay file to load')
 
@@ -180,5 +194,25 @@ def addSettings():
   )
 
   system.addElement(loadReplayBTN, 'loadReplayBTN')
+
+  defaultSkinDim = {
+    'x': DV('customCallable', lambda params: params[0].value - (params[1].value * 2.5), callableParameters=(LSK_X, LSK_WIDTH)),
+    'y': LSK_Y,
+    'width': DV('classPer', LSK_WIDTH, classAttr='value', percent=130),
+    'height': LSK_HEIGHT
+  }
+
+  defaultSkinBTN = Button(
+    Section(defaultSkinDim, AppColors.gray, 3),
+    AppColors.darkGray,
+    None,
+    None,
+    'Load Default Skin',
+    'Helvetica',
+    AppColors.background1,
+    loadDefaultSkin
+  )
+
+  system.addElement(defaultSkinBTN, 'defaultSkinBTN')
 
   window.addSystem(system, 'settings')
