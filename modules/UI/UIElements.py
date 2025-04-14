@@ -23,6 +23,7 @@ class DynamicValue:
     self.classAttr = classAttr
     self.percent = percent
     self.value = None
+    self.resolveValue: Callable
 
     if not self.referenceType in DIMENSION_REFERENCE_TYPES:
       raise ValueError(f'Invalid dimType value received, value must be one of the following: {DIMENSION_REFERENCE_TYPES}')
@@ -45,26 +46,46 @@ class DynamicValue:
     if (self.referenceType == 'percent' or self.referenceType == 'dictPer' or self.referenceType == 'classPer') and (self.percent is None):
       raise ValueError('If referenceType is percent, dictPer or classPer percent must be defined')
 
+    if self.referenceType == 'number':
+      self.resolveValue = self.__getByNumber
+    elif self.referenceType == 'percent':
+      self.resolveValue = self.__getByPercent
+    elif self.referenceType == 'customCallable':
+      self.resolveValue = self.__getByCustomCallable
+    elif self.referenceType == 'dictNum':
+      self.resolveValue = self.__getByDictNum
+    elif self.referenceType == 'dictPer':
+      self.resolveValue = self.__getByDictPer
+    elif self.referenceType == 'classNum':
+      self.resolveValue = self.__getByClassNum
+    elif self.referenceType == 'classPer':
+      self.resolveValue = self.__getByClassPer
+
     self.resolveValue()
 
-  def resolveValue(self):
-    if self.referenceType == 'number':
-      self.value = self.reference
-    elif self.referenceType == 'percent':
-      self.value = self.reference * (self.percent / 100)
-    elif self.referenceType == 'customCallable':
-      if not self.callableParameters is None:
-        self.value = self.reference(self.callableParameters)
-      else:
-        self.value = self.reference()
-    elif self.referenceType == 'dictNum':
-      self.value = self.reference[self.dictKey]
-    elif self.referenceType == 'dictPer':
-      self.value = self.reference[self.dictKey] * (self.percent / 100)
-    elif self.referenceType == 'classNum':
-      self.value = getattr(self.reference, self.classAttr, 0)
-    elif self.referenceType == 'classPer':
-      self.value = getattr(self.reference, self.classAttr, 0) * (self.percent / 100)
+  def __getByNumber(self):
+    self.value = self.reference
+
+  def __getByPercent(self):
+    self.value = self.reference * (self.percent / 100)
+
+  def __getByCustomCallable(self):
+    if not self.callableParameters is None:
+      self.value = self.reference(self.callableParameters)
+    else:
+      self.value = self.reference()
+
+  def __getByDictNum(self):
+    self.value = self.reference[self.dictKey]
+
+  def __getByDictPer(self):
+    self.value = self.reference[self.dictKey] * (self.percent / 100)
+
+  def __getByClassNum(self):
+    self.value = getattr(self.reference, self.classAttr, 0)
+
+  def __getByClassPer(self):
+    self.value = getattr(self.reference, self.classAttr, 0) * (self.percent / 100)
 
 class Section:
   def __init__(self, dimensions: Dict['str', DynamicValue], background: backgroundType, borderRadius: Optional[numType] = 0, backgroundSizeType: Optional[str] = 'fit', backgroundSizePercent: Optional[int] = 100):
@@ -629,7 +650,6 @@ class Slider():
       self.pressed = False
       scroll = False
       updatedValue = self.value
-      scrollValue = 0
 
       if self.hoverToScroll:
         if self.section.rect.collidepoint(pg.mouse.get_pos()):
