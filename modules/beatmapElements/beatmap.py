@@ -365,6 +365,8 @@ class Beatmap:
       else:
         sampleSet = self.map['general']['SampleSet'].lower()
 
+      obj.sampleSet = sampleSet
+
       for hitsound in obj.rawDict['hitSound']:
         hitsoundKey = f'{sampleSet}-hit{hitsound}'
 

@@ -21,6 +21,7 @@ class Hitcircle:
     self.stackOffset = 0
     self.triggeredHitSound = False
     self.hitsounds = []
+    self.sampleSet = 'Normal'
 
     if hitTime is not None:
       self.hitTime = hitTime
@@ -52,6 +53,7 @@ class Slider:
     self.endTime = 0
     self.triggeredHitSound = [False for _ in range(self.slides + 1)]
     self.hitsounds = []
+    self.sampleSet = 'Normal'
 
     if not hitTime is None:
       self.hitTime = hitTime

@@ -74,7 +74,7 @@ def handleReplayPlayback():
         lastObj.triggeredHitSound = True
 
         if window.customData['userData']['normalHitsounds']:
-          window.customData['skin']['hitsounds']['normal-hitnormal'].play()
+          window.customData['skin']['hitsounds'][f'{lastObj.sampleSet}-hitnormal'].play()
         else:
           for hitsound in lastObj.hitsounds:
             hitsound.play()
@@ -90,7 +90,7 @@ def handleReplayPlayback():
           lastObj.triggeredHitSound[i] = True
 
           if window.customData['userData']['normalHitsounds']:
-            window.customData['skin']['hitsounds']['normal-hitnormal'].play()
+            window.customData['skin']['hitsounds'][f'{lastObj.sampleSet}-hitnormal'].play()
           else:
             for hitsound in lastObj.hitsounds:
               hitsound.play()
