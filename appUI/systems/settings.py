@@ -131,24 +131,47 @@ def addSettings():
     }, AppColors.background1), 'mainSection'
   )
 
-  hqSliderOptionText = 'High Quality Sliders *might take a long time to process on slow devices*'
-  addOption(hqSliderOptionText, 1, 'highQualitySliders', system)
+  togglesInfo = [
+    {
+      'text': 'High Quality Sliders *might take a long time to process on slow devices*',
+      'id': 'highQualitySliders'
+    },
+    {
+      'text': 'Display playfield border',
+      'id': 'playfieldBorder'
+    },
+    {
+      'text': 'Display sldier anchors',
+      'id': 'sliderAnchors'
+    },
+    {
+      'text': 'Render default skin cursor',
+      'id': 'renderSkinCursor'
+    },
+    {
+      'text': 'Render cursor tracker',
+      'id': 'renderCursorTracker'
+    },
+    {
+      'text': 'Render hit judgments *not fully implemented yet*',
+      'id': 'renderHitJudgments'
+    },
+    {
+      'text': 'Render key overlay',
+      'id': 'renderKeyOverlay'
+    },
+    {
+      'text': 'Show mods',
+      'id': 'renderModsDisplay'
+    },
+    {
+      'text': 'Only play normal hitsounds',
+      'id': 'normalHitsounds'
+    }
+  ]
 
-  addOption('Display playfield border', 2, 'playfieldBorder', system)
-
-  addOption('Display sldier anchors', 3, 'sliderAnchors', system)
-
-  addOption('Render default skin cursor', 4, 'renderSkinCursor', system)
-
-  addOption('Render cursor tracker', 5, 'renderCursorTracker', system)
-
-  addOption('Render hit judgments *not fully implemented yet*', 6, 'renderHitJudgments', system)
-
-  addOption('Render key overlay', 7, 'renderKeyOverlay', system)
-
-  addOption('Show mods', 8, 'renderModsDisplay', system)
-
-  addOption('Only play normal hitsounds', 9, 'normalHitsounds', system)
+  for i, toggleInfo in enumerate(togglesInfo):
+    addOption(toggleInfo['text'], i+.5, toggleInfo['id'], system)
 
   LSK_HEIGHT = DV('classPer', window, classAttr='screenHeight', percent=5)
   LSK_WIDTH = DV('classPer', LSK_HEIGHT, classAttr='value', percent=320)

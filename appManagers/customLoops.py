@@ -66,7 +66,7 @@ def windowCustomUpdate():
         activateAlert('Couldn\'t load the skin!')
 
   ## Update Replay Section On Resolution Change ##
-  if'replayLoaded' in window.customData and window.customData['replayLoaded'] and not window.customData['firstUpdate'] and window.secondResize:
+  if ('replayLoaded' in window.customData) and window.customData['replayLoaded'] and (not window.customData['firstUpdate']) and window.secondResize:
     defaultHeight = 384
 
     replaySectionHeight = window.screenHeight - window.systems['nav'].elements['topNav'].height

@@ -176,7 +176,6 @@ def addMain():
   }
 
   alertBox = Section(errorDim, pg.Color(241, 188, 208), 7, 'fit', 20)
-  # alertBox.activeDraw = False
 
   system.addElement(alertBox, 'alertBox')
 
@@ -197,7 +196,6 @@ def addMain():
   tintImage(alertIconImg, AppColors.background1)
 
   alertIcon = Section(alertIconDim, alertIconImg)
-  # alertIcon.activeDraw = False
 
   system.addElement(alertIcon, 'alertIcon')
 
@@ -212,8 +210,23 @@ def addMain():
   )
 
   alertText = TextBox(alertTextBox, '-', 'Helvetica', AppColors.background1)
-  # alertText.activeDraw = False
 
   system.addElement(alertText, 'alertText')
+
+  FPSDim = {
+    'x' : DV('number', 5),
+    'y' : DV('customCallable', lambda window: window.systems['nav'].elements['topNav'].height + 5, callableParameters=window),
+    'width' : DV('number', 20),
+    'height' : DV('number', 20)
+  }
+
+  FPSBox = TextBox(
+    Section(FPSDim, pg.Color(0, 0, 0, 0)),
+    '00',
+    'Courier New',
+    AppColors.cream
+  )
+
+  system.addElement(FPSBox, 'FPSBox')
 
   window.addSystem(system, 'main')
