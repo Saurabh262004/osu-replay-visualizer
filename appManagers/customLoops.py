@@ -39,6 +39,10 @@ def windowCustomLoop():
 
   systemSwitch()
 
+  fps = window.clock.get_fps()
+  window.systems['main'].elements['FPSBox'].text = f'{fps:.0f}'
+  window.systems['main'].elements['FPSBox'].update()
+
 def windowCustomUpdate():
   window: Window = sharedWindow.window
   userData = window.customData['userData']
@@ -61,7 +65,7 @@ def windowCustomUpdate():
           window.customData['skin'] = importSkin(userData['skin'], 'assets/defaultSkin', userData['URLs']['osuFolder'])
 
         for hitsound in window.customData['skin']['hitsounds']:
-          window.customData['skin']['hitsounds'][hitsound].set_volume(userData['volume'] / 2)
+          window.customData['skin']['hitsounds'][hitsound].set_volume(userData['volume'] / 3)
       except:
         activateAlert('Couldn\'t load the skin!')
 

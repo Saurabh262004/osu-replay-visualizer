@@ -24,7 +24,7 @@ def changeSkin():
     window.customData['userData']['skin'] = skinName
 
     for hitsound in window.customData['skin']['hitsounds']:
-      window.customData['skin']['hitsounds'][hitsound].set_volume(window.customData['userData']['volume'] / 2)
+      window.customData['skin']['hitsounds'][hitsound].set_volume(window.customData['userData']['volume'] / 3)
 
     deactivateAlert()
   except Exception as e:
@@ -38,7 +38,7 @@ def loadDefaultSkin():
     window.customData['userData']['skin'] = 'default'
 
     for hitsound in window.customData['skin']['hitsounds']:
-      window.customData['skin']['hitsounds'][hitsound].set_volume(window.customData['userData']['volume'] / 2)
+      window.customData['skin']['hitsounds'][hitsound].set_volume(window.customData['userData']['volume'] / 3)
 
     deactivateAlert()
   except Exception as e:

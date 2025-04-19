@@ -28,7 +28,7 @@ def setUserVolume(volume: Union[int, float], window: Window):
 
   if 'skin' in window.customData:
     for hitsound in window.customData['skin']['hitsounds']:
-      window.customData['skin']['hitsounds'][hitsound].set_volume(volume / 2)
+      window.customData['skin']['hitsounds'][hitsound].set_volume(volume / 3)
 
 def addMain():
   window: Window = sharedWindow.window
