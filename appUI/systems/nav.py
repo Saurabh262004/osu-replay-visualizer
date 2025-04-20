@@ -1,18 +1,17 @@
 import pygame as pg
-from typing import Iterable
+from typing import Any
 from modules.misc.helpers import tintImage
 from appUI.colors import AppColors
 from modules.UI.UIElements import DynamicValue as DV, Section, Button, System
 from modules.UI.windowManager import Window
+from appUI.systems.replayList import refreshReplayList
 import sharedWindow
 
-def setLoggedSystemSwitch(params: Iterable):
-  window: Window = params[0]
-  systemID: str = params[1]
+def setLoggedSystemSwitch(systemID: str):
+  sharedWindow.window.loggedSystemSwitch = systemID
 
-  window.loggedSystemSwitch = systemID
 
-def addNavButton(system: System, iconName: pg.Surface, window: Window, switchSystemID: str, pos: int, buttonID: str):
+def addNavButton(system: System, iconName: pg.Surface, callback: callable, callbackParams: Any, pos: int, buttonID: str):
   buttonDim = {
     'x': DV('classPer', system.elements['topNav'], classAttr='height', percent=100*pos),
     'y': DV('number', 0),
@@ -27,8 +26,8 @@ def addNavButton(system: System, iconName: pg.Surface, window: Window, switchSys
   system.addElement(
     Button(
       Section(buttonDim, buttonIcon, backgroundSizeType='fit', backgroundSizePercent=50),
-      onClick = setLoggedSystemSwitch,
-      onClickParams = (window, switchSystemID),
+      onClick = callback,
+      onClickParams = callbackParams,
       onClickActuation = 'buttonUp'
     ), buttonID
   )
@@ -58,8 +57,9 @@ def addNav():
     }, AppColors.listElement1), 'topNav'
   )
 
-  addNavButton(system, 'home', window, 'main', 0, 'goToHome')
-  addNavButton(system, 'list', window, 'replayList', 1, 'goToReplayList')
-  addNavButton(system, 'settings', window, 'settings', 2, 'goToSettings')
+  addNavButton(system, 'home', setLoggedSystemSwitch, 'main', 0, 'goToHome')
+  addNavButton(system, 'list', setLoggedSystemSwitch, 'replayList', 1, 'goToReplayList')
+  addNavButton(system, 'refresh', refreshReplayList, None, 2, 'refreshReplayList')
+  addNavButton(system, 'settings', setLoggedSystemSwitch, 'settings', 3, 'goToSettings')
 
   window.addSystem(system, 'nav')

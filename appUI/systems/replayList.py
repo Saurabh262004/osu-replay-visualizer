@@ -66,7 +66,7 @@ def getReplayElements(replayNames: Iterable[str], system: System):
 
     replayNum += 1
 
-def addReplayList():
+def addReplayList(system: System = None):
   window: Window = sharedWindow.window
 
   replayFolderURL = os.path.join(window.customData['userData']['URLs']['osuFolder'], 'Replays')
@@ -79,16 +79,17 @@ def addReplayList():
 
   replayNames = [file[:-4] for file in replayFiles]
 
-  system = System(preLoadState=True)
+  if system is None:
+    system = System(preLoadState=True)
 
-  mainDim = {
-    'x': DV('number', 1),
-    'y': DV('number', 1),
-    'width': DV('number', 1),
-    'height': DV('number', 1)
-  }
+    mainDim = {
+      'x': DV('number', 1),
+      'y': DV('number', 1),
+      'width': DV('number', 1),
+      'height': DV('number', 1)
+    }
 
-  system.addElement(Section(mainDim, AppColors.background1), 'mainSection')
+    system.addElement(Section(mainDim, AppColors.background1), 'mainSection')
 
   scrollBarDim = {
     'x': DV('customCallable', lambda mainSection: mainSection.width - 8, system.elements['mainSection']),
@@ -123,4 +124,21 @@ def addReplayList():
 
   getReplayElements(replayNames, system)
 
-  window.addSystem(system, 'replayList')
+  if not 'replayList' in window.systems:
+    window.addSystem(system, 'replayList')
+
+def refreshReplayList():
+  window: Window = sharedWindow.window
+
+  if 'replayList' in window.systems:
+    delItems = []
+
+    for elementID in window.systems['replayList'].elements:
+      if not elementID == 'mainSection':
+        delItems.append(elementID)
+
+    [window.systems['replayList'].removeElement(delItem) for delItem in delItems]
+
+    addReplayList(window.systems['replayList'])
+
+    window.systems['replayList'].update()

@@ -725,6 +725,29 @@ class System:
 
     return True
 
+  def removeElement(self, elementID: str) -> bool:
+    if not elementID in self.elements:
+      raise ValueError(f'An element with id: {elementID} does not exist, please enter a valid id.')
+
+    element = self.elements[elementID]
+
+    if isinstance(element, Section):
+      del self.sections[elementID]
+    elif isinstance(element, Circle):
+      del self.circles[elementID]
+    elif isinstance(element, TextBox):
+      del self.textBoxes[elementID]
+    elif isinstance(element, Button):
+      del self.buttons[elementID]
+    elif isinstance(element, Toggle):
+      del self.toggles[elementID]
+    elif isinstance(element, Slider):
+      del self.sliders[elementID]
+
+    del self.elements[elementID]
+
+    return True
+
   def __validateIDs(self, elementIDs: Optional[Iterable] = None) -> Union[Iterable, None, dict]:
     if elementIDs == None:
       return self.elements
