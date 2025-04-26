@@ -21,8 +21,10 @@ def updateTimeStamp(time: int):
 
 def updateHitobjectsHitsoundTrigger(time: int):
   window: Window = sharedWindow.window
+  renderer: BeatmapRenderer = window.customData['beatmapRenderer']
+  time /= renderer.timeDivisor
 
-  for hitobject in window.customData['beatmapRenderer'].beatmap.hitobjects:
+  for hitobject in renderer.beatmap.hitobjects:
     if isinstance(hitobject, Spinner): continue
 
     if isinstance(hitobject, Slider):
@@ -63,7 +65,7 @@ def handleReplayPlayback():
 
     if window.customData['replayPaused']: return
 
-    currentTimeForHit = timeline.value / renderer.timeMultiplier
+    currentTimeForHit = timeline.value / renderer.timeDivisor
     beatmap: Beatmap = renderer.beatmap
     lastObj = beatmap.lastObjectAtTimeByHitTime(currentTimeForHit)
 

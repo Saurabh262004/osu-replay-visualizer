@@ -49,9 +49,9 @@ def loadRendererWithReplay(customURL: str = None):
 
   # get replay data #
   try:
-    # print('getting replay data...')
+    print('getting replay data...')
     replayData = getReplayData(replayURL)
-    # print('done.')
+    print('done.')
   except Exception as e:
     activateAlert('Couldn\'t read osu database!')
 
@@ -61,14 +61,14 @@ def loadRendererWithReplay(customURL: str = None):
 
   # get beatmap data from the database #
   try:
-    # print('getting beatmap data...')
+    print('getting beatmap data...')
     beatmapData = getMapByMD5(osuDbURL, replayData['beatmapMD5Hash'])
 
     if beatmapData is None:
       activateAlert('You don\'t have the beatmap!')
       return False
 
-    # print('done.')
+    print('done.')
   except Exception as e:
     activateAlert('Couldn\'t get map!')
 
@@ -93,14 +93,14 @@ def loadRendererWithReplay(customURL: str = None):
 
   # initialize the beatmap renderer #
   try:
-    # print('initializing beatmap renderer...')
+    print('initializing beatmap renderer...')
     window.customData['beatmapRenderer'] = BeatmapRenderer(
       beatmapURL,
       replayURL,
       replaySection.background,
       resolutionMultiplier
     )
-    # print('initializing beatmap renderer done.')
+    print('initializing beatmap renderer done.')
   except Exception as e:
     replaySection.background = AppColors.background1
 

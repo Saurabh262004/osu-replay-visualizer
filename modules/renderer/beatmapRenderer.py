@@ -14,11 +14,11 @@ class BeatmapRenderer:
     self.window = sharedWindow.window
     self.userData = self.window.customData['userData']
 
-    # print('creating a new renderer...')
+    print('creating a new renderer...')
     if replayURL is not None:
-      # print('initializing beatmap with replay...')
+      print('initializing beatmap with replay...')
       self.beatmap = Beatmap(beatmapURL, self.window.customData['skin'], replayURL)
-      # print('initializing beatmap done.')
+      print('initializing beatmap done.')
     else:
       self.beatmap = Beatmap(beatmapURL, self.window.customData['skin'])
 
@@ -43,11 +43,11 @@ class BeatmapRenderer:
       'SO'
     ]
 
-    self.timeMultiplier = 1
+    self.timeDivisor = 1
     if 'DT' in self.beatmap.replay['mods'] or 'NC' in self.beatmap.replay['mods']:
-      self.timeMultiplier = 2 / 3
+      self.timeDivisor = 2 / 3
     elif 'HT' in self.beatmap.replay['mods']:
-      self.timeMultiplier = 4 / 3
+      self.timeDivisor = 4 / 3
 
     self.updateSurface(surface, playFieldResMultiplier)
 
@@ -78,9 +78,11 @@ class BeatmapRenderer:
     self.beatmap.transformCursorData(self.playFieldResMultiplier, self.playFieldXpadding, self.playFieldYpadding)
 
     # transform and render slider bodies to new resolution
+    print('creating slider bodies...')
     for slider in self.beatmap.sliders:
       slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
       slider.renderBody(self.playFieldResMultiplier, self.userData['highQualitySliders'])
+    print('done.')
 
     # setup the key overlay
     keySize = int(self.playFieldRes[0] / 25)
@@ -123,7 +125,7 @@ class BeatmapRenderer:
         )
 
   def render(self, time: int):
-    renderObjects = self.beatmap.hitobjectsAtTime(time / self.timeMultiplier)
+    renderObjects = self.beatmap.hitobjectsAtTime(time / self.timeDivisor)
 
     self.surface.fill((0, 0, 0))
 
@@ -131,9 +133,9 @@ class BeatmapRenderer:
       pg.draw.rect(self.surface, (128, 128, 128), (self.playFieldXpadding, self.playFieldYpadding, self.playFieldRes[0], self.playFieldRes[1]), 1)
 
     for i in range(len(renderObjects) - 1, -1, -1):
-      if isinstance(renderObjects[i], Hitcircle): self.drawHitcircle(renderObjects[i], time / self.timeMultiplier)
-      elif isinstance(renderObjects[i], Slider): self.drawSlider(renderObjects[i], time / self.timeMultiplier)
-      elif isinstance(renderObjects[i], Spinner): self.drawSpinner(renderObjects[i], time / self.timeMultiplier)
+      if isinstance(renderObjects[i], Hitcircle): self.drawHitcircle(renderObjects[i], time / self.timeDivisor)
+      elif isinstance(renderObjects[i], Slider): self.drawSlider(renderObjects[i], time / self.timeDivisor)
+      elif isinstance(renderObjects[i], Spinner): self.drawSpinner(renderObjects[i], time / self.timeDivisor)
 
     if self.beatmap.mode == 'replay':
       trails = []
@@ -143,10 +145,10 @@ class BeatmapRenderer:
       if self.userData['renderSkinCursor']:
         trails.append('default')
 
-      self.drawCursor(time / self.timeMultiplier, trails)
+      self.drawCursor(time / self.timeDivisor, trails)
 
       if self.userData['renderKeyOverlay']:
-        self.drawKeyOverlay(time / self.timeMultiplier)
+        self.drawKeyOverlay(time / self.timeDivisor)
 
       if self.userData['renderModsDisplay']:
         self.drawModsDisplay()
@@ -271,7 +273,7 @@ class BeatmapRenderer:
 
   def drawJudgments(self, hitcircle: Hitcircle, hitcirclePos: List[numType]):
     ## !!! WIP !!! ##
-    
+
     if not hitcircle.judgment == -1:
       judgmentCol = (255, 255, 255)
 

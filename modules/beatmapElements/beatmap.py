@@ -9,13 +9,13 @@ from modules.beatmapElements.hitobjects import *
 # stores all the data about beatmap and replay #
 class Beatmap:
   def __init__(self, mapURL: str, skin: dict, replayURL: str = None):
-    # print('creating a new beatmap...\nreading map data...')
+    print('creating a new beatmap...\nreading map data...')
     self.map = readMap(mapURL)
 
-    # print('done.\nreading replay data again...')
+    print('done.\nreading replay data again...')
     self.replay = getReplayData(replayURL) if replayURL else None
 
-    # print('done.')
+    print('done.')
 
     self.skin = skin
     # sort out hitobjects #
@@ -33,7 +33,7 @@ class Beatmap:
         for i in range(len(obj['curvePoints'])):
           obj['curvePoints'][i]['y'] = 384 - obj['curvePoints'][i]['y']
 
-    # print('initializing all the hitobjects...')
+    print('initializing all the hitobjects...')
     for hitobject in self.map['hitobjects']:
       if hitobject['type'] == 'hitcircle':
         self.hitobjects.append(Hitcircle(hitobject, self))
@@ -44,7 +44,7 @@ class Beatmap:
       elif hitobject['type'] == 'spinner':
         self.hitobjects.append(Spinner(hitobject, self))
         self.spinners.append(self.hitobjects[-1])
-    # print('done.')
+    print('done.')
 
     if self.replay is None:
       self.mode = 'preview'
@@ -296,7 +296,7 @@ class Beatmap:
         hitobject.head.comboIndex = hitobject.comboIndex
         hitobject.head.comboColorIndex = hitobject.comboColorIndex
 
-    # print('processing skin elements...')
+    print('processing skin elements...')
 
     # the multiplier for scaling all in-game elements (such as hitobjects) #
     hitcircleSkinSize = 0
@@ -373,7 +373,7 @@ class Beatmap:
         if hitsoundKey in self.skin['hitsounds']:
           obj.hitsounds.append(self.skin['hitsounds'][hitsoundKey])
 
-    # print('done.')
+    print('done.')
 
   # get the timing points that are in effect at a certain time #
   def effectiveTimingPointAtTime(self, time: int) -> List[Dict[str, Union[int, float]]]:
