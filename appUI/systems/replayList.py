@@ -1,22 +1,21 @@
 from typing import Iterable
 import os
-import pygame as pg
 from appUI.colors import AppColors
-from modules.UI.UIElements import DynamicValue as DV, Section, Button, TextBox, System, Slider
+from modules.UI.UIElements import DynamicValue as DV, Section, Button, System, Slider
 from modules.UI.windowManager import Window
 import sharedWindow
 
 def getReplayElementY(params):
   window: Window = sharedWindow.window
-  system: System = params[0]
-  replayNum: int = params[1]
+  replaySystem: System = params[0]
+  replayPos: int = params[1]
 
-  mainHeight = system.elements['mainSection'].height
-  scrollOffset = system.elements['scrollBar'].value
-  relativePadding = 5
-  absolutePadding = window.systems['nav'].elements['topNav'].height * .5
+  scrollPos = replaySystem.elements['scrollBar'].value
+  elementHeight = replaySystem.elements['mainSection'].height * .05
+  relativePadding = elementHeight / 5
+  absolutePadding = window.systems['nav'].elements['topNav'].height + relativePadding
 
-  return ((mainHeight * .05 * (replayNum - scrollOffset)) + (replayNum * relativePadding)) + absolutePadding
+  return (replayPos - scrollPos) * (elementHeight + relativePadding) + absolutePadding
 
 def setLoadReplay(replayName: str):
   window: Window = sharedWindow.window
@@ -40,7 +39,7 @@ def scrollReplayList(system: System):
   system.update()
 
 def getReplayElements(replayNames: Iterable[str], system: System):
-  replayNum = 1
+  replayNum = 0
 
   for replayName in replayNames:
     replaySection = Button(
