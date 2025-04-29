@@ -137,13 +137,15 @@ class Beatmap:
     # calculate slider slide times (the time it takes for the slider to complete one slide) #
     for slider in self.sliders:
       timingPoints = self.effectiveTimingPointAtTime(slider.time)
+      UI_TimingPoint = timingPoints[0]
+      inheritedTimingPoint = timingPoints[1]
 
-      if not (timingPoints[1] is None):
-        SV = -100 / timingPoints[1]['inverseSliderVelocityMultiplier']
+      if inheritedTimingPoint is not None:
+        SV = -100 / inheritedTimingPoint['inverseSliderVelocityMultiplier']
       else:
         SV = 1
 
-      slider.slideTime = slider.length / (self.map['difficulty']['SliderMultiplier'] * 100 * SV) * timingPoints[0]['beatLength']
+      slider.slideTime = slider.length / (self.map['difficulty']['SliderMultiplier'] * 100 * SV) * UI_TimingPoint['beatLength']
       slider.endTime = slider.time + (slider.slideTime * slider.slides)
 
     # calculating stacks #

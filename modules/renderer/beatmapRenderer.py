@@ -378,6 +378,13 @@ class BeatmapRenderer:
       self.surface.blit(sliderFollowCircleScaled, sliderFollowCirclePos)
 
     if self.userData['sliderAnchors']:
+      anchorLineCol = (255, 255, 255)
+
+      if slider.curveType == 'B':
+        anchorLineCol = (0, 255, 0)
+      elif slider.curveType == 'P':
+        anchorLineCol = (0, 0, 255)
+
       for i in range(len(slider.anchors)):
         anchor = slider.anchors[i]
         anchorColor = (255, 0, 0) if anchor['red'] else (255, 255, 255)
@@ -392,7 +399,7 @@ class BeatmapRenderer:
         if i > 0:
           pg.draw.aaline(
             self.surface,
-            (255, 255, 255),
+            anchorLineCol,
             (
               (slider.anchors[i - 1]['x'] - scaledStackOffset) * self.playFieldResMultiplier + self.playFieldXpadding,
               (slider.anchors[i - 1]['y'] - scaledStackOffset) * self.playFieldResMultiplier + self.playFieldYpadding

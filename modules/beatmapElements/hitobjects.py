@@ -107,7 +107,7 @@ class Slider:
         self.curveType = 'L'
         self.baseBodyPath = self.computeLinearBody(self.anchors, 0.002)
       else:
-        self.baseBodyPath = self.computeCircleBody(self.anchors, 0.002)
+        self.baseBodyPath = self.computeCircleBody(self.anchors)
 
     # maybe I should reparameterize the body path before this #
     self.calcLength = 0
@@ -191,7 +191,7 @@ class Slider:
 
     return calculatedPoints
 
-  def computeCircleBody(self, anchors: list, radianInterval: numType):
+  def computeCircleBody(self, anchors: list):
     calculatedPoints = []
 
     if not len(anchors) == 3:
@@ -212,11 +212,12 @@ class Slider:
 
     bodyCircleRadius = dist(anchors[0]['x'], anchors[0]['y'], bodyCircleMidpoint['x'], bodyCircleMidpoint['y'])
 
+    radianInterval = 1 / bodyCircleRadius
+
     startAngle = math.atan2(anchors[0]['y'] - bodyCircleMidpoint['y'],anchors[0]['x'] - bodyCircleMidpoint['x'])
     middleAngle = math.atan2(anchors[1]['y'] - bodyCircleMidpoint['y'],anchors[1]['x'] - bodyCircleMidpoint['x'])
     endAngle = math.atan2(anchors[2]['y'] - bodyCircleMidpoint['y'], anchors[2]['x'] - bodyCircleMidpoint['x'])
 
-    radianInterval = abs(radianInterval)
     radianIntervalDirectional = radianInterval
     if (startAngle < endAngle < middleAngle) or (middleAngle < startAngle < endAngle) or (endAngle < middleAngle < startAngle):
       radianIntervalDirectional *= -1
