@@ -52,6 +52,7 @@ class Beatmap:
       self.mode = 'replay'
 
     # process replay array #
+    print('processing replay data...')
     if self.mode == 'replay':
       self.replayArray = self.replay['replayArray']
       self.replayArray.pop()
@@ -79,8 +80,10 @@ class Beatmap:
         )
 
       self.replayArrayByTime.sort(key = lambda x: x['time'])
+    print('done.')
 
     # get some map data #
+    print('calculating beatmap difficulty data + some required data...')
     self.HP = self.map['difficulty']['HPDrainRate']
     self.CS = self.map['difficulty']['CircleSize']
     self.AR = self.map['difficulty']['ApproachRate']
@@ -133,8 +136,10 @@ class Beatmap:
       self.requiredRPS = 5 + 2.5 * (self.OD - 5) / 5
     else:
       self.requiredRPS = 5
+    print('done.')
 
     # calculate slider slide times (the time it takes for the slider to complete one slide) #
+    print('calculating slider slide times...')
     for slider in self.sliders:
       timingPoints = self.effectiveTimingPointAtTime(slider.time)
       UI_TimingPoint = timingPoints[0]
@@ -147,9 +152,11 @@ class Beatmap:
 
       slider.slideTime = slider.length / (self.map['difficulty']['SliderMultiplier'] * 100 * SV) * UI_TimingPoint['beatLength']
       slider.endTime = slider.time + (slider.slideTime * slider.slides)
+    print('done.')
 
     # calculating stacks #
     # the algorithm is taken straight from peppy: https://gist.github.com/peppy/1167470 #
+    print('calculating stacks...')
     stackOffset = self.circleRadius / 10
 
     STACK_LENIENCE = 3
@@ -202,9 +209,11 @@ class Beatmap:
 
         if isinstance(obj, Slider):
           obj.head.stackOffset = obj.stackOffset
+    print('done.')
 
     # calculating hit judgments #
     ## !!! WIP !!! ##
+    print('calculating hit judgments [!WIP!]...')
     if self.mode == 'replay':
       k1 = k1In = k1Out = k2 = k2In = k2Out = False
       for pos in self.replayArrayByTime:
@@ -271,7 +280,9 @@ class Beatmap:
         if not isinstance(obj, Spinner) and not obj.hit:
           obj.hitTime = obj.time + self.hitWindow50
           obj.judgment = 0
+    print('done.')
 
+    print('setting combo colors...')
     # get combo colors #
     if 'Colours' in self.map:
       self.comboColors = [pgColor(*self.map['Colours'][color]) for color in self.map['Colors']]
@@ -297,6 +308,7 @@ class Beatmap:
       if isinstance(hitobject, Slider):
         hitobject.head.comboIndex = hitobject.comboIndex
         hitobject.head.comboColorIndex = hitobject.comboColorIndex
+    print('done.')
 
     print('processing skin elements...')
 

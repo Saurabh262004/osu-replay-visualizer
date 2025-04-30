@@ -288,7 +288,8 @@ class Slider:
   def renderBody(self, renderResMultiplier: numType, highQualitySliders: bool):
     highResMultiplier = 2
 
-    CR = self.beatmap.circleRadius * renderResMultiplier * highResMultiplier
+    CR = self.beatmap.circleRadius * renderResMultiplier
+    highResCR = CR * highResMultiplier
 
     translatedBodyPath = []
 
@@ -312,15 +313,15 @@ class Slider:
       } for point in self.bodyPath
     ]
 
-    self.bodySurfacePos = (minX / renderResMultiplier, minY / renderResMultiplier)
+    self.bodySurfacePos = (minX, minY)
     highResBodySurface.fill((0, 0, 0, 0))
 
     sliderOutlineAlpha = 180
     sliderOutlineSize = .15
-    totalAlphaIterations = int(CR * (1 - sliderOutlineSize))
+    totalAlphaIterations = int(highResCR * (1 - sliderOutlineSize))
 
     for point in translatedBodyPath:
-      pg.draw.circle(highResBodySurface, (255, 255, 255, sliderOutlineAlpha), (point['x'], point['y']), CR)
+      pg.draw.circle(highResBodySurface, (255, 255, 255, sliderOutlineAlpha), (point['x'], point['y']), highResCR)
 
     if highQualitySliders:
       maxAlpha = 80
