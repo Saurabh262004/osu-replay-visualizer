@@ -3,6 +3,7 @@ import math
 from copy import deepcopy
 from modules.misc.helpers import dist, mapRange
 import pygame as pg
+import sharedWindow
 
 numType = Union[int, float]
 
@@ -194,7 +195,7 @@ class Slider:
   def computeCircleBody(self, anchors: list):
     calculatedPoints = []
 
-    if not len(anchors) == 3:
+    if not len(anchors) == 3 and sharedWindow.window.customData['debug']:
       print(self.totalAnchors)
       print(anchors)
 

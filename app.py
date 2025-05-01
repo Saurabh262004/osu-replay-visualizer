@@ -56,6 +56,7 @@ window = sharedWindow.window = Window('Replay Veiwer', (800, 450), customLoopPro
 
 window.customData['firstUpdate'] = True
 window.customData['userData'] = userData
+window.customData['debug'] = False
 
 # add systems #
 addNav()

@@ -350,7 +350,8 @@ class Button:
         try:
           self.textBox.update()
         except Exception as e:
-          print(e)
+          pass
+          # print(e)
       else:
         self.section.update()
 

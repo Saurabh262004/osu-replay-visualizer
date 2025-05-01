@@ -29,7 +29,8 @@ def changeSkin():
 
     deactivateAlert()
   except Exception as e:
-    print(e)
+    if window.customData['debug']:
+      print(e)
 
 def loadDefaultSkin():
   window: Window = sharedWindow.window
@@ -43,7 +44,8 @@ def loadDefaultSkin():
 
     deactivateAlert()
   except Exception as e:
-    print(e)
+    if window.customData['debug']:
+      print(e)
 
 def loadReplay():
   replayURL: str = fileopenbox('Please select a replay file to load')

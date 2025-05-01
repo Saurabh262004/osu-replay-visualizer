@@ -49,31 +49,43 @@ def loadRendererWithReplay(customURL: str = None):
 
   # get replay data #
   try:
-    print('getting replay data...')
+    if window.customData['debug']:
+      print('getting replay data...')
+  
     replayData = getReplayData(replayURL)
-    print('done.')
+  
+    if window.customData['debug']:
+      print('done.')
   except Exception as e:
     activateAlert('Couldn\'t read osu database!')
 
-    traceback.print_exc()
-    print(e)
+    if window.customData['debug']:
+      traceback.print_exc()
+      print(e)
+
     return e
 
   # get beatmap data from the database #
   try:
-    print('getting beatmap data...')
+    if window.customData['debug']:
+      print('getting beatmap data...')
+
     beatmapData = getMapByMD5(osuDbURL, replayData['beatmapMD5Hash'])
 
     if beatmapData is None:
       activateAlert('You don\'t have the beatmap!')
       return False
 
-    print('done.')
+    if window.customData['debug']:
+      print('done.')
+
   except Exception as e:
     activateAlert('Couldn\'t get map!')
 
-    traceback.print_exc()
-    print(e)
+    if window.customData['debug']:
+      traceback.print_exc()
+      print(e)
+
     return e
 
   # create the beatmap URL and the replay surface #
@@ -93,21 +105,28 @@ def loadRendererWithReplay(customURL: str = None):
 
   # initialize the beatmap renderer #
   try:
-    print('initializing beatmap renderer...')
+    if window.customData['debug']:
+      print('initializing beatmap renderer...')
+
     window.customData['beatmapRenderer'] = BeatmapRenderer(
       beatmapURL,
       replayData,
       replaySection.background,
       resolutionMultiplier
     )
-    print('initializing beatmap renderer done.')
+
+    if window.customData['debug']:
+      print('initializing beatmap renderer done.')
+
   except Exception as e:
     replaySection.background = AppColors.background1
 
     activateAlert('Error initializing the renderer!')
 
-    traceback.print_exc()
-    print(e)
+    if window.customData['debug']:
+      traceback.print_exc()
+      print(e)
+
     return e
 
   mods = window.customData['beatmapRenderer'].beatmap.replay['mods']
@@ -117,7 +136,8 @@ def loadRendererWithReplay(customURL: str = None):
     audio = AudioSegment.from_file(audioFileURL)
     audioDurationMS = len(audio)
 
-    print(f"Audio duration: {audioDurationMS} ms")
+    if window.customData['debug']:
+      print(f"Audio duration: {audioDurationMS} ms")
 
     if 'DT' in mods or 'NC' in mods:
       loadPgMusicAtSpeed(audio, 1.5)
@@ -135,8 +155,10 @@ def loadRendererWithReplay(customURL: str = None):
   except Exception as e:
     activateAlert('Couldn\'t load the audio!')
 
-    traceback.print_exc()
-    print(e)
+    if window.customData['debug']:
+      traceback.print_exc()
+      print(e)
+
     return e
 
   if 'DT' in mods or 'NC' in mods:

@@ -4,11 +4,17 @@ from pygame import Color as pgColor, transform as pgTransform
 from modules.misc.helpers import tintImage
 from modules.readers.beatmapReader import readMap
 from modules.beatmapElements.hitobjects import *
+from modules.UI.windowManager import Window
+import sharedWindow
 
 # stores all the data about beatmap and replay #
 class Beatmap:
   def __init__(self, mapURL: str, skin: dict, replayData: Optional[dict]):
-    print('creating a new beatmap...\nreading map data...')
+    self.window: Window = sharedWindow.window
+
+    if self.window.customData['debug']:
+      print('creating a new beatmap...\nreading map data...')
+
     self.map = readMap(mapURL)
 
     self.replay = replayData
@@ -30,7 +36,9 @@ class Beatmap:
         for i in range(len(obj['curvePoints'])):
           obj['curvePoints'][i]['y'] = 384 - obj['curvePoints'][i]['y']
 
-    print('initializing all the hitobjects...')
+    if self.window.customData['debug']:
+      print('initializing all the hitobjects...')
+
     for hitobject in self.map['hitobjects']:
       if hitobject['type'] == 'hitcircle':
         self.hitobjects.append(Hitcircle(hitobject, self))
@@ -41,7 +49,9 @@ class Beatmap:
       elif hitobject['type'] == 'spinner':
         self.hitobjects.append(Spinner(hitobject, self))
         self.spinners.append(self.hitobjects[-1])
-    print('done.')
+
+    if self.window.customData['debug']:
+      print('done.')
 
     if self.replay is None:
       self.mode = 'preview'
@@ -49,7 +59,9 @@ class Beatmap:
       self.mode = 'replay'
 
     # process replay array #
-    print('processing replay data...')
+    if self.window.customData['debug']:
+      print('processing replay data...')
+
     if self.mode == 'replay':
       self.replayArray = self.replay['replayArray']
       self.replayArray.pop()
@@ -77,10 +89,14 @@ class Beatmap:
         )
 
       self.replayArrayByTime.sort(key = lambda x: x['time'])
-    print('done.')
+
+    if self.window.customData['debug']:
+      print('done.')
 
     # get some map data #
-    print('calculating beatmap difficulty data + some required data...')
+    if self.window.customData['debug']:
+      print('calculating beatmap difficulty data + some required data...')
+
     self.HP = self.map['difficulty']['HPDrainRate']
     self.CS = self.map['difficulty']['CircleSize']
     self.AR = self.map['difficulty']['ApproachRate']
@@ -133,10 +149,14 @@ class Beatmap:
       self.requiredRPS = 5 + 2.5 * (self.OD - 5) / 5
     else:
       self.requiredRPS = 5
-    print('done.')
+
+    if self.window.customData['debug']:
+      print('done.')
 
     # calculate slider slide times (the time it takes for the slider to complete one slide) #
-    print('calculating slider slide times...')
+    if self.window.customData['debug']:
+      print('calculating slider slide times...')
+
     for slider in self.sliders:
       timingPoints = self.effectiveTimingPointAtTime(slider.time)
       UI_TimingPoint = timingPoints[0]
@@ -154,11 +174,16 @@ class Beatmap:
 
       slider.slideTime = slider.length / (self.map['difficulty']['SliderMultiplier'] * 100 * SV) * UI_TimingPoint['beatLength']
       slider.endTime = slider.time + (slider.slideTime * slider.slides)
-    print('done.')
+
+    if self.window.customData['debug']:
+      print('done.')
 
     # calculating stacks #
     # the algorithm is taken straight from peppy: https://gist.github.com/peppy/1167470 #
-    print('calculating stacks...')
+
+    if self.window.customData['debug']:
+      print('calculating stacks...')
+  
     stackOffset = self.circleRadius / 10
 
     STACK_LENIENCE = 3
@@ -211,11 +236,16 @@ class Beatmap:
 
         if isinstance(obj, Slider):
           obj.head.stackOffset = obj.stackOffset
-    print('done.')
+
+    if self.window.customData['debug']:
+      print('done.')
 
     # calculating hit judgments #
     ## !!! WIP !!! ##
-    print('calculating hit judgments [!WIP!]...')
+
+    if self.window.customData['debug']:
+      print('calculating hit judgments [!WIP!]...')
+
     if self.mode == 'replay':
       k1 = k1In = k1Out = k2 = k2In = k2Out = False
       for pos in self.replayArrayByTime:
@@ -282,9 +312,12 @@ class Beatmap:
         if not isinstance(obj, Spinner) and not obj.hit:
           obj.hitTime = obj.time + self.hitWindow50
           obj.judgment = 0
-    print('done.')
 
-    print('setting combo colors...')
+    if self.window.customData['debug']:
+      print('done.')
+
+      print('setting combo colors...')
+ 
     # get combo colors #
     if 'Colours' in self.map:
       self.comboColors = [pgColor(*self.map['Colours'][color]) for color in self.map['Colors']]
@@ -310,9 +343,11 @@ class Beatmap:
       if isinstance(hitobject, Slider):
         hitobject.head.comboIndex = hitobject.comboIndex
         hitobject.head.comboColorIndex = hitobject.comboColorIndex
-    print('done.')
 
-    print('processing skin elements...')
+    if self.window.customData['debug']:
+      print('done.')
+
+      print('processing skin elements...')
 
     # the multiplier for scaling all in-game elements (such as hitobjects) #
     hitcircleSkinSize = 0
@@ -389,7 +424,8 @@ class Beatmap:
         if hitsoundKey in self.skin['hitsounds']:
           obj.hitsounds.append(self.skin['hitsounds'][hitsoundKey])
 
-    print('done.')
+    if self.window.customData['debug']:
+      print('done.')
 
   # get the timing points that are in effect at a certain time #
   def effectiveTimingPointAtTime(self, time: int) -> List[Dict[str, Union[int, float]]]:

@@ -51,7 +51,8 @@ def windowCustomUpdate():
   if window.customData['firstUpdate']:
     activateAlert('No replay Loaded')
 
-    print('first update')
+    if window.customData['debug']:
+      print('first update')
 
     window.customData['firstUpdate'] = False
 
@@ -85,8 +86,6 @@ def windowCustomUpdate():
 
   if not window.systems['replayList'].locked:
     scrollReplayList(window.systems['replayList'])
-
-  # print('update')
 
 def windowCustomEvents(event: pg.event.Event):
   window: Window = sharedWindow.window

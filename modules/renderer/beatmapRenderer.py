@@ -2,6 +2,7 @@ from typing import Union, Optional, List
 from math import atan2, degrees, ceil
 import pygame as pg
 from modules.misc.gameLists import MODS, MODS_ABRV
+from modules.UI.windowManager import Window
 import sharedWindow
 from modules.misc.helpers import mapRange, find
 from modules.beatmapElements.hitobjects import Hitcircle, Slider, Spinner
@@ -11,14 +12,21 @@ numType = Union[int, float]
 
 class BeatmapRenderer:
   def __init__(self, beatmapURL: dict, replayData: Optional[dict], surface: pg.Surface, playFieldResMultiplier: numType):
-    self.window = sharedWindow.window
+    self.window: Window = sharedWindow.window
     self.userData = self.window.customData['userData']
+    self.debug = self.window.customData['debug']
 
-    print('creating a new renderer...')
+    if self.debug:
+      print('creating a new renderer...')
+
     if replayData is not None:
-      print('initializing beatmap with replay...')
+      if self.debug:
+        print('initializing beatmap with replay...')
+
       self.beatmap = Beatmap(beatmapURL, self.window.customData['skin'], replayData)
-      print('initializing beatmap done.')
+
+      if self.debug:
+        print('initializing beatmap done.')
     else:
       self.beatmap = Beatmap(beatmapURL, self.window.customData['skin'])
 
@@ -78,11 +86,15 @@ class BeatmapRenderer:
     self.beatmap.transformCursorData(self.playFieldResMultiplier, self.playFieldXpadding, self.playFieldYpadding)
 
     # transform and render slider bodies to new resolution
-    print('creating slider bodies...')
+    if self.debug:
+      print('creating slider bodies...')
+
     for slider in self.beatmap.sliders:
       slider.transformBodyPath((self.playFieldResMultiplier, self.playFieldResMultiplier), (self.playFieldXpadding, self.playFieldYpadding))
       slider.renderBody(self.playFieldResMultiplier, self.userData['highQualitySliders'])
-    print('done.')
+
+    if self.debug:
+      print('done.')
 
     # setup the key overlay
     keySize = int(self.playFieldRes[0] / 25)
