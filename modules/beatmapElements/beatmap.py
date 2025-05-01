@@ -3,19 +3,15 @@ from copy import deepcopy
 from pygame import Color as pgColor, transform as pgTransform
 from modules.misc.helpers import tintImage
 from modules.readers.beatmapReader import readMap
-from modules.readers.replayReader import getReplayData
 from modules.beatmapElements.hitobjects import *
 
 # stores all the data about beatmap and replay #
 class Beatmap:
-  def __init__(self, mapURL: str, skin: dict, replayURL: str = None):
+  def __init__(self, mapURL: str, skin: dict, replayData: Optional[dict]):
     print('creating a new beatmap...\nreading map data...')
     self.map = readMap(mapURL)
 
-    print('done.\nreading replay data again...')
-    self.replay = getReplayData(replayURL) if replayURL else None
-
-    print('done.')
+    self.replay = replayData
 
     self.skin = skin
     # sort out hitobjects #

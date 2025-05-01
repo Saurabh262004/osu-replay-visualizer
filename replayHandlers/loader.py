@@ -96,7 +96,7 @@ def loadRendererWithReplay(customURL: str = None):
     print('initializing beatmap renderer...')
     window.customData['beatmapRenderer'] = BeatmapRenderer(
       beatmapURL,
-      replayURL,
+      replayData,
       replaySection.background,
       resolutionMultiplier
     )

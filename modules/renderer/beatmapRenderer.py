@@ -10,14 +10,14 @@ from modules.beatmapElements.beatmap import Beatmap
 numType = Union[int, float]
 
 class BeatmapRenderer:
-  def __init__(self, beatmapURL: dict, replayURL: Optional[str], surface: pg.Surface, playFieldResMultiplier: numType):
+  def __init__(self, beatmapURL: dict, replayData: Optional[dict], surface: pg.Surface, playFieldResMultiplier: numType):
     self.window = sharedWindow.window
     self.userData = self.window.customData['userData']
 
     print('creating a new renderer...')
-    if replayURL is not None:
+    if replayData is not None:
       print('initializing beatmap with replay...')
-      self.beatmap = Beatmap(beatmapURL, self.window.customData['skin'], replayURL)
+      self.beatmap = Beatmap(beatmapURL, self.window.customData['skin'], replayData)
       print('initializing beatmap done.')
     else:
       self.beatmap = Beatmap(beatmapURL, self.window.customData['skin'])
