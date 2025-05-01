@@ -238,7 +238,7 @@ def addSettings():
 
   buttonsSection = Section(
     buttonsSectionDim,
-    AppColors.listElement1Heighlight1
+    AppColors.listElement1
   )
 
   system.addElement(buttonsSection, 'buttonsSection')

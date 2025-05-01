@@ -10,7 +10,6 @@ import sharedWindow
 def setLoggedSystemSwitch(systemID: str):
   sharedWindow.window.loggedSystemSwitch = systemID
 
-
 def addNavButton(system: System, iconName: pg.Surface, callback: callable, callbackParams: Any, pos: int, buttonID: str):
   buttonDim = {
     'x': DV('classPer', system.elements['topNav'], classAttr='height', percent=100*pos),

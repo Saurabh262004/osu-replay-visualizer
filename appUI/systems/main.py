@@ -129,7 +129,7 @@ def addMain():
     Section(audioControlDim, AppColors.darkGray, borderRadius=2),
     Section(audioControlDragDim, AppColors.cream, 2),
     (1, 0),
-    -0.1,
+    -0.05,
     AppColors.listElement1,
     {
       'callable': setUserVolume,
