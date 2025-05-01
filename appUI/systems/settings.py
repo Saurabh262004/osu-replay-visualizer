@@ -1,8 +1,9 @@
 import os
+from typing import Union, List
 from easygui import diropenbox, fileopenbox
 from modules.readers.importSkin import importSkin
 from appUI.colors import AppColors
-from modules.UI.UIElements import DynamicValue as DV, Section, System, TextBox, Toggle, Button
+from modules.UI.UIElements import DynamicValue as DV, Section, System, TextBox, Toggle, Button, Slider
 from modules.UI.windowManager import Window
 from replayHandlers.loader import loadRendererWithReplay
 from appManagers.manageAlerts import deactivateAlert
@@ -52,6 +53,28 @@ def loadReplay():
   else:
     return
 
+numType = Union[int, float]
+def getOptionYpos(optionNumber: numType) -> numType:
+  window: Window = sharedWindow.window
+  scrollOffset: numType = 0
+
+  if 'settings' in window.systems and 'optionScroller' in window.systems['settings'].elements:
+    scrollOffset = window.systems['settings'].elements['optionScroller'].value
+
+  actualPosition = optionNumber - scrollOffset
+  toggleHeight = (window.screenHeight / 100) * 3
+  relativePadding = toggleHeight
+  absolutePadding = window.systems['nav'].elements['topNav'].height + relativePadding
+
+  return (actualPosition * (toggleHeight + relativePadding)) + absolutePadding
+
+def getScrollerHeight():
+  window: Window = sharedWindow.window
+  navHeight = window.systems['nav'].elements['topNav'].height
+  bottomPadding = window.screenHeight / 10
+  
+  return (window.screenHeight - navHeight) - bottomPadding
+
 def addOption(text: str, pos: int, toggleID: str, system: System):
   window: Window = sharedWindow.window
   callbackParams = [window.customData['userData'], toggleID]
@@ -63,7 +86,7 @@ def addOption(text: str, pos: int, toggleID: str, system: System):
   optionToggleSection = Section(
     {
       'x': DV('classPer', window, classAttr='screenWidth', percent=2),
-      'y': DV('customCallable', lambda params: ((params[1] * params[2].value)) + params[0].height + 5, (window.systems['nav'].elements['topNav'], pos, optionToggleSectionWidth)),
+      'y': DV('customCallable', getOptionYpos, pos),
       'width': optionToggleSectionWidth,
       'height': DV('classPer', optionToggleSectionWidth, classAttr='value', percent=50)
     },
@@ -170,8 +193,53 @@ def addSettings():
     }
   ]
 
+  optionScrollerSectionDim = {
+    'x': DV('customCallable', lambda mainSection: mainSection.width - 8, system.elements['mainSection']),
+    'y': DV('classNum', window.systems['nav'].elements['topNav'], classAttr='height'),
+    'width': DV('number', 8),
+    'height': DV('customCallable', getScrollerHeight)
+  }
+
+  optionScrollerDragDim = {
+    'x': DV('number', 0),
+    'y': DV('number', 0),
+    'width': DV('number', 8),
+    'height': DV('number', 16)
+  }
+
+  optionScroller = Slider(
+    'vertical',
+    Section(optionScrollerSectionDim, AppColors.listElement1),
+    Section(optionScrollerDragDim, AppColors.primary1),
+    (0, len(togglesInfo)-1),
+    -2,
+    AppColors.listElement1,
+    {
+      'callable': system.update,
+      'params': None,
+      'sendValue': False
+    },
+    False
+  )
+
+  system.addElement(optionScroller, 'optionScroller')
+
   for i, toggleInfo in enumerate(togglesInfo):
-    addOption(toggleInfo['text'], i+.5, toggleInfo['id'], system)
+    addOption(toggleInfo['text'], i, toggleInfo['id'], system)
+
+  buttonsSectionDim = {
+    'x': DV('number', 0),
+    'y': DV('classPer', window, classAttr='screenHeight', percent=90),
+    'width': DV('classNum', window, classAttr='screenWidth'),
+    'height': DV('classPer', window, classAttr='screenHeight', percent=10)
+  }
+
+  buttonsSection = Section(
+    buttonsSectionDim,
+    AppColors.listElement1Heighlight1
+  )
+
+  system.addElement(buttonsSection, 'buttonsSection')
 
   LSK_HEIGHT = DV('classPer', window, classAttr='screenHeight', percent=5)
   LSK_WIDTH = DV('classPer', LSK_HEIGHT, classAttr='value', percent=320)

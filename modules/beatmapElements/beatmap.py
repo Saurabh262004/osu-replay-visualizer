@@ -24,6 +24,7 @@ class Beatmap:
     self.sliders: List[Slider] = []
     self.spinners: List[Spinner] = []
 
+    # mirroring objects when HR is enabled #
     if 'HR' in self.replay['mods']:
       for obj in self.map['hitobjects']:
         obj['y'] = 384 - obj['y']
@@ -144,6 +145,11 @@ class Beatmap:
       timingPoints = self.effectiveTimingPointAtTime(slider.time)
       UI_TimingPoint = timingPoints[0]
       inheritedTimingPoint = timingPoints[1]
+
+      # apparently inherited timing points don't have any effect on hitobjects if an Uninherited timing point is after the inherited timing point
+      if (UI_TimingPoint is not None) and (inheritedTimingPoint is not None):
+        if UI_TimingPoint['time'] > inheritedTimingPoint['time']:
+          inheritedTimingPoint = None
 
       if inheritedTimingPoint is not None:
         SV = -100 / inheritedTimingPoint['inverseSliderVelocityMultiplier']
