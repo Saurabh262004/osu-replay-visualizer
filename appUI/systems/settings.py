@@ -192,6 +192,10 @@ def addSettings():
     {
       'text': 'Only play normal hitsounds',
       'id': 'normalHitsounds'
+    },
+    {
+      'text': 'Disable hidden mod',
+      'id': 'disableHidden'
     }
   ]
 

@@ -31,7 +31,8 @@ class BeatmapRenderer:
       self.beatmap = Beatmap(beatmapURL, self.window.customData['skin'])
 
     self.maxImgAlpha = 255
-    self.keyHighlight = pg.Color(30, 255, 180)
+    self.keyHighlight1 = pg.Color(190, 145, 214)
+    self.keyHighlight2 = pg.Color(76, 228, 101)
     self.keyOff = pg.Color(30, 30, 30)
 
     self.supportedModsDisplay = [
@@ -176,7 +177,7 @@ class BeatmapRenderer:
     drawWindowStart = hitcircle.time - self.beatmap.preempt
     fadeWindowEnd = drawWindowStart + self.beatmap.fadeIn
 
-    if not 'HD' in self.beatmap.replay['mods']:
+    if (not 'HD' in self.beatmap.replay['mods']) or self.userData['disableHidden']:
       if hitcircle.time >= time:
         hitcircleMultiplier = 1
         hitobjectAlpha = mapRange(time, drawWindowStart, fadeWindowEnd, 0, self.maxImgAlpha)
@@ -256,7 +257,7 @@ class BeatmapRenderer:
       for i in range(comboLength):
         self.surface.blit(comboImagesScaled[i], (comboPosesX[i], comboPosY))
 
-    if not 'HD' in self.beatmap.replay['mods']:
+    if (not 'HD' in self.beatmap.replay['mods']) or self.userData['disableHidden']:
       approachcircleImage = self.beatmap.approachcircleCombos[hitcircle.comboColorIndex]
 
       if hitcircle.time >= time:
@@ -312,7 +313,7 @@ class BeatmapRenderer:
       else:
         sliderAlpha = self.maxImgAlpha
 
-    if 'HD' in self.beatmap.replay['mods']:
+    if ('HD' in self.beatmap.replay['mods']) and (not self.userData['disableHidden']):
       if time < fadeWindowEnd:
         sliderAlphaHD = mapRange(time, drawWindowStart, fadeWindowEnd, 0, self.maxImgAlpha)
       elif time < slider.time:
@@ -330,7 +331,7 @@ class BeatmapRenderer:
     elif sliderAlpha < 0:
       sliderAlpha = 0
 
-    if 'HD' in self.beatmap.replay['mods']:
+    if ('HD' in self.beatmap.replay['mods']) and (not self.userData['disableHidden']):
       slider.bodySurface.set_alpha(sliderAlphaHD)
     else:
       slider.bodySurface.set_alpha(sliderAlpha)
@@ -548,12 +549,12 @@ class BeatmapRenderer:
     cursorNow = self.beatmap.cursorTrailAtTime(time, 1)[0]
 
     if 'k1' in cursorNow['keys'] or 'm1' in cursorNow['keys']:
-      pg.draw.rect(self.surface, self.keyHighlight, self.k1Rect, border_radius=self.keyBorderRadius)
+      pg.draw.rect(self.surface, self.keyHighlight1, self.k1Rect, border_radius=self.keyBorderRadius)
     else:
       pg.draw.rect(self.surface, self.keyOff, self.k1Rect, border_radius=self.keyBorderRadius)
 
     if 'k2' in cursorNow['keys'] or 'm2' in cursorNow['keys']:
-      pg.draw.rect(self.surface, self.keyHighlight, self.k2Rect, border_radius=self.keyBorderRadius)
+      pg.draw.rect(self.surface, self.keyHighlight2, self.k2Rect, border_radius=self.keyBorderRadius)
     else:
       pg.draw.rect(self.surface, self.keyOff, self.k2Rect, border_radius=self.keyBorderRadius)
 

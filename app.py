@@ -30,6 +30,7 @@ except:
     'renderKeyOverlay': True,
     'renderModsDisplay': True,
     'normalHitsounds': False,
+    'disableHidden': False,
     'URLs': {
       'osuFolder': ''
     }
