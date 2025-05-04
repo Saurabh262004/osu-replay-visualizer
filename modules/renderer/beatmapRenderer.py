@@ -35,6 +35,10 @@ class BeatmapRenderer:
     self.keyHighlight2 = pg.Color(76, 228, 101)
     self.keyOff = pg.Color(30, 30, 30)
 
+    # self.customTrailIntervalCol = pg.Color(0, 128, 200)
+    self.customTrailIntervalCol = pg.Color(249, 243, 118)
+    self.customCursorCol = pg.Color(199, 0, 57)
+
     self.supportedModsDisplay = [
       'AP',
       'CN',
@@ -96,6 +100,9 @@ class BeatmapRenderer:
 
     if self.debug:
       print('done.')
+
+    self.customCursorRadius = max(int((self.beatmap.circleRadius * self.playFieldResMultiplier) / 8), 3)
+    self.customCursorTrailRadius = int(self.customCursorRadius / 3)
 
     # setup the key overlay
     keySize = int(self.playFieldRes[0] / 25)
@@ -538,12 +545,16 @@ class BeatmapRenderer:
         cursorTrailPos1 = (cursorTrail[i]['x'] , cursorTrail[i]['y'])
         cursorTrailPos2 = (cursorTrail[i + 1]['x'], cursorTrail[i + 1]['y'])
 
+        # line to connect cursor positions
         pg.draw.line(self.surface, (255, 255, 255), cursorTrailPos1, cursorTrailPos2, 1)
-        pg.draw.circle(self.surface, (0, 128, 200), cursorTrailPos1, 2)
+        
+        # points on cursor position intervals
+        pg.draw.circle(self.surface, self.customTrailIntervalCol, cursorTrailPos1, self.customCursorTrailRadius)
 
       lastTrailPos = (cursorTrail[-1]['x'] , cursorTrail[-1]['y'])
 
-      pg.draw.circle(self.surface, (255, 0, 0), lastTrailPos, 4)
+      # current cursor position
+      pg.draw.circle(self.surface, self.customCursorCol, lastTrailPos, self.customCursorRadius)
   
   def drawKeyOverlay(self, time: int):
     cursorNow = self.beatmap.cursorTrailAtTime(time, 1)[0]
