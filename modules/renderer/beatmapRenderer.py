@@ -35,7 +35,6 @@ class BeatmapRenderer:
     self.keyHighlight2 = pg.Color(76, 228, 101)
     self.keyOff = pg.Color(30, 30, 30)
 
-    # self.customTrailIntervalCol = pg.Color(0, 128, 200)
     self.customTrailIntervalCol = pg.Color(249, 243, 118)
     self.customCursorCol = pg.Color(199, 0, 57)
 
@@ -432,10 +431,11 @@ class BeatmapRenderer:
       currentTimingPoints = self.beatmap.effectiveTimingPointAtTime(time)
 
       maxArrowSizeMult = .5
+
       if len(currentTimingPoints) > 0 and (currentTimingPoints[0] is not None):
         currentUITimingPoint = currentTimingPoints[0]
 
-        timeSinceUIPoint = (time - currentUITimingPoint['time'])
+        timeSinceUIPoint = abs(time - currentUITimingPoint['time'])
 
         beatLength = currentUITimingPoint['beatLength']
 

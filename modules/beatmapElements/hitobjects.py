@@ -51,10 +51,12 @@ class Slider:
     self.judgment = -1
     self.stackCount = 0
     self.stackOffset = 0
+    self.totalSlideTime = 0
     self.endTime = 0
     self.triggeredHitSound = [False for _ in range(self.slides + 1)]
     self.hitsounds = []
     self.sampleSet = 'Normal'
+    self.ticks = []
 
     if not hitTime is None:
       self.hitTime = hitTime

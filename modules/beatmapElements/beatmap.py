@@ -125,7 +125,6 @@ class Beatmap:
       self.HP = newHP if newHP <= 10 else 10
 
     # calculate some needed values #
-    # self.requiredRPM = 60000 / (self.mapDict['timingPoints'][0]['bpm'] * self.sliderMultiplier)
     self.circleRadius = 54.4 - 4.48 * self.CS
 
     if self.AR < 5:
@@ -142,6 +141,10 @@ class Beatmap:
     self.hitWindow100 = 140 - 8 * self.OD
     self.hitWindow50 = 200 - 10 * self.OD
     self.missWindow = 400
+    
+    self.hitWindow300Rounded = round(self.hitWindow300)
+    self.hitWindow100Rounded = round(self.hitWindow100)
+    self.hitWindow50Rounded = round(self.hitWindow50)
 
     if self.OD < 5:
       self.requiredRPS = 5 - 2 * (5 - self.OD) / 5
@@ -153,7 +156,7 @@ class Beatmap:
     if self.window.customData['debug']:
       print('done.')
 
-    # calculate slider slide times (the time it takes for the slider to complete one slide) #
+    # calculate slider slide times #
     if self.window.customData['debug']:
       print('calculating slider slide times...')
 
@@ -162,7 +165,6 @@ class Beatmap:
       UI_TimingPoint = timingPoints[0]
       inheritedTimingPoint = timingPoints[1]
 
-      # apparently inherited timing points don't have any effect on hitobjects if an Uninherited timing point is after the inherited timing point
       if (UI_TimingPoint is not None) and (inheritedTimingPoint is not None):
         if UI_TimingPoint['time'] > inheritedTimingPoint['time']:
           inheritedTimingPoint = None
@@ -173,10 +175,25 @@ class Beatmap:
         SV = 1
 
       slider.slideTime = slider.length / (self.map['difficulty']['SliderMultiplier'] * 100 * SV) * UI_TimingPoint['beatLength']
-      slider.endTime = slider.time + (slider.slideTime * slider.slides)
+      slider.totalSlideTime = slider.slideTime * slider.slides
+      slider.endTime = slider.time + slider.totalSlideTime
 
     if self.window.customData['debug']:
       print('done.')
+
+    # calculate slider ticks #
+    for slider in self.sliders:
+      beatLength = self.effectiveTimingPointAtTime(slider.time)[0]['beatLength']
+      tickInterval = beatLength / self.sliderTickRate
+
+      tick = slider.time + tickInterval
+      while tick < slider.endTime:
+        slider.ticks.append(tick)
+
+        if self.window.customData['debug']:
+          print(tick)
+
+        tick += tickInterval
 
     # calculating stacks #
     # the algorithm is taken straight from peppy: https://gist.github.com/peppy/1167470 #
@@ -249,64 +266,70 @@ class Beatmap:
     if self.mode == 'replay':
       k1 = k1In = k1Out = k2 = k2In = k2Out = False
       for pos in self.replayArrayByTime:
-        if 'k1' in pos['keys'] or 'm1' in pos['keys']:
-          if not k1:
-            k1 = True
-            k1In = True
-          else:
-            k1In = False
-        elif k1:
-          k1 = False
-          k1Out = True
-        else:
-          k1Out = False
+        # setup key change states
+        k1Pressed = 'k1' in pos['keys'] or 'm1' in pos['keys']
 
-        if 'k2' in pos['keys'] or 'm2' in pos['keys']:
-          if not k2:
-            k2 = True
-            k2In = True
-          else:
-            k2In = False
-        elif k2:
-          k2 = False
-          k2Out = True
+        if k1Pressed:
+          k1In = not k1
+          k1Out = False
+          k1 = True
         else:
+          k1Out = k1
+          k1In = False
+          k1 = False
+
+        k2Pressed = 'k2' in pos['keys'] or 'm2' in pos['keys']
+        if k2Pressed:
+          k2In = not k2
           k2Out = False
+          k2 = True
+        else:
+          k2Out = k2
+          k2In = False
+          k2 = False
 
         time = pos['time']
         hitobjects = self.hitobjectsAtTime(time)
-        for i in range(len(hitobjects)):
-          obj = hitobjects[i]
+        activeObject = None
 
-          if isinstance(obj, Spinner):
-            continue
+        requiredCalcs = 1
 
-          insideUpperHitwindow = (time < (obj.time + self.hitWindow50))
-          insideLowerHitwindow = (time > (obj.time - self.missWindow))
-          inHitArea = dist(pos['x'], pos['y'], obj.x, obj.y) <= self.circleRadius
+        if k1In and k2In:
+          requiredCalcs = 2
 
-          if obj.hit or not insideUpperHitwindow or not insideLowerHitwindow:
-            continue
-          elif inHitArea and (k1In or k2In):
-            hitError = abs(obj.time - time)
-            hit = False
+        for _ in range(requiredCalcs):
+          # get the current active hitcircle
+          for hitobject in hitobjects:
+            if isinstance(hitobject, Spinner) or hitobject.hit or (time > (hitobject.time + self.hitWindow50)):
+              continue
 
-            if hitError < self.hitWindow300:
-              obj.judgment = 300
-              hit = obj.hit = True
-            elif hitError < self.hitWindow100:
-              obj.judgment = 100
-              hit = obj.hit = True
-            elif hitError < self.hitWindow50:
-              obj.judgment = 50
-              hit = obj.hit = True
-            elif hitError < self.missWindow:
-              obj.judgment = 0
-              hit = obj.hit = True
+            activeObject = hitobject
 
-            if hit:
-              obj.hitTime = time
-              break
+            break
+
+          if activeObject == None: continue
+
+          inHitArea = dist(pos['x'], pos['y'], activeObject.x, activeObject.y) <= self.circleRadius
+
+          # check judgment if the avtive object has been hit
+          if inHitArea and (k1In or k2In):
+            hitError = abs(activeObject.time - time)
+
+            judgment = 'lock'
+
+            if hitError < self.hitWindow300Rounded:
+              judgment = 300
+            elif hitError < self.hitWindow100Rounded:
+              judgment = 100
+            elif hitError < self.hitWindow50Rounded:
+              judgment = 50
+            elif hitError >= self.missWindow:
+              judgment = 0
+            else: continue
+
+            activeObject.judgment = judgment
+            activeObject.hitTime = time
+            activeObject.hit = True
 
       for obj in self.hitobjects:
         if not isinstance(obj, Spinner) and not obj.hit:
