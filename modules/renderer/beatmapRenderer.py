@@ -100,6 +100,15 @@ class BeatmapRenderer:
     if self.debug:
       print('done.')
 
+    # calculating the position of slider ticks in the point data array of slider body path
+    for slider in self.beatmap.sliders:
+      tickSlides = []
+      for tick in slider.ticks:
+        tickSlides.append(mapRange(tick, slider.time, slider.endTime, 1, slider.slides + 1))
+
+      for tickSlide in tickSlides:
+        slider.tickPoses.append(int(abs((tickSlide % 2) - 1) * (len(slider.bodyPath) - 1)))
+
     self.customCursorRadius = max(int((self.beatmap.circleRadius * self.playFieldResMultiplier) / 8), 3)
     self.customCursorTrailRadius = int(self.customCursorRadius / 3)
 
@@ -337,6 +346,13 @@ class BeatmapRenderer:
     elif sliderAlpha < 0:
       sliderAlpha = 0
 
+    for i in range(len(slider.ticks)):
+      tick = slider.ticks[i]
+      tickPos = slider.tickPoses[i]
+
+      if tick > time:
+        pg.draw.circle(self.surface, (180, 180, 180, sliderAlpha), (slider.bodyPath[tickPos]['x'], slider.bodyPath[tickPos]['y']), 2)
+
     if ('HD' in self.beatmap.replay['mods']) and (not self.userData['disableHidden']):
       slider.bodySurface.set_alpha(sliderAlphaHD)
     else:
@@ -571,7 +587,4 @@ class BeatmapRenderer:
 
   def drawModsDisplay(self):
     for mod in self.modDisplays:
-      modPos = mod['pos']
-      modImg = mod['img']
-
-      self.surface.blit(modImg, modPos)
+      self.surface.blit(mod['img'], mod['pos'])

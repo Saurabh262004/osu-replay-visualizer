@@ -57,6 +57,7 @@ class Slider:
     self.hitsounds = []
     self.sampleSet = 'Normal'
     self.ticks = []
+    self.tickPoses = []
 
     if not hitTime is None:
       self.hitTime = hitTime

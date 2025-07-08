@@ -190,9 +190,6 @@ class Beatmap:
       while tick < slider.endTime:
         slider.ticks.append(tick)
 
-        if self.window.customData['debug']:
-          print(tick)
-
         tick += tickInterval
 
     # calculating stacks #

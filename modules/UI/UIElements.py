@@ -259,7 +259,7 @@ class TextBox:
 
     self.section.update()
 
-    self.fontSize = max(10, int(self.section.height * .6))
+    self.fontSize = int(self.section.height * .6)
     self.font = pg.font.SysFont(self.fontPath, self.fontSize)
 
     self.textSurface = self.font.render(self.text, True, self.textColor)
