@@ -2,10 +2,10 @@ from typing import Union
 import pygame as pg
 from modules.misc.helpers import tintImage
 from appUI.colors import AppColors
-from modules.UI.UIElements import DynamicValue as DV, Section, TextBox, Slider, System
+from modules.UI.UIElements import DynamicValue as DV, Section, TextBox, Button, Slider, System
 from modules.UI.windowManager import Window
 import sharedWindow
-from replayHandlers.playbackHandler import timelineCallback
+from replayHandlers.playbackHandler import timelineCallback, pauseToggle
 
 def toggleActivation(system: System):
   system.elements['replayListButton'].active = not system.elements['replayListButton'].active
@@ -88,6 +88,32 @@ def addMain():
   )
 
   system.addElement(replayTimeline, 'replayTimeline')
+
+  playbackButtonWidth = DV('classPer', window, classAttr='screenWidth', percent=4)
+  playbackButtonHeight = DV('classNum', playbackButtonWidth, classAttr='value')
+
+  # pause / play button #
+  pausePlayButtonDim = {
+    'x': DV('customCallable', lambda params: params[0].x - (params[1].value * 1.5), (replayTimeline.section, playbackButtonWidth)),
+    'y': DV('customCallable', lambda params: (params[0].y + (params[0].height / 2)) - (params[1].value / 2), (replayTimeline.section, playbackButtonHeight)),
+    'width': playbackButtonWidth,
+    'height': playbackButtonHeight
+  }
+
+  playButtonIcon = pg.image.load('assets/UI/play-square.png')
+  tintImage(playButtonIcon, AppColors.cream)
+
+  playbackButtonSection = Section(
+    pausePlayButtonDim,
+    playButtonIcon
+  )
+
+  playbackButton = Button(
+    playbackButtonSection,
+    onClick=pauseToggle
+  )
+
+  system.addElement(playbackButton, 'playbackButton')
 
   # timeStamp TextBox #
   timeStampSectionDim = {

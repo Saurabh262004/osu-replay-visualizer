@@ -1,10 +1,18 @@
 from typing import Union, Optional
 import pygame as pg
 import sharedWindow
+from appUI.colors import AppColors
+from modules.misc.helpers import tintImage
 from modules.beatmapElements.beatmap import Beatmap
 from modules.renderer.beatmapRenderer import BeatmapRenderer
 from modules.UI.windowManager import Window
 from modules.beatmapElements.hitobjects import Hitcircle, Slider, Spinner
+
+pauseButtonIcon = pg.image.load('assets/UI/pause-square.png')
+tintImage(pauseButtonIcon, AppColors.cream)
+
+playButtonIcon = pg.image.load('assets/UI/play-square.png')
+tintImage(playButtonIcon, AppColors.cream)
 
 def updateTimeStamp(time: int):
   window: Window = sharedWindow.window
@@ -122,6 +130,8 @@ def timelineCallback(value: Union[int, float]):
   pauseReplay(True)
 
 def pauseReplay(unpauseAfter: Optional[bool] = False):
+  global playButtonIcon
+
   window: Window = sharedWindow.window
 
   if (not 'replayLoaded' in window.customData or not window.customData['replayLoaded']) or window.customData['replayPaused']:
@@ -133,10 +143,15 @@ def pauseReplay(unpauseAfter: Optional[bool] = False):
 
   pg.mixer.music.pause()
 
+  window.systems['main'].elements['playbackButton'].section.background = playButtonIcon
+  window.systems['main'].elements['playbackButton'].section.update()
+
   if unpauseAfter:
     unpauseReplay()
 
 def unpauseReplay():
+  global pauseButtonIcon
+
   window: Window = sharedWindow.window
 
   if (not 'replayLoaded' in window.customData or not window.customData['replayLoaded']) or not window.customData['replayPaused']:
@@ -159,6 +174,9 @@ def unpauseReplay():
   window.systems['main'].elements['replayTimeline'].update()
 
   updateHitobjectsHitsoundTrigger(newTime)
+  
+  window.systems['main'].elements['playbackButton'].section.background = pauseButtonIcon
+  window.systems['main'].elements['playbackButton'].section.update()
 
   pg.mixer.music.play(start=(newTime/1000))
 

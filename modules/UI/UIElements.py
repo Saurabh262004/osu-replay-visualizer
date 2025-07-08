@@ -328,7 +328,9 @@ class Button:
       return True
     elif event.type == pg.MOUSEBUTTONUP and self.pressed:
       self.pressed = False
-      self.section.background = self.defaultBackground
+
+      if self.pressedBackground:
+        self.section.background = self.defaultBackground
 
       if self.onClick and self.onClickActuation == 'buttonUp':
         if self.onClickParams is None:
