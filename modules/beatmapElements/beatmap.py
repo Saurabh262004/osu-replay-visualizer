@@ -186,11 +186,18 @@ class Beatmap:
       beatLength = self.effectiveTimingPointAtTime(slider.time)[0]['beatLength']
       tickInterval = beatLength / self.sliderTickRate
 
+      singleSlideTicks = []
+
       tick = slider.time + tickInterval
-      while tick < slider.endTime:
-        slider.ticks.append(tick)
+      while tick < (slider.time + slider.slideTime):
+        if abs(tick - (slider.time + slider.slideTime)) > 10:
+          singleSlideTicks.append(tick)
 
         tick += tickInterval
+
+      for i in range(slider.slides):
+        for tick in singleSlideTicks:
+          slider.ticks.append(tick + (slider.slideTime * i))
 
     # calculating stacks #
     # the algorithm is taken straight from peppy: https://gist.github.com/peppy/1167470 #

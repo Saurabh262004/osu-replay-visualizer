@@ -169,6 +169,8 @@ def unpauseReplay():
 
   if newTime < 0:
     newTime = 0
+  elif newTime >= window.systems['main'].elements['replayTimeline'].valueRange[1]:
+    newTime = window.systems['main'].elements['replayTimeline'].valueRange[1] - 1
 
   window.systems['main'].elements['replayTimeline'].value = newTime
   window.systems['main'].elements['replayTimeline'].update()

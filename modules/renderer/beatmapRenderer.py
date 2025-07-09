@@ -106,6 +106,7 @@ class BeatmapRenderer:
       for tick in slider.ticks:
         tickSlides.append(mapRange(tick, slider.time, slider.endTime, 1, slider.slides + 1))
 
+      slider.tickPoses = []
       for tickSlide in tickSlides:
         slider.tickPoses.append(int(abs((tickSlide % 2) - 1) * (len(slider.bodyPath) - 1)))
 
