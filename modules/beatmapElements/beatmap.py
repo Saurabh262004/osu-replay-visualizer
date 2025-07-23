@@ -268,6 +268,9 @@ class Beatmap:
       print('calculating hit judgments [!WIP!]...')
 
     if self.mode == 'replay':
+      # create the replay array storing the event times and positions
+      self.replayArrayByEvents = []
+
       k1 = k1In = k1Out = k2 = k2In = k2Out = False
       for pos in self.replayArrayByTime:
         # setup key change states
@@ -292,53 +295,19 @@ class Beatmap:
           k2In = False
           k2 = False
 
-        time = pos['time']
-        hitobjects = self.hitobjectsAtTime(time)
-        activeObject = None
-
-        requiredCalcs = 1
-
-        if k1In and k2In:
-          requiredCalcs = 2
-
-        for _ in range(requiredCalcs):
-          # get the current active hitcircle
-          for hitobject in hitobjects:
-            if isinstance(hitobject, Spinner) or hitobject.hit or (time > (hitobject.time + self.hitWindow50)):
-              continue
-
-            activeObject = hitobject
-
-            break
-
-          if activeObject == None: continue
-
-          inHitArea = dist(pos['x'], pos['y'], activeObject.x, activeObject.y) <= self.circleRadius
-
-          # check judgment if the avtive object has been hit
-          if inHitArea and (k1In or k2In):
-            hitError = abs(activeObject.time - time)
-
-            judgment = 'lock'
-
-            if hitError < self.hitWindow300Rounded:
-              judgment = 300
-            elif hitError < self.hitWindow100Rounded:
-              judgment = 100
-            elif hitError < self.hitWindow50Rounded:
-              judgment = 50
-            elif hitError >= self.missWindow:
-              judgment = 0
-            else: continue
-
-            activeObject.judgment = judgment
-            activeObject.hitTime = time
-            activeObject.hit = True
-
-      for obj in self.hitobjects:
-        if not isinstance(obj, Spinner) and not obj.hit:
-          obj.hitTime = obj.time + self.hitWindow50
-          obj.judgment = 0
+        # if any event has been triggered, add it to the array
+        if k1In or k2In or k1Out or k2Out:
+          self.replayArrayByEvents.append({
+            'x': pos['x'],
+            'y': pos['y'],
+            'time': pos['time'],
+            'k1In': k1In,
+            'k2In': k2In,
+            'k1Out': k1Out,
+            'k2Out': k2Out
+          })
+      
+      self.calculateHitcirclesHitjudgments()
 
     if self.window.customData['debug']:
       print('done.')
@@ -531,3 +500,63 @@ class Beatmap:
         return obj
 
     return False
+
+  def calculateHitcirclesHitjudgments(self):
+    if not self.mode == 'replay':
+      return
+
+    for event in self.replayArrayByEvents:
+      pos = {'x': event['x'], 'y': event['y']}
+      time = event['time']
+      k1In = event['k1In']
+      k2In = event['k2In']
+      
+      hitobjects = self.hitobjectsAtTime(time)
+
+      if not (k1In or k2In): continue
+
+      if k1In and k2In:
+        requiredCalcs = 2
+      else:
+        requiredCalcs = 1
+
+      for _ in range(requiredCalcs):
+        activeObject = None
+
+        # get the current active hitcircle
+        for hitobject in hitobjects:
+          if isinstance(hitobject, Spinner) or hitobject.hit or (time > (hitobject.time + self.hitWindow50)):
+            continue
+
+          activeObject = hitobject
+
+          break
+
+        if activeObject == None: continue
+
+        inHitArea = dist(pos['x'], pos['y'], activeObject.x, activeObject.y) <= self.circleRadius
+
+        # check judgment if the active object has been hit
+        if inHitArea and (k1In or k2In):
+          hitError = abs(activeObject.time - time)
+
+          judgment = 'lock'
+
+          if hitError < self.hitWindow300Rounded:
+            judgment = 300
+          elif hitError < self.hitWindow100Rounded:
+            judgment = 100
+          elif hitError < self.hitWindow50Rounded:
+            judgment = 50
+          elif hitError >= self.missWindow:
+            judgment = 0
+          else: continue
+
+          activeObject.judgment = judgment
+          activeObject.hitTime = time
+          activeObject.hit = True
+  
+    for obj in self.hitobjects:
+      if not isinstance(obj, Spinner) and not obj.hit:
+        obj.hitTime = obj.time + self.hitWindow50
+        obj.judgment = 0

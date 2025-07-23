@@ -300,22 +300,22 @@ class BeatmapRenderer:
     if self.userData['renderHitJudgments']:
       self.drawJudgments(hitcircle, hitcirclePos)
 
-  def drawJudgments(self, hitcircle: Hitcircle, hitcirclePos: List[numType]):
+  def drawJudgments(self, hitobject: Union[Hitcircle, Slider], judgmentPos: List[numType]):
     ## !!! WIP !!! ##
 
-    if not hitcircle.judgment == -1:
+    if not hitobject.judgment == -1:
       judgmentCol = (255, 255, 255)
 
-      if hitcircle.judgment == 0:
+      if hitobject.judgment == 0:
         judgmentCol = (255, 0, 0)
-      elif hitcircle.judgment == 50:
+      elif hitobject.judgment == 50:
         judgmentCol = (255, 255, 0)
-      elif hitcircle.judgment == 100:
+      elif hitobject.judgment == 100:
         judgmentCol = (0, 255, 0)
-      elif hitcircle.judgment == 300:
+      elif hitobject.judgment == 300:
         judgmentCol = (0, 0, 255)
 
-      pg.draw.circle(self.surface, judgmentCol, hitcirclePos, 5)
+      pg.draw.circle(self.surface, judgmentCol, judgmentPos, 5)
 
   def drawSlider(self, slider: Slider, time: int):
     drawWindowStart = slider.time - self.beatmap.preempt
@@ -520,6 +520,14 @@ class BeatmapRenderer:
           self.surface.blit(reverseArrowNxt, reverseArrowNxtPos)
 
     self.drawHitcircle(slider.head, time)
+
+    lastPointPos = (
+      slider.bodyPath[-1]['x'] - scaledStackOffset,
+      slider.bodyPath[-1]['y'] - scaledStackOffset
+    )
+
+    if self.userData['renderHitJudgments']:
+      self.drawJudgments(slider, lastPointPos)
 
   def drawSpinner(self, spinner: Spinner, time: int):
     ## WIP ##

@@ -176,7 +176,7 @@ def unpauseReplay():
   window.systems['main'].elements['replayTimeline'].update()
 
   updateHitobjectsHitsoundTrigger(newTime)
-  
+
   window.systems['main'].elements['playbackButton'].section.background = pauseButtonIcon
   window.systems['main'].elements['playbackButton'].section.update()
 
