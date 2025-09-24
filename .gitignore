@@ -4,3 +4,4 @@ testFiles/
 __init__.py
 assets/defaultSkin
 ffmpeg/
+.venv
