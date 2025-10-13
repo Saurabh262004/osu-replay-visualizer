@@ -8,10 +8,11 @@ from modules.renderer.beatmapRenderer import BeatmapRenderer
 from modules.UI.windowManager import Window
 from modules.beatmapElements.hitobjects import Hitcircle, Slider, Spinner
 
-pauseButtonIcon = pg.image.load('assets/UI/pause-square.png')
+pauseButtonIcon = pg.image.load('assets/UI/pause-button.png')
+# pauseButtonIcon = pg.image.load('assets/UI/pause-square.png')
 tintImage(pauseButtonIcon, AppColors.cream)
 
-playButtonIcon = pg.image.load('assets/UI/play-square.png')
+playButtonIcon = pg.image.load('assets/UI/play-button.png')
 tintImage(playButtonIcon, AppColors.cream)
 
 def updateTimeStamp(time: int):

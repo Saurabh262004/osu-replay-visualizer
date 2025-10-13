@@ -183,7 +183,7 @@ class Circle:
     self.activeUpdate = True
 
     if len(self.dimensions) != 3:
-      raise ValueError(f'dimensions must contain 4 Dimension objects, received: {len(self.dimensions)}')
+      raise ValueError(f'dimensions must contain 3 Dimension objects, received: {len(self.dimensions)}')
 
     if not allIn(('x', 'y', 'radius'), self.dimensions):
       raise ValueError('dimensions must contain all of the following keys: \'x\', \'y\', \'radius\'')

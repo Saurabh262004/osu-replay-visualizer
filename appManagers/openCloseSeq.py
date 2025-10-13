@@ -53,7 +53,10 @@ def detectOsuFolder() -> Union[str, bool]:
 
 # setup userdata on the first boot on the device
 def firstBootSetup(userData: dict):
-  detectedOsuFolders = detectOsuFolder()
+  try:
+    detectedOsuFolders = detectOsuFolder()
+  except Exception as e:
+    detectedOsuFolders = False
 
   folderPath = ""
   if not detectedOsuFolders:

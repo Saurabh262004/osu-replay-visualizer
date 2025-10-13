@@ -1,7 +1,9 @@
 import os
+import platform
 import json
 import sharedWindow
 from pydub import AudioSegment
+import pygame as pg
 from appManagers.openCloseSeq import *
 from appManagers.customLoops import *
 from modules.UI.windowManager import Window
@@ -9,6 +11,9 @@ from appUI.systems.nav import addNav
 from appUI.systems.main import addMain
 from appUI.systems.replayList import addReplayList
 from appUI.systems.settings import addSettings
+
+pg.mixer.pre_init(44100, -16, 2, 256)
+pg.init()
 
 userData = None
 
@@ -39,13 +44,35 @@ except:
 if userData['firstBoot']:
   firstBootSetup(userData)
 
-ffmpegPath = os.path.join(os.path.dirname(__file__), 'ffmpeg', 'bin', 'ffmpeg.exe')
-AudioSegment.converter = ffmpegPath
+def setupFFMPEG():
+  system = platform.system().lower()
+  machine = platform.machine().lower()
 
-ffmpegBinDir = os.path.join(os.path.dirname(__file__), 'ffmpeg', 'bin')
-os.environ['PATH'] += os.pathsep + ffmpegBinDir
+  if machine in ("x86_64", "amd64"):
+    arch = "amd64"
+  elif machine in ("aarch64", "arm64"):
+    arch = "arm64"
+  elif machine in ("i386", "i686"):
+    arch = "i686"
+  else:
+    arch = machine
 
-AudioSegment.ffprobe = ffmpegPath.replace('ffmpeg', 'ffprobe')
+  binary_name = "ffmpeg.exe" if system == "windows" else "ffmpeg"
+
+  base_dir = os.path.dirname(__file__)
+  ffmpeg_dir = os.path.join(base_dir, "ffmpeg", f"{system}-{arch}")
+  ffmpeg_path = os.path.join(ffmpeg_dir, binary_name)
+
+  if not os.path.exists(ffmpeg_path):
+    from pydub.utils import which
+    ffmpeg_path = which("ffmpeg")
+
+  AudioSegment.converter = ffmpeg_path
+
+  if ffmpeg_dir not in os.environ["PATH"]:
+    os.environ["PATH"] += os.pathsep + ffmpeg_dir
+
+setupFFMPEG()
 
 for url in userData['URLs']:
   if not os.path.isdir(userData['URLs'][url]):

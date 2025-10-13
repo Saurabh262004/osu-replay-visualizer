@@ -89,18 +89,18 @@ def addMain():
 
   system.addElement(replayTimeline, 'replayTimeline')
 
-  playbackButtonWidth = DV('classPer', window, classAttr='screenWidth', percent=4)
+  playbackButtonWidth = DV('classPer', window, classAttr='screenWidth', percent=2.5)
   playbackButtonHeight = DV('classNum', playbackButtonWidth, classAttr='value')
 
   # pause / play button #
   pausePlayButtonDim = {
-    'x': DV('customCallable', lambda params: params[0].x - (params[1].value * 1.5), (replayTimeline.section, playbackButtonWidth)),
+    'x': DV('customCallable', lambda params: params[0].x - (params[1].value * 2), (replayTimeline.section, playbackButtonWidth)),
     'y': DV('customCallable', lambda params: (params[0].y + (params[0].height / 2)) - (params[1].value / 2), (replayTimeline.section, playbackButtonHeight)),
     'width': playbackButtonWidth,
     'height': playbackButtonHeight
   }
 
-  playButtonIcon = pg.image.load('assets/UI/play-square.png')
+  playButtonIcon = pg.image.load('assets/UI/play-button.png')
   tintImage(playButtonIcon, AppColors.cream)
 
   playbackButtonSection = Section(
@@ -155,7 +155,7 @@ def addMain():
     Section(audioControlDim, AppColors.darkGray, borderRadius=2),
     Section(audioControlDragDim, AppColors.cream, 2),
     (1, 0),
-    -0.05,
+    0.05,
     AppColors.listElement1,
     {
       'callable': setUserVolume,

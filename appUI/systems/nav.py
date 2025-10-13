@@ -38,8 +38,8 @@ def addNav():
 
   system.addElement(
     Section({
-      'x': DV('number', 1),
-      'y': DV('number', 1),
+      'x': DV('number', 0),
+      'y': DV('number', 0),
       'width': DV('number', 1),
       'height': DV('number', 1)
     }, pg.Color(200, 200, 200)), 'mainSection'

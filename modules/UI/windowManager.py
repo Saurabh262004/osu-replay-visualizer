@@ -126,8 +126,6 @@ class Window:
     pg.display.set_caption(self.title)
 
   def openWindow(self):
-    pg.init()
-
     self.time = pg.time
     self.clock = self.time.Clock()
     pg.display.set_caption(self.title)
