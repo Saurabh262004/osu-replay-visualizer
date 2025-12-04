@@ -1,3 +1,4 @@
+import traceback
 import pygame as pg
 from copy import copy
 from appManagers.manageAlerts import activateAlert
@@ -67,7 +68,9 @@ def windowCustomUpdate():
 
         for hitsound in window.customData['skin']['hitsounds']:
           window.customData['skin']['hitsounds'][hitsound].set_volume(userData['volume'] / 3)
-      except:
+      except Exception as e:
+        print(f'E: {e}')
+        traceback.print_exc()
         activateAlert('Couldn\'t load the skin!')
 
   ## Update Replay Section On Resolution Change ##

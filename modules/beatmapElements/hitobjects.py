@@ -58,6 +58,7 @@ class Slider:
     self.sampleSet = 'Normal'
     self.ticks = []
     self.tickPoses = []
+    self.checkpointsHit = []
 
     if not hitTime is None:
       self.hitTime = hitTime
@@ -94,6 +95,7 @@ class Slider:
         tmpCurve.append(self.anchors[i])
 
     self.computeBaseBodyPath()
+    self.reparameterizeBodyPath()
 
   def computeBaseBodyPath(self):
     self.baseBodyPath = []
@@ -244,50 +246,51 @@ class Slider:
 
     return calculatedPoints
 
-  def transformBodyPath(self, resMultiplier: numType, resPadding: numType):
+  ## don't think this is still good enough... but it's fine for now ##
+  def reparameterizeBodyPath(self):
+    if not self.curveType == 'B': return
+
+    self.flatBasePath = [point for curve in self.baseBodyPath for point in curve]
+    lastDistance = 0
+    totalBezierLength = 0
+    self.reparamBasePath = []
+    self.reparamBasePath.append(self.flatBasePath[0])
+    targetDistance = 2
+
+    for i in range(1, len(self.flatBasePath)):
+      totalBezierLength += dist(self.flatBasePath[i-1]['x'], self.flatBasePath[i-1]['y'], self.flatBasePath[i]['x'], self.flatBasePath[i]['y'])
+
+      if lastDistance == 0:
+        p1 = self.reparamBasePath[-1]
+      else:
+        p1 = self.flatBasePath[i-1]
+
+      p2 = self.flatBasePath[i]
+
+      segmentLength = dist(p1['x'], p1['y'], p2['x'], p2['y'])
+
+      if (lastDistance + segmentLength) >= targetDistance:
+        t = (targetDistance - lastDistance) / segmentLength
+        self.reparamBasePath.append(self.lerpAnchors(p1, p2, t))
+        lastDistance = 0
+      else:
+        lastDistance += segmentLength
+
+  def transformBodyPath(self, resMultiplier: List[numType], resPadding: List[numType]):
     if self.curveType == 'B':
-      self.transformedBodyPath = []
-      totalBezierLength = 0
-
-      for curve in self.baseBodyPath:
-        self.transformedBodyPath.extend([
-          {
-            'x': (point['x'] * resMultiplier[0]) + resPadding[0],
-            'y': (point['y'] * resMultiplier[1]) + resPadding[1]
-          } for point in curve
-        ])
-
-      ## don't think this is still good enough... but it's fine for now ##
-      lastDistance = 0
-      self.bodyPath = []
-      self.bodyPath.append(self.transformedBodyPath[0])
-      targetDistance = 2
-      for i in range(1, len(self.transformedBodyPath)):
-        totalBezierLength += dist(self.transformedBodyPath[i-1]['x'], self.transformedBodyPath[i-1]['y'], self.transformedBodyPath[i]['x'], self.transformedBodyPath[i]['y'])
-
-        if lastDistance == 0:
-          p1 = self.bodyPath[-1]
-        else:
-          p1 = self.transformedBodyPath[i-1]
-
-        p2 = self.transformedBodyPath[i]
-
-        segmentLength = dist(p1['x'], p1['y'], p2['x'], p2['y'])
-
-        if (lastDistance + segmentLength) >= targetDistance:
-          t = (targetDistance - lastDistance) / segmentLength
-          self.bodyPath.append(self.lerpAnchors(p1, p2, t))
-          lastDistance = 0
-        else:
-          lastDistance += segmentLength
+      self.bodyPath = [
+        {
+          'x': (point['x'] * resMultiplier[0]) + resPadding[0],
+          'y': (point['y'] * resMultiplier[1]) + resPadding[1]
+        } for point in self.reparamBasePath
+      ]
     elif self.curveType == 'L' or self.curveType == 'P':
-      self.transformedBodyPath = [
+      self.bodyPath = [
         {
           'x': (point['x'] * resMultiplier[0]) + resPadding[0],
           'y': (point['y'] * resMultiplier[1]) + resPadding[1]
         } for point in self.baseBodyPath
       ]
-      self.bodyPath = self.transformedBodyPath
 
   def renderBody(self, renderResMultiplier: numType, highQualitySliders: bool):
     highResMultiplier = 2
@@ -351,3 +354,4 @@ class Spinner:
     self.endTime = self.rawDict['endTime']
     self.comboIndex = 0
     self.comboColorIndex = 0
+    self.minSpinsRequired = 0

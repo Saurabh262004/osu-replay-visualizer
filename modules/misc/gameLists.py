@@ -391,7 +391,7 @@ SKIN_ELEMENTS = {
     'alter': None,
     'required': True
   },
-  'selection-mod-doubletime': {
+  'selection-mod-doubleTime': {
     'animetable': False,
     'blendMode': 'normal',
     'origin': 'center',
@@ -423,7 +423,7 @@ SKIN_ELEMENTS = {
     'alter': None,
     'required': True
   },
-  'selection-mod-halftime': {
+  'selection-mod-halfTime': {
     'animetable': False,
     'blendMode': 'normal',
     'origin': 'center',
@@ -431,7 +431,7 @@ SKIN_ELEMENTS = {
     'alter': None,
     'required': True
   },
-  'selection-mod-hardrock': {
+  'selection-mod-hardRock': {
     'animetable': False,
     'blendMode': 'normal',
     'origin': 'center',
@@ -543,7 +543,7 @@ SKIN_ELEMENTS = {
     'alter': None,
     'required': True
   },
-  'selection-mod-nofail': {
+  'selection-mod-noFail': {
     'animetable': False,
     'blendMode': 'normal',
     'origin': 'center',
@@ -583,7 +583,7 @@ SKIN_ELEMENTS = {
     'alter': None,
     'required': True
   },
-  'selection-mod-scorev2': {
+  'selection-mod-scoreV2': {
     'animetable': False,
     'blendMode': 'normal',
     'origin': 'center',
@@ -591,7 +591,7 @@ SKIN_ELEMENTS = {
     'alter': None,
     'required': True
   },
-  'selection-mod-spunout': {
+  'selection-mod-spunOut': {
     'animetable': False,
     'blendMode': 'normal',
     'origin': 'center',
@@ -599,7 +599,7 @@ SKIN_ELEMENTS = {
     'alter': None,
     'required': True
   },
-  'selection-mod-suddendeath': {
+  'selection-mod-suddenDeath': {
     'animetable': False,
     'blendMode': 'normal',
     'origin': 'center',

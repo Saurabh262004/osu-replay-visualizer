@@ -21,6 +21,8 @@ try:
   with open('data/userData.json', 'r') as rawData:
     userData = json.load(rawData)
 except:
+  print('failed to load userdata file')
+
   # create default user data
   userData = {
     'firstBoot': True,
@@ -84,7 +86,7 @@ window = sharedWindow.window = Window('Replay Veiwer', (800, 450), customLoopPro
 
 window.customData['firstUpdate'] = True
 window.customData['userData'] = userData
-window.customData['debug'] = False
+window.customData['debug'] = True
 
 # add systems #
 addNav()

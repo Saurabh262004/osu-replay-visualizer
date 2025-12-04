@@ -1,11 +1,13 @@
 from typing import List, Dict, Union, Optional
 from copy import deepcopy
 from pygame import Color as pgColor, transform as pgTransform
-from modules.misc.helpers import tintImage
+from modules.misc.helpers import tintImage, dist
 from modules.readers.beatmapReader import readMap
 from modules.beatmapElements.hitobjects import *
 from modules.UI.windowManager import Window
 import sharedWindow
+
+numType = Union[int, float]
 
 # stores all the data about beatmap and replay #
 class Beatmap:
@@ -112,20 +114,23 @@ class Beatmap:
       self.OD /= 2
       self.HP /= 2
     elif 'HR' in self.replay['mods']:
-      newCS = self.CS * 1.3
-      self.CS = newCS if newCS <= 10 else 10
+      self.CS = min(self.CS * 1.3, 10)
 
-      newAR = self.AR * 1.4
-      self.AR = newAR if newAR <= 10 else 10
+      self.AR = min(self.AR * 1.4, 10)
 
-      newOD = self.OD * 1.4
-      self.OD = newOD if newOD <= 10 else 10
+      self.OD = min(self.OD * 1.4, 10)
 
-      newHP = self.HP * 1.4
-      self.HP = newHP if newHP <= 10 else 10
+      self.HP = min(self.HP * 1.4, 10)
 
     # calculate some needed values #
     self.circleRadius = 54.4 - 4.48 * self.CS
+
+    self.sliderFollowCircleRadius = 2.4 * self.circleRadius
+
+    self.minimumRPS = 1.5 + 0.2 * self.OD if self.OD < 5 else 1.25 + 0.25 * self.OD
+
+    for spinner in self.spinners:
+      spinner.minSpinsRequired = self.minimumRPS * (spinner.endTime - spinner.time) + 0.5
 
     if self.AR < 5:
       self.preempt = 1200 + 600 * (5 - self.AR) / 5
@@ -141,7 +146,7 @@ class Beatmap:
     self.hitWindow100 = 140 - 8 * self.OD
     self.hitWindow50 = 200 - 10 * self.OD
     self.missWindow = 400
-    
+
     self.hitWindow300Rounded = round(self.hitWindow300)
     self.hitWindow100Rounded = round(self.hitWindow100)
     self.hitWindow50Rounded = round(self.hitWindow50)
@@ -204,7 +209,7 @@ class Beatmap:
 
     if self.window.customData['debug']:
       print('calculating stacks...')
-  
+
     stackOffset = self.circleRadius / 10
 
     STACK_LENIENCE = 3
@@ -306,14 +311,15 @@ class Beatmap:
             'k1Out': k1Out,
             'k2Out': k2Out
           })
-      
+
       self.calculateHitcirclesHitjudgments()
+      self.calculateSliderJudgments()
 
     if self.window.customData['debug']:
       print('done.')
 
       print('setting combo colors...')
- 
+
     # get combo colors #
     if 'Colours' in self.map:
       self.comboColors = [pgColor(*self.map['Colours'][color]) for color in self.map['Colors']]
@@ -424,7 +430,7 @@ class Beatmap:
       print('done.')
 
   # get the timing points that are in effect at a certain time #
-  def effectiveTimingPointAtTime(self, time: int) -> List[Dict[str, Union[int, float]]]:
+  def effectiveTimingPointAtTime(self, time: int) -> List[Dict[str, numType]]:
     possibleUninheritedTimingPoint = None
     possibleInheritedTimingPoint = None
 
@@ -456,14 +462,14 @@ class Beatmap:
 
     return returnHitobjects
 
-  def transformCursorData(self, resMultiplier: Union[int, float], xPadding: Union[int, float], yPadding: Union[int, float]):
+  def transformCursorData(self, resMultiplier: numType, xPadding: numType, yPadding: numType):
     self.transformedCusrorData = [{
       'x': (pos['x'] * resMultiplier) + xPadding,
       'y': (pos['y'] * resMultiplier) + yPadding,
       'time': pos['time']
     } for pos in self.replayArrayByTime]
 
-  def cursorTrailAtTimeTransformed(self, time: int, trailLength: Optional[int] = 10) -> List[Dict[str, Union[int, float]]]:
+  def cursorTrailAtTimeTransformed(self, time: int, trailLength: Optional[int] = 10) -> List[Dict[str, numType]]:
     if not self.transformedCusrorData:
       return None
 
@@ -478,7 +484,64 @@ class Beatmap:
 
     return returnTrail
 
-  def cursorTrailAtTime(self, time: int, trailLength: Optional[int] = 10) -> List[Dict[str, Union[int, float]]]:
+  def getReplayArraySection(self, timeStart, timeEnd):
+    # get the replay array section between the given times
+    if not self.mode == 'replay': return None
+
+    startIndex = None
+    endIndex = len(self.replayArrayByTime)
+
+    # get start and end index
+    for i in range(len(self.replayArrayByTime)):
+      if self.replayArrayByTime[i]['time'] > timeStart and startIndex is None:
+        startIndex = i - 3
+
+      if self.replayArrayByTime[i]['time'] > timeEnd:
+        endIndex = i + 3
+        break
+
+    if startIndex is None or startIndex < 0:
+      startIndex = 0
+
+    if endIndex > len(self.replayArrayByTime):
+      endIndex = len(self.replayArrayByTime)
+
+    return self.replayArrayByTime[startIndex:endIndex]
+
+  # nothing is using this method and I have no clue why it is here...
+  def replayArrayInfoAtTime(self, time):
+    # find the closest object from replay array by time at the given time
+    # also includes the k1In, k2In, k1Out and k2Out data from the replay array by action array
+    if not self.mode == 'replay': return None
+
+    returnObj = None
+
+    # iterate through the replay array by time in reverse order to find the closest object
+    for i in range(len(self.replayArrayByTime) - 1, -1, -1):
+      if self.replayArrayByTime[i]['time'] <= time:
+        returnObj = self.replayArrayByTime[i]
+        break
+
+    if returnObj is None: return None
+
+    # iterate through the replay array by events to find the event with the same time
+    # and return an object containing the position, time, keys and k1In, k2In, k1Out, k2Out data
+    for event in self.replayArrayByEvents:
+      if event['time'] == returnObj['time']:
+        return {
+          'x': returnObj['x'],
+          'y': returnObj['y'],
+          'time': returnObj['time'],
+          'keys': returnObj['keys'],
+          'k1In': event['k1In'],
+          'k2In': event['k2In'],
+          'k1Out': event['k1Out'],
+          'k2Out': event['k2Out']
+        }
+
+  def cursorTrailAtTime(self, time: int, trailLength: Optional[int] = 10) -> List[Dict[str, numType]]:
+    if not self.mode == 'replay': return None
+
     returnTrail = []
 
     for pos in self.replayArrayByTime:
@@ -491,7 +554,6 @@ class Beatmap:
     return returnTrail
 
   def lastObjectAtTimeByHitTime(self, time: int) -> Union[Hitcircle, Slider, Spinner, bool]:
-
     for i in range(len(self.hitobjects) - 1, -1, -1):
       obj = self.hitobjects[i]
       if isinstance(obj, Spinner): continue
@@ -502,15 +564,14 @@ class Beatmap:
     return False
 
   def calculateHitcirclesHitjudgments(self):
-    if not self.mode == 'replay':
-      return
+    if not self.mode == 'replay': return
 
     for event in self.replayArrayByEvents:
       pos = {'x': event['x'], 'y': event['y']}
       time = event['time']
       k1In = event['k1In']
       k2In = event['k2In']
-      
+
       hitobjects = self.hitobjectsAtTime(time)
 
       if not (k1In or k2In): continue
@@ -555,8 +616,149 @@ class Beatmap:
           activeObject.judgment = judgment
           activeObject.hitTime = time
           activeObject.hit = True
-  
+
     for obj in self.hitobjects:
       if not isinstance(obj, Spinner) and not obj.hit:
         obj.hitTime = obj.time + self.hitWindow50
         obj.judgment = 0
+
+      if isinstance(obj, Slider):
+        obj.head.hitTime = obj.hitTime
+        obj.head.judgment = obj.judgment
+
+  @staticmethod
+  def validFollowKey(key: str, replaySection: List[dict], pos: int):
+    if not (key in replaySection[pos]['keys']): return False
+
+    for i in range(pos, 0, -1):
+      if not (key in replaySection[i]['keys']):
+        return True
+
+    return False
+
+  @staticmethod
+  def trackingAtTime(trackingData: List[dict], time: numType):
+    for data in reversed(trackingData):
+      if data['time'] <= time: return data['tracking']
+
+    return False
+
+  # check if the cursor is inside the follow circle of a slider at a certain time
+  def inFollowCircle(self, slider: Slider, replayData: List[dict], i: int) -> List[bool]:
+    # if slider curve type is bezier, use the reparameterized base path
+    # otherwise, use the base body path
+    if slider.curveType == 'B':
+      bodyPath = slider.reparamBasePath
+    else:
+      bodyPath = slider.baseBodyPath
+
+    # get needed start and end frame data
+    time = replayData[i]['time']
+    pos = {'x': replayData[i]['x'], 'y': replayData[i]['y']}
+
+    # get the position of the followcircle at both frames
+    slide = mapRange(time, slider.time, slider.endTime, 1, slider.slides + 1)
+    posIndex = int(abs((slide % 2) - 1) * (len(bodyPath) - 1))
+    followCirclePos = bodyPath[posIndex]
+
+    # get the distance of the cursor from the follow circle at both frames
+    mDist = dist(pos['x'], pos['y'], followCirclePos['x'], followCirclePos['y'])
+
+    # check if the cursor is inside the radius of the follow circle
+    InFollow = (mDist <= self.circleRadius)
+
+    # check if the cursor is inside the expanded radius of the follow circle
+    InFollowExpanded = (mDist <= self.sliderFollowCircleRadius)
+
+    return [InFollow, InFollowExpanded]
+
+  def getTrackingData(self, slider: Slider, replayData: List[dict]) -> List[Dict[str, bool]]:
+    trackingData = []
+
+    # loop through the segment of the replay data and create tracking data
+    followingSlider = False
+    for i in range(len(replayData)):
+      # get needed start and end frame data
+      time = replayData[i]['time']
+
+      K1 = self.validFollowKey('k1', replayData, i)
+      K2 = self.validFollowKey('k2', replayData, i)
+
+      InFollow, InFollowExpanded = self.inFollowCircle(slider, replayData, i)
+
+      # if both frames have a key pressed
+      # and the cursor is inside the circle radius of the follow circle
+      # we are following the slider
+      if (K1 or K2) and InFollow:
+        followingSlider = True
+
+      # if the cursor gets out of the expanded radius of the follow circle at start or the end frame
+      # we are not following the slider
+      if not InFollowExpanded:
+        followingSlider = False
+
+      # if in one of the frames, no keys are being pressed
+      # we are not following the slider
+      if not (K1 or K2):
+        followingSlider = False
+
+      trackingData.append(
+        {
+          'time': time,
+          'tracking': followingSlider
+        }
+      )
+
+    return trackingData
+
+  def calculateSliderJudgments(self):
+    if not self.mode == 'replay': return
+
+    # i = 0
+    # loop through all sliders to check which checkpoints (ticks + slider end) have been captured
+    for slider in self.sliders:
+      # get a portion of the replay array at the slider time
+      replayData = self.getReplayArraySection(slider.hitTime, slider.endTime)
+
+      if replayData is None: continue
+
+      trackingData = self.getTrackingData(slider, replayData)
+      # i += 1
+      # print(i)
+      # print(trackingData)
+
+      # get slider ticks and slider end as checkpoints
+      # slider head judgment calculation must be done before this, so no need to add it
+      checkpoints = deepcopy(slider.ticks)
+
+      # add slider repeats and slider end
+      for i in range(slider.slides):
+        checkpoints.append(slider.time + (slider.slideTime * (i + 1)))
+
+      # if a checkpoint has been captured, add it to the checkpointsHit list
+      for checkpoint in checkpoints:
+        if self.trackingAtTime(trackingData, checkpoint):
+          slider.checkpointsHit.append(checkpoint)
+
+      # total checkpoints is number of slider ticks + 2 for the slider head and the slider end
+      # slider end has already been accounted for in the checkpoints
+      totalCheckpoints = len(checkpoints) + 1
+
+      # number of checkpoints that have been hit
+      totalCheckpointsHit = len(slider.checkpointsHit)
+
+      # add 1 if the slider head has been hit
+      if not slider.head.judgment == 0:
+        totalCheckpointsHit += 1
+
+      slider.head.judgment = -1
+
+      # set the slider judgment based on the number of checkpoints hit
+      if totalCheckpointsHit == 0:
+        slider.judgment = 0
+      elif totalCheckpointsHit < (totalCheckpoints / 2):
+        slider.judgment = 50
+      elif totalCheckpointsHit < totalCheckpoints:
+        slider.judgment = 100
+      else:
+        slider.judgment = 300

@@ -1,8 +1,8 @@
 {
-  "firstBoot": true,
+  "firstBoot": false,
   "skin": "default",
   "volume": 0.1,
-  "highQualitySliders": false,
+  "highQualitySliders": true,
   "playfieldBorder": true,
   "sliderAnchors": false,
   "renderSkinCursor": true,
@@ -10,9 +10,9 @@
   "renderHitJudgments": false,
   "renderKeyOverlay": true,
   "renderModsDisplay": true,
-  "normalHitsounds": false,
+  "normalHitsounds": true,
   "disableHidden": false,
   "URLs": {
-    "osuFolder": ""
+    "osuFolder": "/media/DDrive/Games/osu!"
   }
 }
